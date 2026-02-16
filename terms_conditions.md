@@ -1,36 +1,46 @@
 # Terms and Conditions of Use
 
-**Last Updated:** February 14, 2026
+**Last Updated:** February 16, 2026
+
+Welcome to Really Simple Cards! These Terms and Conditions (“Terms”) govern your use of our digital products and services, including our website (reallysimple.apps) and the Really Simple Cards platform. By using Really Simple Cards, creating a profile, or subscribing, you agree to these Terms. Please read them carefully.
 
 ## 1. General Terms & Applicability
-These Terms of Service govern your use of the Contact Tree platform (Really Simple Apps). By accessing our services, you agree to be bound by these terms. We reserve the right to update these terms at any time.
+
+These Terms apply to all interactions with Really Simple Apps. We reserve the right to update these Terms at any time. Updates become effective immediately upon posting. Continued use signifies acceptance of the revised Terms.
 
 ## 2. Service Description
-Contact Tree provides digital business card hosting and analytics. Our services include:
-- Profile Hosting: Creation and management of digital business profiles.
-- Analytics: Engagement reporting (views, clicks, geographic data).
-- Sharing Tools: QR code generation and custom URLs.
+
+Really Simple Cards provides a digital business card ecosystem. Our services include:
+- **Profile Hosting:** Creation and management of digital business profiles.
+- **Lead Capture:** Tools for contact collection and storage.
+- **Sharing Tools:** QR code generation, Apple Wallet passes, and custom URLs.
+- **Analytics:** Engagement reporting (views, clicks, geographic data).
 
 ## 3. User Accounts
+
 - You are responsible for maintaining the security of your account and password.
-- You must provide accurate and complete information when creating an account.
+- You must provide accurate and complete information.
 - Content you post must not violate any laws or third-party rights.
 
 ## 4. Data Ownership & Fair Usage
-- **Data Ownership:** You own all the content you add to your profile. You may export your analytics data or delete your account at any time.
-- **Fair Usage:** You agree not to use our platform for spam, fraudulent activities, or to scrape data from other users.
-- **System Integrity:** Attempting to bypass security measures or disrupt service is strictly prohibited.
+
+- **Data Ownership:** You own all contact data and leads captured via your profile. You may export this data at any time during an active subscription.
+- **Fair Usage:** To ensure platform stability, we prohibit spamming, scraping, or misrepresenting identity. Excessive volume that impacts performance may require a plan upgrade.
 
 ## 5. Subscription Plans & Pricing
+
 - We may offer free and paid (Pro) tiers.
-- Paid subscriptions are billed in advance and are non-refundable for the current billing period.
-- Subscriptions renew automatically unless cancelled via your dashboard.
+- Paid subscriptions renew automatically unless cancelled at least 48 hours before the next billing date.
+- Pricing may be adjusted at any time with prior notification.
 
 ## 6. Limitation of Liability
-Contact Tree is provided "as is". We are not liable for any indirect, incidental, or consequential damages resulting from your use of the service. Our maximum liability is limited to the amount paid for the specific subscription service.
+
+Really Simple Cards is provided "as is". We are not liable for indirect, incidental, or consequential damages. Our maximum liability is limited to the amount paid for the specific service.
 
 ## 7. Governing Law
+
 These Terms are governed by the laws of the United Kingdom. Any disputes shall be subject to the exclusive jurisdiction of the courts of the UK.
 
 ## 8. Contact
-For any questions regarding these Terms, please contact support@contacttree.link.
+
+For any questions regarding these Terms, please contact support@reallysimple.apps.

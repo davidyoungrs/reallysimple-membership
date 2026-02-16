@@ -4,6 +4,7 @@ import { Share2, ShieldCheck, Zap } from 'lucide-react';
 import { SignedIn, SignedOut, UserButton, useUser, useAuth } from '@clerk/clerk-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './LanguageSelector';
+import { CookieConsent } from './CookieConsent';
 
 export const LandingPage = () => {
     const { t } = useTranslation();
@@ -148,6 +149,31 @@ export const LandingPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Footer */}
+            <footer className="bg-gray-900 text-gray-400 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="flex items-center gap-2">
+                            <img src="/logo.png" alt="Really Simple Cards" className="h-12 w-auto brightness-0 invert" />
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
+                            <Link to="/privacy" className="hover:text-white transition-colors">{t('Privacy Policy')}</Link>
+                            <Link to="/terms" className="hover:text-white transition-colors">{t('Terms of Service')}</Link>
+                            <Link to="/cookies" className="hover:text-white transition-colors">{t('Cookies Policy')}</Link>
+                            <a href="mailto:support@reallysimple.apps" className="hover:text-white transition-colors">{t('Support')}</a>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+                        <p>© {new Date().getFullYear()} Really Simple Apps. All rights reserved.</p>
+                        <p>Built for professionals who value simplicity.</p>
+                    </div>
+                </div>
+            </footer>
+
+            <CookieConsent />
         </div>
     );
 };

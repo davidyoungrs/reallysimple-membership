@@ -4,6 +4,7 @@ import { LandingPage } from './components/LandingPage';
 import { CardBuilder } from './components/CardBuilder';
 import { Dashboard } from './components/Dashboard';
 import { PublicCard } from './components/PublicCard';
+import { PolicyPage } from './components/PolicyPage';
 import { RequireVerifiedEmail } from './components/RequireVerifiedEmail';
 
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp } from '@clerk/clerk-react';
@@ -20,6 +21,9 @@ function App() {
 
         {/* Public Card Route */}
         <Route path="/card/:slug" element={<PublicCard />} />
+
+        {/* Policy Routes */}
+        <Route path="/:type" element={<PolicyPage />} />
 
         {/* Protected App Route */}
         <Route

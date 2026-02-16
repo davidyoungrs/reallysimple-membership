@@ -134,10 +134,17 @@ export function PublicCard() {
                     <p className="text-gray-600 mb-3">Impressed? Create your own digital business card in minutes.</p>
                     <Link
                         to="/"
-                        className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                        className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors mb-6"
                     >
                         Get Started Free
                     </Link>
+
+                    <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-400 border-t border-gray-100 pt-6">
+                        <span>© {new Date().getFullYear()} Really Simple Apps</span>
+                        <Link to="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
+                        <Link to="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
+                        <Link to="/cookies" className="hover:text-gray-600 transition-colors">Cookies</Link>
+                    </div>
                 </div>
             </div>
         </div>
