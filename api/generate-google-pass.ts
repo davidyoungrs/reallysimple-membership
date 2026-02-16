@@ -63,8 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const toAbsoluteUrl = (url: string) => {
             if (!url) return '';
             if (url.startsWith('http')) return url;
-            // Use VERCEL_URL if available, otherwise fallback (e.g., for local dev)
-            const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://contact-tree.vercel.app';
+            // FORCE PRODUCTION URL: Vercel Preview URLs are often private (401), causing Google to fail.
+            const baseUrl = 'https://reallysimple-new.vercel.app';
             return new URL(url, baseUrl).toString();
         };
 
