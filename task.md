@@ -90,11 +90,15 @@
     - [-] JWT-signed link generation
     - [-] "Save to Google Pay" button
 
-## Phase 7: Lifecycle & Growth (Future)
-- [ ] **Engagement Tools**
-    - [ ] Lead Capture Form on cards
-    - [ ] "Exchange Contact" feature
-    - [ ] Save Leads to Dashboard
+## Phase 7: Lifecycle & Growth (Completed)
+> [!IMPORTANT]
+> **Vercel Pro Plan Required**: This phase and subsequent complex backend features exceed the 12-function limit of the Vercel Hobby plan.
+- [x] **Engagement Tools** <!-- id: 13 -->
+    - [x] Lead Capture Form on cards
+    - [x] "Exchange Contact" feature
+    - [x] Lead submission API
+    - [x] Save Leads to Dashboard
+    - [x] Leads management view in Dashboard
 - [ ] **Notifications**
     - [ ] Push Notifications for card updates
     - [ ] Expiration reminders for subscriptions
