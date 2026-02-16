@@ -10,6 +10,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { ActivityFeed } from './ActivityFeed';
 import { DashboardCharts } from './DashboardCharts';
 import { ProfileSettings } from './ProfileSettings';
+import { WalletPreview } from './WalletBuilder';
 
 interface Card {
     id: number;
@@ -249,16 +250,35 @@ export function Dashboard() {
                                     >
                                         {/* Card Preview */}
                                         <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
-                                            <div className="scale-[0.35] origin-top-left translate-x-[15%] translate-y-[5%]" style={{ width: '500px', height: '800px' }}>
-                                                <BusinessCard data={card.data} />
-                                            </div>
-                                            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-60" />
+                                            {card.data.wallet ? (
+                                                <div className="flex h-full p-4 gap-4 items-center justify-center">
+                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center">
+                                                        <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('Online Card')}</span>
+                                                        <div className="scale-[0.25] origin-top h-0 pb-[150%] w-[180%]">
+                                                            <BusinessCard data={card.data} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center">
+                                                        <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('Apple Wallet')}</span>
+                                                        <div className="scale-[0.45] origin-top">
+                                                            <WalletPreview data={card.data} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="scale-[0.35] origin-top-left translate-x-[15%] translate-y-[5%]" style={{ width: '500px', height: '800px' }}>
+                                                        <BusinessCard data={card.data} />
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-60" />
+                                                </>
+                                            )}
 
                                             {/* Hover Play Button / View */}
                                             <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <button
                                                     onClick={() => navigate(`/card/${card.slug || card.uid}`)}
-                                                    className="p-3 bg-white rounded-full shadow-lg text-gray-900 hover:scale-110 transition-transform"
+                                                    className="p-3 bg-white rounded-full shadow-lg text-gray-900 hover:scale-110 transition-transform z-10"
                                                 >
                                                     <Eye className="w-6 h-6" />
                                                 </button>
