@@ -192,26 +192,6 @@ export function Dashboard() {
                     <ProfileSettings />
                 ) : (
                     <>
-                        {/* Dashboard Insights */}
-                        {cards.length > 0 && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <div className="lg:col-span-2">
-                                    <DashboardCharts
-                                        data={userAnalytics?.dailyStats || []}
-                                        totalViews={userAnalytics?.totalViews || 0}
-                                        totalClicks={userAnalytics?.totalClicks || 0}
-                                        isLoading={isAnalyticsLoading}
-                                    />
-                                </div>
-                                <div className="lg:col-span-1">
-                                    <ActivityFeed
-                                        activities={userAnalytics?.recentActivity || []}
-                                        isLoading={isAnalyticsLoading}
-                                    />
-                                </div>
-                            </div>
-                        )}
-
                         {/* Cards Section */}
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-gray-900">{t('Your Cards')}</h2>
@@ -240,7 +220,7 @@ export function Dashboard() {
                                 </Link>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-1000">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-1000 mb-12">
                                 {cards.map((card) => (
                                     <div
                                         key={card.id}
@@ -319,6 +299,26 @@ export function Dashboard() {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+
+                        {/* Dashboard Insights */}
+                        {cards.length > 0 && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div className="lg:col-span-2">
+                                    <DashboardCharts
+                                        data={userAnalytics?.dailyStats || []}
+                                        totalViews={userAnalytics?.totalViews || 0}
+                                        totalClicks={userAnalytics?.totalClicks || 0}
+                                        isLoading={isAnalyticsLoading}
+                                    />
+                                </div>
+                                <div className="lg:col-span-1">
+                                    <ActivityFeed
+                                        activities={userAnalytics?.recentActivity || []}
+                                        isLoading={isAnalyticsLoading}
+                                    />
+                                </div>
                             </div>
                         )}
                     </>
