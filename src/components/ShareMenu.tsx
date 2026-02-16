@@ -51,10 +51,14 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
     };
 
     const handleAddToGoogleWallet = async () => {
-        console.log('Running handleAddToGoogleWallet');
         setLoadingGoogle(true);
+        // Open window immediately to avoid popup blockers
+        const newWindow = window.open('', '_blank');
+        if (newWindow) {
+            newWindow.document.write('<html><body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;"><div>Generating your Google Wallet pass...</div></body></html>');
+        }
+
         try {
-            console.log('Fetching /api/generate-google-pass for slug:', data.slug);
             const response = await fetch('/api/generate-google-pass', {
                 method: 'POST',
                 headers: {
@@ -63,25 +67,22 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
                 body: JSON.stringify({ slug: data.slug }),
             });
 
-            console.log('Response status:', response.status);
-
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Error response body:', errorData);
                 throw new Error(errorData.error || 'Failed to generate pass');
             }
 
             const { saveUrl } = await response.json();
-            console.log('Received saveUrl:', saveUrl);
 
-            if (saveUrl) {
-                console.log('Opening saveUrl in new tab');
-                window.open(saveUrl, '_blank');
+            if (saveUrl && newWindow) {
+                newWindow.location.href = saveUrl;
             } else {
-                console.warn('No saveUrl returned');
+                if (newWindow) newWindow.close();
+                throw new Error('No save URL returned');
             }
         } catch (error) {
             console.error('Error generating Google Wallet pass:', error);
+            if (newWindow) newWindow.close();
             alert('Failed to generate Google Wallet pass. Please try again.');
         } finally {
             setLoadingGoogle(false);
