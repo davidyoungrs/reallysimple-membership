@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleAuth } from 'google-auth-library';
+
 import jwt from 'jsonwebtoken';
 import { db } from '../src/db/index.js';
 import { businessCards } from '../src/db/schema.js';
@@ -68,7 +68,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return new URL(url, baseUrl).toString();
         };
 
+
         console.log(`Debug Info: IssuerID=${ISSUER_ID}, ServiceAccount=${SERVICE_ACCOUNT_EMAIL?.substring(0, 5)}...`);
+        console.log(`Debug Info: PrivateKey Length=${PRIVATE_KEY?.length}`);
+        console.log(`Debug Info: jwt type=${typeof jwt}`);
+        console.log(`Debug Info: jwt.sign type=${typeof jwt?.sign}`);
+
+        if (!jwt || !jwt.sign) {
+            console.error('CRITICAL: jsonwebtoken library not loaded correctly or missing .sign method');
+            throw new Error('Internal Server Error: JWT library issue');
+        }
 
         const title = (card.company || 'Digital Card').substring(0, 50); // Google limit
 
@@ -195,9 +204,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 3. Sign the JWT
         // Ensure privateKey corresponds to the service account email
-        const token = jwt.sign(newPass, PRIVATE_KEY as string, {
-            algorithm: 'RS256',
-        });
+        let token;
+        try {
+            token = jwt.sign(newPass, PRIVATE_KEY as string, {
+                algorithm: 'RS256',
+            });
+        } catch (signError: any) {
+            console.error('Error signing JWT:', signError);
+            throw new Error(`JWT Signing Failed: ${signError.message}`);
+        }
 
         const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
