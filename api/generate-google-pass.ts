@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: 'Missing server configuration (Google Wallet)' });
     }
 
-    const { slug } = req.body;
+    const slug = (req.query.slug as string) || (req.body?.slug as string);
 
     if (!slug) {
         return res.status(400).json({ error: 'Missing slug' });
@@ -60,6 +60,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const classId = `${ISSUER_ID}.contact-tree-standard-v1`;
         const objectId = `${ISSUER_ID}.${slug}-${Date.now()}`; // Unique object ID
 
+        // Helper to ensure absolute URLs
+        const toAbsoluteUrl = (url: string) => {
+            if (!url) return '';
+            if (url.startsWith('http')) return url;
+            // Use VERCEL_URL if available, otherwise fallback (e.g., for local dev)
+            const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://contact-tree.vercel.app';
+            return new URL(url, baseUrl).toString();
+        };
+
+        const title = (card.company || 'Digital Card').substring(0, 50); // Google limit
+        const headerValue = (card.first_name + ' ' + card.last_name).substring(0, 50);
+        const subheaderValue = (card.job_title || 'Digital Business Card').substring(0, 50);
+
         const newPass = {
             iss: SERVICE_ACCOUNT_EMAIL,
             aud: 'google',
@@ -75,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         hexBackgroundColor: card.color_primary || '#4f46e5',
                         logo: {
                             sourceUri: {
-                                uri: card.logo_url || 'https://contact-tree.vercel.app/icon.png',
+                                uri: toAbsoluteUrl(card.logo_url || '/icon.png'),
                             },
                             contentDescription: {
                                 defaultValue: {
@@ -87,30 +100,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         cardTitle: {
                             defaultValue: {
                                 language: 'en-US',
-                                value: card.company || 'Digital Card',
+                                value: title,
                             },
                         },
                         header: {
                             defaultValue: {
                                 language: 'en-US',
-                                value: card.first_name + ' ' + card.last_name,
+                                value: headerValue,
                             },
                         },
                         subheader: {
                             defaultValue: {
                                 language: 'en-US',
-                                value: card.job_title || 'Digital Business Card',
+                                value: subheaderValue,
                             },
                         },
                         textModulesData: [
                             {
                                 header: 'Phone',
-                                body: card.phone_numbers ? String(card.phone_numbers[0]?.value || '') : '',
+                                body: card.phone_numbers ? String(card.phone_numbers[0]?.value || '').substring(0, 50) : '',
                                 id: 'phone',
                             },
                             {
                                 header: 'Email',
-                                body: card.email || '',
+                                body: String(card.email || '').substring(0, 50),
                                 id: 'email',
                             },
                             {
