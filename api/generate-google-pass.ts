@@ -5,10 +5,20 @@ import { db } from '../src/db/index.js';
 import { businessCards } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
-// ... (Environment variables check remains the same)
+// Environment variables
+const ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
+const SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_WALLET_CLIENT_EMAIL;
+const PRIVATE_KEY = process.env.GOOGLE_WALLET_PRIVATE_KEY?.replace(/\\n/g, '\n'); // Handle escaped newlines
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // ... (CORS headers remain the same)
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
