@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const record = cardData[0];
         const card = record.data as any; // Cast JSONB data to any or specific type if available
 
-        const classId = `${ISSUER_ID}.contact-tree-standard-v1`;
+        const classId = `${ISSUER_ID}.contact-tree-standard-v2`; // Bumped to v2 to force new class definition
         const objectId = `${ISSUER_ID}.${slug}-${Date.now()}`; // Unique object ID
 
         const toAbsoluteUrl = (url: string) => {
@@ -68,6 +68,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return new URL(url, baseUrl).toString();
         };
 
+        const logoUrl = toAbsoluteUrl(card.logo_url || '/icon.png');
+        console.log(`Debug Info: Logo URL=${logoUrl}`);
 
         console.log(`Debug Info: IssuerID=${ISSUER_ID}, ServiceAccount=${SERVICE_ACCOUNT_EMAIL?.substring(0, 5)}...`);
         console.log(`Debug Info: PrivateKey Length=${PRIVATE_KEY?.length}`);
@@ -90,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             aud: 'google',
             typ: 'savetowallet',
             iat: Math.floor(Date.now() / 1000),
-            origins: [],
+            // origins: [], // Removed to avoid potential mismatches
             payload: {
                 genericObjects: [
                     {
@@ -100,7 +102,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         hexBackgroundColor: card.color_primary || '#4f46e5',
                         logo: {
                             sourceUri: {
-                                uri: toAbsoluteUrl(card.logo_url || '/icon.png'),
+                                uri: logoUrl,
                             },
                             contentDescription: {
                                 defaultValue: {
