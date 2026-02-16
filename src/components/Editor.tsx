@@ -379,7 +379,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
             </div>
 
             {/* Personal Info */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tour="profile">
                 <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Personal Info')}</h3>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -482,7 +482,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
             </div>
 
             {/* Social Links */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tour="links">
                 <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Social Links')}</h3>
                     <button
@@ -674,7 +674,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
             */}
 
             {/* Branding */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-tour="branding">
                 <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Branding')}</h3>
 
                 {/* Logo Upload */}

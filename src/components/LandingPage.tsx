@@ -1,12 +1,45 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Share2, ShieldCheck, Zap } from 'lucide-react';
-import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, UserButton, useUser, useAuth } from '@clerk/clerk-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './LanguageSelector';
 
 export const LandingPage = () => {
     const { t } = useTranslation();
+    const { user, isLoaded: isUserLoaded } = useUser();
+    const { getToken } = useAuth();
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        const checkUserAndRedirect = async () => {
+            if (isUserLoaded && user) {
+                try {
+                    const token = await getToken();
+                    if (!token) return;
+
+                    const response = await fetch('/api/get-cards', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.cards && data.cards.length > 0) {
+                            navigate('/dashboard');
+                        } else {
+                            navigate('/app');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error during redirection check:', error);
+                }
+            }
+        };
+
+        checkUserAndRedirect();
+    }, [isUserLoaded, user, getToken, navigate]);
 
     return (
         <div className="min-h-screen bg-white">

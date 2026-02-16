@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronUp, ChevronDown, ArrowLeft, Copy, Check, Trash2, Eye, LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
+import { OnboardingTour } from './OnboardingTour';
 
 // Declare Clerk on window for TypeScript
 declare global {
@@ -97,6 +98,7 @@ export function CardBuilder() {
     const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: number, name: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
+    const [showTour, setShowTour] = useState(false);
 
     // Initialize state from URL or default
     const [data, setData] = useState<CardData>(() => {
@@ -117,32 +119,32 @@ export function CardBuilder() {
         setIsLoadingCards(true);
         try {
             const token = await window.Clerk?.session?.getToken();
-            if (!token) return;
+            if (!token) return [];
 
             const response = await fetch('/api/get-cards', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token} `,
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
             if (response.ok) {
                 const result = await response.json();
                 setSavedCards(result.cards || []);
+                return result.cards || [];
             }
         } catch (error) {
             console.error('Error loading cards:', error);
         } finally {
             setIsLoadingCards(false);
         }
+        return [];
     };
 
     // Load a specific card
     const handleLoadCard = (card: any) => {
         // Merge the slug from the database into the card data
         setData({ ...card.data, slug: card.slug });
-        setCurrentCardId(card.id);
-        setShowCardsDropdown(false);
         setCurrentCardId(card.id);
         setShowCardsDropdown(false);
     };
@@ -214,7 +216,13 @@ export function CardBuilder() {
 
     // Load saved cards on mount
     useEffect(() => {
-        loadSavedCards();
+        loadSavedCards().then((cards) => {
+            // If user has no cards and hasn't seen the tour this session/ever
+            const hasSeenTour = localStorage.getItem('hasSeenOnboardingTour');
+            if (cards && cards.length === 0 && !hasSeenTour) {
+                setShowTour(true);
+            }
+        });
     }, []);
 
     // Close dropdown when clicking outside
@@ -390,6 +398,7 @@ export function CardBuilder() {
                     {/* Dashboard Link */}
                     <Link
                         to="/dashboard"
+                        data-tour="dashboard"
                         className="w-full px-4 py-2 rounded-lg font-medium transition-all shadow-md bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 flex items-center justify-center gap-2"
                     >
                         <LayoutDashboard className="w-4 h-4" />
@@ -411,8 +420,7 @@ export function CardBuilder() {
                                 <button
                                     onClick={handleNewCard}
                                     disabled={savedCards.length >= 2 && !currentCardId}
-                                    className={`w - full text - left px - 4 py - 3 hover: bg - gray - 50 border - b border - gray - 200 flex items - center gap - 2 ${savedCards.length >= 2 && !currentCardId ? 'opacity-50 cursor-not-allowed' : ''
-                                        } `}
+                                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-200 flex items-center gap-2 ${savedCards.length >= 2 && !currentCardId ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     title={savedCards.length >= 2 && !currentCardId ? 'Maximum 2 cards allowed' : ''}
                                 >
                                     <span className="font-medium text-blue-600">{t('New Card')}</span>
@@ -480,6 +488,7 @@ export function CardBuilder() {
 
                     <button
                         onClick={handleSaveCard}
+                        data-tour="save"
                         disabled={isSaving || slugStatus === 'taken' || slugStatus === 'reserved' || slugStatus === 'invalid'}
                         className={`w-full px-4 py-2 rounded-lg font-medium transition-all shadow-md ${saveStatus === 'success'
                             ? 'bg-green-500 text-white'
@@ -549,10 +558,10 @@ export function CardBuilder() {
 
             {/* Editor Side */}
             <div className={`
-        fixed inset - x - 0 bottom - 0 z - 40 bg - white rounded - t - 3xl shadow - [0_ - 4px_20px_ - 5px_rgba(0, 0, 0, 0.1)] transition - transform duration - 300 ease -in -out border - t border - gray - 200
-h - [75vh] md: h - screen md:relative md: inset - auto md: w - 1 / 3 lg: w - 1 / 4 md: rounded - none md: shadow - none md: border - r md: border - t - 0 md: bg - white md: translate - y - 0
-        ${isEditorOpen ? 'translate-y-0' : 'translate-y-[calc(100%-80px)] md:translate-y-0'}
-`}>
+                fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out border-t border-gray-200
+                h-[75vh] md:h-screen md:relative md:inset-auto md:w-1/3 lg:w-1/4 md:rounded-none md:shadow-none md:border-r md:border-t-0 md:bg-white md:translate-y-0
+                ${isEditorOpen ? 'translate-y-0' : 'translate-y-[calc(100%-80px)] md:translate-y-0'}
+            `}>
                 {/* Mobile Handle */}
                 <div
                     className="w-full flex justify-center p-3 md:hidden cursor-pointer"
@@ -618,6 +627,14 @@ h - [75vh] md: h - screen md:relative md: inset - auto md: w - 1 / 3 lg: w - 1 /
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Onboarding Tour */}
+            {showTour && (
+                <OnboardingTour onComplete={() => {
+                    setShowTour(false);
+                    localStorage.setItem('hasSeenOnboardingTour', 'true');
+                }} />
             )}
         </div>
     );
