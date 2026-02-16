@@ -69,21 +69,26 @@
 - [/] **Authentication & Onboarding**
     - [x] Clerk Auth Integration
     - [x] Landing Page
-    - [ ] Secure User Dashboard routes (Refinement)
+    - [x] Secure User Dashboard routes (Refinement)
 - [ ] **Subscription System**
     - [ ] Stripe/PayPal Integration
     - [ ] Tiered Access (Free vs Pro)
     - [ ] Card Limit enforcement
     - [ ] Subscription Management Dashboard
 
-## Phase 6: Wallet Integration (Current Focus)
-- [/] **Apple Wallet (.pkpass)**
-    - [ ] Pass Certificate generation
-    - [ ] Server-side signing (Node.js/Python)
-    - [ ] "Add to Apple Wallet" button
-- [ ] **Google Wallet**
-    - [ ] JWT-signed link generation
-    - [ ] "Save to Google Pay" button
+## Phase 6: Wallet Integration & Dashboard Polish (Current Focus)
+- [x] **Apple Wallet (.pkpass)**
+    - [x] Pass Certificate generation & Server-side signing
+    - [x] "Add to Apple Wallet" button
+    - [x] Verified on actual device
+- [x] **Dashboard Polish**
+    - [x] Activity Feed: "Recent Activity" widget showing last 5 interactions
+    - [x] Views Chart: Line chart showing "Total Views" over time
+    - [x] Profile Management: Enhanced settings page for account details
+    - [x] Empty States: Better illustrations for new users
+- [-] **Google Wallet (Parked)**
+    - [-] JWT-signed link generation
+    - [-] "Save to Google Pay" button
 
 ## Phase 7: Lifecycle & Growth (Future)
 - [ ] **Engagement Tools**
