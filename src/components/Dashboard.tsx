@@ -224,10 +224,10 @@ export function Dashboard() {
                                 {cards.map((card) => (
                                     <div
                                         key={card.id}
-                                        className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                                        className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1"
                                     >
                                         {/* Card Preview */}
-                                        <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50">
+                                        <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
                                             <div className="scale-[0.35] origin-top-left translate-x-[15%] translate-y-[5%]" style={{ width: '500px', height: '800px' }}>
                                                 <BusinessCard data={card.data} />
                                             </div>
