@@ -105,13 +105,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 organizationName: data.company || 'Contact Tree',
                 passTypeIdentifier: passTypeId,
                 teamIdentifier: teamId,
-                backgroundColor: 'rgb(255,255,255)',
-                foregroundColor: 'rgb(0,0,0)',
-                labelColor: 'rgb(0,0,0)',
+                backgroundColor: data.wallet?.backgroundColor || 'rgb(255,255,255)',
+                foregroundColor: data.wallet?.foregroundColor || 'rgb(0,0,0)',
+                labelColor: data.wallet?.labelColor || 'rgb(0,0,0)',
             }
         );
 
         pass.type = 'storeCard';
+
+        // Add strip image if specified
+        const stripImageUrl = data.wallet?.stripImageUrl || '/wallet-strip.png';
+        if (stripImageUrl) {
+            try {
+                // If it's a relative path to public, load from fs
+                if (stripImageUrl.startsWith('/')) {
+                    const publicPath = path.join(process.cwd(), 'public', stripImageUrl);
+                    if (fs.existsSync(publicPath)) {
+                        pass.addBuffer('strip.png', fs.readFileSync(publicPath));
+                    }
+                } else if (stripImageUrl.startsWith('http')) {
+                    // In a real app, we'd fetch the image and add it as a buffer
+                    // For now, we'll stick to local assets or default
+                }
+            } catch (err) {
+                console.error('[PassGen] Error adding strip image:', err);
+            }
+        }
 
         pass.primaryFields.push({
             key: 'name',

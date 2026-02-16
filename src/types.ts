@@ -37,6 +37,15 @@ export interface CardData {
     stickyActionBar: boolean;
     embeds: { type: 'youtube' | 'spotify' | 'vimeo' | 'tiktok' | 'instagram'; url: string; title?: string }[];
     sections?: Section[];
+    wallet?: WalletData;
+}
+
+export interface WalletData {
+    backgroundColor?: string;
+    foregroundColor?: string;
+    labelColor?: string;
+    logoText?: string;
+    stripImageUrl?: string;
 }
 
 export interface Section {
@@ -73,5 +82,12 @@ export const initialCardData: CardData = {
     layoutMode: 'classic',
     stickyActionBar: true,
     embeds: [],
-    sections: []
+    sections: [],
+    wallet: {
+        backgroundColor: '#ffffff',
+        foregroundColor: '#000000',
+        labelColor: '#000000',
+        logoText: '',
+        stripImageUrl: ''
+    }
 };

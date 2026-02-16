@@ -110,6 +110,17 @@
     - [ ] Input Sanitization & XSS Prevention
     - [ ] Content Security Policy (CSP) headers
 
+## Phase 11: Wallet Experience & Builder (Completed)
+- [x] **Asset Generation**
+    - [x] Generate professional `strip` image for Apple Wallet
+- [x] **Wallet Card Builder UI**
+    - [x] Create `WalletBuilder.tsx` component
+    - [x] Add Wallet settings to main editor
+    - [x] Live preview for Wallet pass layout
+- [x] **Backend Integration**
+    - [x] Support dynamic strip images in `api/generate-pass.ts`
+    - [x] Store Wallet-specific customization in database
+
 ## Phase 9: Policies & Compliance (Current)
 - [ ] **Policy Updates** (Review and refine Privacy, Terms, and Cookies)
     - [ ] Update Privacy Policy

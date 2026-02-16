@@ -9,6 +9,7 @@ import { ChevronUp, ChevronDown, ArrowLeft, Copy, Check, Trash2, Eye, LayoutDash
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
 import { OnboardingTour } from './OnboardingTour';
+import { WalletBuilder, WalletPreview } from './WalletBuilder';
 
 // Declare Clerk on window for TypeScript
 declare global {
@@ -99,6 +100,7 @@ export function CardBuilder() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
     const [showTour, setShowTour] = useState(false);
+    const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
 
     // Initialize state from URL or default
     const [data, setData] = useState<CardData>(() => {
@@ -570,8 +572,27 @@ export function CardBuilder() {
                     <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
                 </div>
 
+                <div className="px-4 py-2 border-b border-gray-100 flex gap-1">
+                    <button
+                        onClick={() => setBuilderMode('card')}
+                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'card' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    >
+                        {t('Main Card')}
+                    </button>
+                    <button
+                        onClick={() => setBuilderMode('wallet')}
+                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    >
+                        {t('Apple Wallet')}
+                    </button>
+                </div>
+
                 <div className="h-full overflow-y-auto pb-24 md:pb-0">
-                    <Editor data={data} onChange={setData} currentCardId={currentCardId} onSlugStatusChange={setSlugStatus} />
+                    {builderMode === 'card' ? (
+                        <Editor data={data} onChange={setData} currentCardId={currentCardId} onSlugStatusChange={setSlugStatus} />
+                    ) : (
+                        <WalletBuilder data={data} onChange={setData} />
+                    )}
                 </div>
             </div>
 
@@ -580,7 +601,11 @@ export function CardBuilder() {
                 <div className="fixed inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50 pointer-events-none"></div>
 
                 <ScaleToFit>
-                    <BusinessCard data={data} />
+                    {builderMode === 'card' ? (
+                        <BusinessCard data={data} />
+                    ) : (
+                        <WalletPreview data={data} />
+                    )}
                 </ScaleToFit>
 
                 <div className="mt-8 text-center text-gray-400 text-sm hidden md:block shrink-0 pb-8">
