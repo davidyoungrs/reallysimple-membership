@@ -36,17 +36,17 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-500" />
                     {t('Recent Activity')}
                 </h3>
             </div>
 
-            <div className="divide-y divide-gray-50 max-h-[400px] overflow-y-auto">
+            <div className="divide-y divide-gray-50 max-h-[304px] overflow-y-auto">
                 {isLoading ? (
-                    Array(5).fill(0).map((_, i) => (
-                        <div key={i} className="p-4 animate-pulse flex gap-3">
+                    Array(4).fill(0).map((_, i) => (
+                        <div key={i} className="p-3 animate-pulse flex gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-100" />
                             <div className="flex-1 space-y-2">
                                 <div className="h-3 bg-gray-100 rounded w-3/4" />
@@ -61,7 +61,7 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
                     </div>
                 ) : (
                     activities.map((item, idx) => (
-                        <div key={idx} className="p-4 hover:bg-gray-50 transition-colors flex gap-3 items-start">
+                        <div key={idx} className="p-3 hover:bg-gray-50 transition-colors flex gap-3 items-start">
                             <div className={`p-2 rounded-full flex-shrink-0 ${item.type === 'view' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
                                 }`}>
                                 {item.type === 'view' ? <Eye className="w-4 h-4" /> : <MousePointerClick className="w-4 h-4" />}
