@@ -60,13 +60,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const classId = `${ISSUER_ID}.contact-tree-standard-v1`;
         const objectId = `${ISSUER_ID}.${slug}-${Date.now()}`; // Unique object ID
 
-        // Helper to ensure absolute URLs
         const toAbsoluteUrl = (url: string) => {
+            // DEBUG: Force a known public image to rule out accessibility issues
+            return 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png';
+
+            /* Original logic commented out for debug
             if (!url) return '';
             if (url.startsWith('http')) return url;
             // Use VERCEL_URL if available, otherwise fallback (e.g., for local dev)
             const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://contact-tree.vercel.app';
             return new URL(url, baseUrl).toString();
+            */
         };
 
         const title = (card.company || 'Digital Card').substring(0, 50); // Google limit
