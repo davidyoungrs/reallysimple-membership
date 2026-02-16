@@ -72,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const title = (card.company || 'Digital Card').substring(0, 50); // Google limit
 
-        const title = (card.company || 'Digital Card').substring(0, 50); // Google limit
+
         const headerValue = (card.first_name + ' ' + card.last_name).substring(0, 50);
         const subheaderValue = (card.job_title || 'Digital Business Card').substring(0, 50);
 
