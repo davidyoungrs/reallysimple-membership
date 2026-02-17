@@ -2,12 +2,12 @@ import { db } from '../src/db/index.js';
 import { businessCards } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-// export const config = {
-//     runtime: 'edge',
-// };
+import { secureEndpoint } from './_utils/security.js';
+import { sanitize } from '../src/utils/sanitization.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!secureEndpoint(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -19,6 +19,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!cardData) {
             return res.status(400).json({ error: 'Missing card data' });
         }
+
+        // Sanitize sensitive user input
+        if (cardData.fullName) cardData.fullName = sanitize(cardData.fullName);
+        if (cardData.bio) cardData.bio = sanitize(cardData.bio);
+        if (cardData.jobTitle) cardData.jobTitle = sanitize(cardData.jobTitle);
+        if (cardData.company) cardData.company = sanitize(cardData.company);
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId' });

@@ -7,8 +7,11 @@ import { eq } from 'drizzle-orm';
 // };
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { secureEndpoint } from './_utils/security.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!secureEndpoint(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

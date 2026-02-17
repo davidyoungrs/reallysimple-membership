@@ -66,14 +66,16 @@
     - [x] Verify deletion with existing analytics data
 
 ## Phase 5: Onboarding & Monetization (Next Steps)
-- [/] **Authentication & Onboarding**
+- [x] **Authentication & Onboarding**
     - [x] Clerk Auth Integration
     - [x] Landing Page
-    - [x] Secure User Dashboard routes (Refinement)
+    - [x] Secure User Dashboard routes
 - [ ] **Subscription System**
+    - [ ] Update users schema (tier, stripe_customer_id, status)
+    - [ ] Initialize Stripe billing portal logic
     - [ ] Stripe/PayPal Integration
     - [ ] Tiered Access (Free vs Pro)
-    - [ ] Card Limit enforcement
+    - [ ] Feature Gating (Restrict advanced backgrounds/limits)
     - [ ] Subscription Management Dashboard
 
 ## Phase 6: Wallet Integration & Dashboard Polish (Current Focus)
@@ -86,29 +88,34 @@
     - [x] Views Chart: Line chart showing "Total Views" over time
     - [x] Profile Management: Enhanced settings page for account details
     - [x] Empty States: Better illustrations for new users
-- [-] **Google Wallet (Parked)**
-    - [-] JWT-signed link generation
-    - [-] "Save to Google Pay" button
+- [x] **Google Wallet**
+    - [x] JWT-signed link generation
+    - [x] "Save to Google Pay" button
+- [x] **Dashboard Visibility & UX Fixes**
 
 ## Phase 7: Lifecycle & Growth (Future)
 > [!IMPORTANT]
 > **Vercel Pro Plan Required**: This phase and subsequent complex backend features exceed the 12-function limit of the Vercel Hobby plan.
 - [ ] **Engagement Tools** <!-- id: 13 -->
-    - [ ] Lead Capture Form on cards
-    - [ ] "Exchange Contact" feature
-    - [ ] Lead submission API
+    - [ ] Database Schema for Leads (`leads` table)
+    - [ ] Lead Capture Form on cards (`LeadForm.tsx`)
+    - [ ] Lead submission API (`/api/leads/submit`)
     - [ ] Save Leads to Dashboard
-    - [ ] Leads management view in Dashboard
+    - [ ] Leads management view in Dashboard (`LeadsManager.tsx`)
+    - [ ] "Exchange Contact" feature (Two-way lead submission)
+    - [ ] CSV export for leads
 - [ ] **Notifications**
     - [ ] Push Notifications for card updates
     - [ ] Expiration reminders for subscriptions
 
-## Phase 8: Security & Privacy (Future)
-- [ ] **API Security**
-    - [ ] Rate Limiting (API endpoints, view tracking)
+## Phase 8: Security & Privacy (Completed)
+- [x] **API Security**
+    - [x] Rate Limiting (API endpoints, view tracking)
     - [ ] CSRF Protection tokens
-    - [ ] Input Sanitization & XSS Prevention
-    - [ ] Content Security Policy (CSP) headers
+    - [x] Input Sanitization & XSS Prevention (Lead notes, bios)
+    - [x] CONTENT SECURITY POLICY (CSP) headers
+- [ ] **Growth Polish**
+    - [ ] Generate dynamic OpenGraph (OG) images for each card slug
 
 ## Phase 11: Wallet Experience & Builder (Completed)
 - [x] **Asset Generation**
@@ -120,10 +127,16 @@
 - [x] **Backend Integration**
     - [x] Support dynamic strip images in `api/generate-pass.ts`
     - [x] Store Wallet-specific customization in database
+    - [x] Drag & Drop Wallet Logo upload
 
-## Phase 9: Policies & Compliance (Current)
-- [ ] **Policy Updates** (Review and refine Privacy, Terms, and Cookies)
-    - [ ] Update Privacy Policy
-    - [ ] Update Terms and Conditions
-    - [ ] Update Cookies Policy
-- [x] **Initial Policies Implementation**
+## Phase 9: Policies & Compliance (Completed)
+- [x] **Policy Updates** (Privacy, Terms, and Cookies)
+    - [x] Privacy Policy implementation
+    - [x] Terms and Conditions implementation
+    - [x] Cookies Policy implementation
+
+## Phase 12: Visual Refresh & Dashboard UX (Completed)
+- [x] **UI Refinement**
+    - [x] New Color Palettes integration
+    - [x] Template defaults update (Sarah Jenkins)
+    - [x] Dashboard Preview Centering & Size optimization
