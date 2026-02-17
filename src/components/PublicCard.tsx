@@ -45,10 +45,10 @@ export function PublicCard() {
                 // Track view (fire-and-forget) - prevent double counting in StrictMode
                 if (lastTrackedSlug.current !== slug) {
                     lastTrackedSlug.current = slug;
-                    fetch('/api/track-view', {
+                    fetch('/api/track', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ slug, source }),
+                        body: JSON.stringify({ slug, source, action: 'view' }),
                     }).catch(err => console.error('Failed to track view:', err));
                 }
 
@@ -70,11 +70,11 @@ export function PublicCard() {
 
         console.log('Tracking click:', { slug, type, targetInfo });
 
-        // Use log-click to avoid ad-blockers blocking "track" in URL
-        fetch('/api/log-click', {
+        // Use track endpoint
+        fetch('/api/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug, type, targetInfo }),
+            body: JSON.stringify({ slug, type, targetInfo, action: 'click' }),
         }).catch(err => console.error('Failed to track click:', err));
     };
 
