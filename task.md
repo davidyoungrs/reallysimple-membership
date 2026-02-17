@@ -141,3 +141,4 @@
     - [x] Template defaults update (Sarah Jenkins)
     - [x] Dashboard Preview Centering & Size optimization
     - [x] Email Signature Modal full-width layout optimization
+    - [x] /bug: Fix Email Signature Modal flickering/positioning (Portal implementation)

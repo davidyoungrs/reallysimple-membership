@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Copy, Check, Code } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CardData } from '../types';
@@ -29,17 +30,7 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
     const handleCopyVisual = async () => {
         if (!previewRef.current) return;
         try {
-            // We need to copy both text/html and text/plain for maximum compatibility
-            const html = points; // Use the generated HTML directly to ensure clean code
-            // Or better, use the ref's innerHTML which might have browser sanitization, 
-            // but for email signatures, raw generated HTML is safer to control style tags.
-            // Actually, copying the *rendered* selection is often safer for "visual" copy.
-
-            // Let's rely on the Clipboard API with the generated HTML string.
-            // However, some clients prefer the computed styles. 
-            // The most robust way for "Copy for Gmail" is often `document.execCommand('copy')` on a selection,
-            // but `navigator.clipboard.write` is the modern standard.
-
+            const html = points;
             const blobHtml = new Blob([html], { type: 'text/html' });
             const blobText = new Blob([previewRef.current.innerText], { type: 'text/plain' });
 
@@ -54,7 +45,6 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
             setTimeout(() => setCopiedVisual(false), 2000);
         } catch (err) {
             console.error('Failed to copy visual signature:', err);
-            // Fallback for older browsers or if permission denied
             try {
                 const range = document.createRange();
                 range.selectNode(previewRef.current);
@@ -80,9 +70,12 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div
+                className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-2xl font-bold text-gray-900">{t('Email Signature')}</h2>
@@ -139,6 +132,7 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
                     </p>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
