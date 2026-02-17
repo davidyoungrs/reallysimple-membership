@@ -98,9 +98,37 @@ const iconMap: Record<string, any> = {
 function SaveIcon(props: any) { return <Download {...props} />; }
 function WalletIcon(props: any) { return <Smartphone {...props} />; }
 
+// Brand Colors Mapping
+const platformColors: Record<string, string> = {
+    linkedin: '#0A66C2',
+    twitter: '#000000',
+    github: '#181717',
+    instagram: '#E4405F',
+    youtube: '#FF0000',
+    tiktok: '#000000',
+    whatsapp: '#25D366',
+    telegram: '#24A1DE',
+    facebook: '#1877F2',
+    spotify: '#1DB954',
+    soundcloud: '#FF3300',
+    pinterest: '#BD081C',
+    vimeo: '#1AB7EA',
+    email: '#EA4335',
+    phone: '#34A853',
+    website: '#3B82F6',
+    vcard: '#F59E0B',
+    wallet: '#000000',
+    qr: '#F59E0B',
+    direct: '#10B981',
+    mobile: '#3B82F6',
+    tablet: '#8B5CF6',
+    desktop: '#94A3B8'
+};
+
 function SocialIcon({ platform, className = "w-4 h-4" }: { platform: string; className?: string }) {
     const Icon = iconMap[platform.toLowerCase()] || ExternalLink;
-    return <Icon className={className} />;
+    const color = platformColors[platform.toLowerCase()] || '#6B7280';
+    return <Icon className={className} style={{ color }} />;
 }
 
 // Fix for default marker icons in Leaflet + Vite
@@ -340,20 +368,16 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
         platformLabel: formatPlatformName(item.platform)
     }));
 
-    // Custom Tick for Y-Axis to show icons
+    // Custom Tick for Y-Axis to show ONLY icons
     const CustomYAxisTick = (props: any) => {
         const { x, y, payload } = props;
         const platform = data.clickBreakdown[payload.index]?.platform || '';
-        const label = payload.value;
 
         return (
             <g transform={`translate(${x},${y})`}>
-                <foreignObject x={-110} y={-10} width={100} height={20}>
-                    <div className="flex items-center justify-end gap-2 text-[11px] font-medium text-gray-600">
-                        <span className="truncate max-w-[70px]">{label}</span>
-                        <div className="text-gray-400">
-                            <SocialIcon platform={platform} className="w-3.5 h-3.5" />
-                        </div>
+                <foreignObject x={-40} y={-12} width={30} height={30}>
+                    <div className="flex items-center justify-end">
+                        <SocialIcon platform={platform} className="w-6 h-6" />
                     </div>
                 </foreignObject>
             </g>
@@ -629,9 +653,8 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                             />
                                             <Legend
                                                 formatter={(value) => (
-                                                    <span className="inline-flex items-center gap-2">
-                                                        <SocialIcon platform={value} className="w-3 h-3 translate-y-[1px]" />
-                                                        {t(`device.${value}`) || value}
+                                                    <span className="inline-flex items-center justify-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                                        <SocialIcon platform={value} className="w-5 h-5" />
                                                     </span>
                                                 )}
                                                 verticalAlign="bottom"
@@ -671,16 +694,15 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                                     const source = payload.value;
                                                     return (
                                                         <g transform={`translate(${x},${y})`}>
-                                                            <foreignObject x={-80} y={-10} width={80} height={20}>
-                                                                <div className="flex items-center justify-end gap-2 text-[11px] font-medium text-gray-600">
-                                                                    <span>{t(`source.${source}`) || source}</span>
-                                                                    <SocialIcon platform={source} className="w-3 h-3 text-gray-400" />
+                                                            <foreignObject x={-40} y={-10} width={30} height={20}>
+                                                                <div className="flex items-center justify-end">
+                                                                    <SocialIcon platform={source} className="w-5 h-5" />
                                                                 </div>
                                                             </foreignObject>
                                                         </g>
                                                     );
                                                 }}
-                                                width={80}
+                                                width={40}
                                             />
                                             <Tooltip
                                                 cursor={{ fill: 'transparent' }}
@@ -730,7 +752,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                             tick={<CustomYAxisTick />}
                                             tickLine={false}
                                             axisLine={false}
-                                            width={110}
+                                            width={40}
                                         />
                                         <Tooltip
                                             cursor={{ fill: '#F3F4F6' }}
