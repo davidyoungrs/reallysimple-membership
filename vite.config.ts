@@ -31,6 +31,8 @@ export default defineConfig({
               const filePath = path.join(process.cwd(), 'api', `${filename}.ts`);
 
               if (fs.existsSync(filePath)) {
+                // Query parsing
+                (req as any).query = Object.fromEntries(url.searchParams);
                 // Body parsing for JSON
                 if (req.method === 'POST' || req.method === 'PUT') {
                   const buffers = [];
@@ -51,16 +53,20 @@ export default defineConfig({
                 }
 
                 // Polyfill res.status and res.json for Vercel-like API
-                (res as any).status = (statusCode: number) => {
-                  res.statusCode = statusCode;
-                  return res;
-                };
+                if (!(res as any).status) {
+                  (res as any).status = (statusCode: number) => {
+                    res.statusCode = statusCode;
+                    return res;
+                  };
+                }
 
-                (res as any).json = (data: any) => {
-                  res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify(data));
-                  return res;
-                };
+                if (!(res as any).json) {
+                  (res as any).json = (data: any) => {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.end(JSON.stringify(data));
+                    return res;
+                  };
+                }
 
                 // Invalidate cache to allow hot reloading of API files
                 const mod = await server.ssrLoadModule(filePath);

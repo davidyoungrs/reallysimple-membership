@@ -1,6 +1,7 @@
+import { useState, useRef } from 'react';
 import { type CardData, type WalletData } from '../types';
 import { useTranslation } from 'react-i18next';
-import { Palette, Type, Info } from 'lucide-react';
+import { Palette, Type, Info, Upload, X } from 'lucide-react';
 
 interface WalletBuilderProps {
     data: CardData;
@@ -20,11 +21,47 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
         showCompany: true
     };
 
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
     const updateWallet = (updates: Partial<WalletData>) => {
         onChange({
             ...data,
             wallet: { ...wallet, ...updates }
         });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            processFile(file);
+        }
+    };
+
+    const processFile = (file: File) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            updateWallet({ logoUrl: reader.result as string });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const onDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const onDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+            processFile(file);
+        }
     };
 
     const coolPalettes = [
@@ -187,36 +224,82 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="block text-xs font-medium text-gray-500">
-                                    {t('Custom Wallet Logo')}
-                                </label>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
-                                        {(wallet.logoUrl || data.logoUrl) ? (
-                                            <img src={wallet.logoUrl || data.logoUrl} alt="Logo" className="w-full h-full object-contain" />
-                                        ) : (
-                                            <div className="w-6 h-6 bg-gray-100 rounded-sm" />
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            const url = prompt(t('Enter Logo URL') || 'Enter Logo URL', wallet.logoUrl || data.logoUrl || '');
-                                            if (url !== null) updateWallet({ logoUrl: url });
-                                        }}
-                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
-                                    >
-                                        {t('Change')}
-                                    </button>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                                        {t('Custom Wallet Logo')}
+                                    </label>
                                     {wallet.logoUrl && (
                                         <button
                                             onClick={() => updateWallet({ logoUrl: undefined })}
-                                            className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors"
+                                            className="text-[10px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors"
                                         >
+                                            <X className="w-3 h-3" />
                                             {t('Remove')}
                                         </button>
                                     )}
                                 </div>
+
+                                <div
+                                    onDragOver={onDragOver}
+                                    onDragLeave={onDragLeave}
+                                    onDrop={onDrop}
+                                    onClick={() => logoInputRef.current?.click()}
+                                    className={`
+                                        relative group cursor-pointer overflow-hidden border-2 border-dashed rounded-xl transition-all duration-200
+                                        ${isDragging ? 'border-blue-500 bg-blue-50/50 scale-[0.99]' : 'border-gray-200 hover:border-blue-400 hover:bg-white'}
+                                        ${wallet.logoUrl ? 'border-solid border-gray-100 bg-white' : 'aspect-[4/1] py-4'}
+                                    `}
+                                >
+                                    <input
+                                        type="file"
+                                        ref={logoInputRef}
+                                        onChange={handleFileChange}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+
+                                    {wallet.logoUrl ? (
+                                        <div className="relative group/logo w-full p-4 flex items-center justify-center min-h-[80px]">
+                                            <img
+                                                src={wallet.logoUrl}
+                                                alt="Wallet Logo"
+                                                className="max-h-16 max-w-full object-contain"
+                                            />
+                                            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center">
+                                                <div className="px-3 py-1 bg-white/90 rounded-full text-[10px] font-bold text-gray-700 shadow-sm border border-gray-100">
+                                                    {t('Change')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-gray-400 gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                                                <Upload className="w-4 h-4" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[10px] font-bold text-gray-500 group-hover:text-blue-600 transition-colors">
+                                                    {t('Upload Logo')}
+                                                </p>
+                                                <p className="text-[9px] text-gray-400">
+                                                    {t('Drag & drop or Click')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {isDragging && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-[1px] animate-in fade-in duration-200">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Upload className="w-6 h-6 text-blue-500 animate-bounce" />
+                                                <span className="text-[10px] font-bold text-blue-600">{t('Drop here')}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-[9px] text-gray-400 italic">
+                                    {t('Recommended: PNG with transparency, max 480x150px')}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -273,7 +356,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex gap-2">
                                     <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                                     <p className="text-xs text-blue-800 leading-relaxed">
-                                        The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.
+                                        {t('The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.')}
                                     </p>
                                 </div>
                             </div>
@@ -281,7 +364,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     </div>
                 </div>
             </section>
-        </div>
+        </div >
     );
 }
 

@@ -251,22 +251,22 @@ export function Dashboard() {
                                         {/* Card Preview */}
                                         <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
                                             {card.data.wallet ? (
-                                                <div className="flex h-full p-4 gap-6 items-center justify-center">
+                                                <div className="flex h-full p-4 gap-4 items-center justify-center overflow-hidden">
                                                     {/* Online Card */}
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Online Card')}</span>
-                                                        <div className="overflow-hidden bg-white/5 rounded-xl border border-gray-100" style={{ width: '140px', height: '220px' }}>
-                                                            <div className="origin-top scale-[0.3125] pointer-events-none" style={{ width: '448px' }}>
+                                                    <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{t('Online')}</span>
+                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '120px', height: '190px' }}>
+                                                            <div className="origin-top scale-[0.2678] pointer-events-none" style={{ width: '448px' }}>
                                                                 <BusinessCard data={card.data} />
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Apple Wallet */}
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Apple Wallet')}</span>
-                                                        <div className="overflow-hidden bg-white/5 rounded-xl border border-gray-100" style={{ width: '140px', height: '220px' }}>
-                                                            <div className="origin-top scale-[0.4375] pointer-events-none" style={{ width: '320px' }}>
+                                                    <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{t('Wallet')}</span>
+                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '120px', height: '190px' }}>
+                                                            <div className="origin-top scale-[0.375] pointer-events-none" style={{ width: '320px' }}>
                                                                 <WalletPreview data={card.data} />
                                                             </div>
                                                         </div>
