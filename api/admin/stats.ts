@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { users, businessCards, cardViews, cardClicks } from '../../src/db/schema.js';
-import { count, eq } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
@@ -48,12 +48,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             db.select({ count: count() }).from(cardClicks),
         ]);
 
+        // 5. Get Last 7 Days History for Charts
+        // Note: In Drizzle with Postgres, generating series is complex without raw SQL.
+        // For now, we'll just fetch raw counts grouped by date via SQL.
+
+        // Users History
+        const usersHistory = await db.execute(sql`
+            SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*) as count
+            FROM users
+            WHERE created_at > NOW() - INTERVAL '30 days'
+            GROUP BY date
+            ORDER BY date ASC
+        `);
+
+        // Views History
+        const viewsHistory = await db.execute(sql`
+            SELECT TO_CHAR(viewed_at, 'YYYY-MM-DD') as date, COUNT(*) as count
+            FROM card_views
+            WHERE viewed_at > NOW() - INTERVAL '30 days'
+            GROUP BY date
+            ORDER BY date ASC
+        `);
+
         return res.status(200).json({
             users: userStats[0]?.count || 0,
             totalCards: cardStats[0]?.count || 0,
             activeCards: activeCardStats[0]?.count || 0,
             views: viewStats[0]?.count || 0,
             clicks: clickStats[0]?.count || 0,
+            charts: {
+                users: usersHistory.rows,
+                views: viewsHistory.rows
+            }
         });
 
     } catch (error: any) {

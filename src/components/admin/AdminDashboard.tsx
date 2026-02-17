@@ -1,6 +1,7 @@
 import { Loader2, Users, CreditCard, MousePointer, Eye } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface AdminStats {
     users: number;
@@ -8,6 +9,10 @@ interface AdminStats {
     activeCards: number;
     views: number;
     clicks: number;
+    charts?: {
+        users: { date: string; count: number }[];
+        views: { date: string; count: number }[];
+    };
 }
 
 export function AdminDashboard() {
@@ -102,8 +107,75 @@ export function AdminDashboard() {
                 </div>
             </div>
 
-            <div className="bg-white p-8 rounded-xl border border-dashed border-gray-200 text-center">
-                <p className="text-gray-500">Chart visualizations coming in next update...</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* User Growth Chart */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 className="text-lg font-bold text-gray-900 mb-6">User Growth (30 Days)</h3>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={stats?.charts?.users || []}>
+                                <defs>
+                                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis
+                                    dataKey="date"
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str);
+                                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                                    }}
+                                />
+                                <YAxis
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Area type="monotone" dataKey="count" stroke="#2563eb" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Views Traffic Chart */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 className="text-lg font-bold text-gray-900 mb-6">Traffic Volume (30 Days)</h3>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={stats?.charts?.views || []}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis
+                                    dataKey="date"
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str);
+                                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                                    }}
+                                />
+                                <YAxis
+                                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: '#f8fafc' }}
+                                    contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Bar dataKey="count" fill="#f97316" radius={[4, 4, 0, 0]} barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
             </div>
         </div>
     );

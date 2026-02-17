@@ -8,6 +8,10 @@ import { PolicyPage } from './components/PolicyPage';
 import { RequireVerifiedEmail } from './components/RequireVerifiedEmail';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { AdminUsers } from './components/admin/AdminUsers';
+import { AdminCards } from './components/admin/AdminCards';
+import { AdminSecurity } from './components/admin/AdminSecurity';
+import { AdminSettings } from './components/admin/AdminSettings';
 
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp } from '@clerk/clerk-react';
 
@@ -64,7 +68,10 @@ function App() {
         {/* Super Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          {/* Future routes: /admin/users, /admin/cards, etc. */}
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="cards" element={<AdminCards />} />
+          <Route path="security" element={<AdminSecurity />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/* Redirect unknown routes to home */}
