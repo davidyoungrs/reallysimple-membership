@@ -142,3 +142,6 @@
     - [x] Dashboard Preview Centering & Size optimization
     - [x] Email Signature Modal full-width layout optimization
     - [x] /bug: Fix Email Signature Modal flickering/positioning (Portal implementation)
+- [x] **Analytics & Maps Fixes**
+    - [x] Fix Map visibility by updating CSP in `vercel.json`
+    - [x] Add social icons to Analytics Dashboard (Interactions, Sources, Devices)

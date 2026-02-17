@@ -14,12 +14,94 @@ import {
     Pie,
     Cell
 } from 'recharts';
-import { Loader2, TrendingUp, MousePointerClick, Eye, Calendar, Download, FileDown, ChevronDown, Map as MapIcon, Globe, Smartphone, Zap } from 'lucide-react';
+import {
+    Loader2,
+    TrendingUp,
+    MousePointerClick,
+    Eye,
+    Calendar,
+    Download,
+    FileDown,
+    ChevronDown,
+    Map as MapIcon,
+    Globe,
+    Smartphone,
+    Zap,
+    Linkedin,
+    Twitter,
+    Github,
+    Mail,
+    Phone,
+    Instagram,
+    Youtube,
+    ExternalLink,
+    MessageCircle,
+    Send,
+    Monitor,
+    Tablet,
+    QrCode,
+    Tv
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import i18n from '../i18n';
 import { exportToCSV, exportToJSON } from '../utils/analyticsExport';
+import {
+    TikTok,
+    Pinterest,
+    Spotify,
+    SoundCloud,
+    Bandcamp,
+    BandLab,
+    Tidal,
+    Deezer,
+    Pandora,
+    IHeartRadio,
+    AmazonMusic
+} from './BrandIcons';
+
+// Social Icon Mapping
+const iconMap: Record<string, any> = {
+    linkedin: Linkedin,
+    twitter: Twitter,
+    github: Github,
+    website: Globe,
+    email: Mail,
+    phone: Phone,
+    instagram: Instagram,
+    youtube: Youtube,
+    tiktok: TikTok,
+    pinterest: Pinterest,
+    spotify: Spotify,
+    soundcloud: SoundCloud,
+    bandcamp: Bandcamp,
+    bandlab: BandLab,
+    tidal: Tidal,
+    deezer: Deezer,
+    pandora: Pandora,
+    iheartradio: IHeartRadio,
+    amazonmusic: AmazonMusic,
+    whatsapp: MessageCircle,
+    telegram: Send,
+    vimeo: Tv,
+    vcard: SaveIcon,
+    wallet: WalletIcon,
+    qr: QrCode,
+    direct: MousePointerClick,
+    mobile: Smartphone,
+    tablet: Tablet,
+    desktop: Monitor
+};
+
+// Simple wrapper for vcard/wallet icons since they aren't in lucide-react standard names I imported
+function SaveIcon(props: any) { return <Download {...props} />; }
+function WalletIcon(props: any) { return <Smartphone {...props} />; }
+
+function SocialIcon({ platform, className = "w-4 h-4" }: { platform: string; className?: string }) {
+    const Icon = iconMap[platform.toLowerCase()] || ExternalLink;
+    return <Icon className={className} />;
+}
 
 // Fix for default marker icons in Leaflet + Vite
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -257,6 +339,26 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
         ...item,
         platformLabel: formatPlatformName(item.platform)
     }));
+
+    // Custom Tick for Y-Axis to show icons
+    const CustomYAxisTick = (props: any) => {
+        const { x, y, payload } = props;
+        const platform = data.clickBreakdown[payload.index]?.platform || '';
+        const label = payload.value;
+
+        return (
+            <g transform={`translate(${x},${y})`}>
+                <foreignObject x={-110} y={-10} width={100} height={20}>
+                    <div className="flex items-center justify-end gap-2 text-[11px] font-medium text-gray-600">
+                        <span className="truncate max-w-[70px]">{label}</span>
+                        <div className="text-gray-400">
+                            <SocialIcon platform={platform} className="w-3.5 h-3.5" />
+                        </div>
+                    </div>
+                </foreignObject>
+            </g>
+        );
+    };
 
     return (
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-5xl w-full mx-auto relative">
@@ -526,7 +628,12 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                             />
                                             <Legend
-                                                formatter={(value) => t(`device.${value}`) || value}
+                                                formatter={(value) => (
+                                                    <span className="inline-flex items-center gap-2">
+                                                        <SocialIcon platform={value} className="w-3 h-3 translate-y-[1px]" />
+                                                        {t(`device.${value}`) || value}
+                                                    </span>
+                                                )}
                                                 verticalAlign="bottom"
                                             />
                                         </PieChart>
@@ -561,10 +668,16 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                                 tickLine={false}
                                                 tick={(props) => {
                                                     const { x, y, payload } = props;
+                                                    const source = payload.value;
                                                     return (
-                                                        <text x={x} y={y} dy={4} textAnchor="end" className="text-xs font-medium text-gray-600">
-                                                            {t(`source.${payload.value}`) || payload.value}
-                                                        </text>
+                                                        <g transform={`translate(${x},${y})`}>
+                                                            <foreignObject x={-80} y={-10} width={80} height={20}>
+                                                                <div className="flex items-center justify-end gap-2 text-[11px] font-medium text-gray-600">
+                                                                    <span>{t(`source.${source}`) || source}</span>
+                                                                    <SocialIcon platform={source} className="w-3 h-3 text-gray-400" />
+                                                                </div>
+                                                            </foreignObject>
+                                                        </g>
                                                     );
                                                 }}
                                                 width={80}
@@ -614,10 +727,10 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                         <YAxis
                                             dataKey="platformLabel"
                                             type="category"
-                                            tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                                            tick={<CustomYAxisTick />}
                                             tickLine={false}
                                             axisLine={false}
-                                            width={100}
+                                            width={110}
                                         />
                                         <Tooltip
                                             cursor={{ fill: '#F3F4F6' }}
