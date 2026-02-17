@@ -255,8 +255,8 @@ export function Dashboard() {
                                                     {/* Online Card */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
                                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Online')}</span>
-                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
-                                                            <div className="origin-top scale-[0.3571] pointer-events-none" style={{ width: '448px', height: '784px' }}>
+                                                        <div className="flex items-center justify-center overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
+                                                            <div className="origin-center scale-[0.3571] pointer-events-none" style={{ width: '448px', height: '784px' }}>
                                                                 <BusinessCard data={card.data} />
                                                             </div>
                                                         </div>
@@ -265,8 +265,8 @@ export function Dashboard() {
                                                     {/* Apple Wallet */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
                                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Wallet')}</span>
-                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
-                                                            <div className="origin-top scale-[0.5] pointer-events-none" style={{ width: '320px', height: '560px' }}>
+                                                        <div className="flex items-center justify-center overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
+                                                            <div className="origin-center scale-[0.5] pointer-events-none" style={{ width: '320px', height: '560px' }}>
                                                                 <WalletPreview data={card.data} isPreview={true} />
                                                             </div>
                                                         </div>
