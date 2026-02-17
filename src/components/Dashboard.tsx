@@ -252,15 +252,15 @@ export function Dashboard() {
                                         <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
                                             {card.data.wallet ? (
                                                 <div className="flex h-full p-4 gap-4 items-center justify-center">
-                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center">
+                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center justify-center pt-8">
                                                         <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('Online Card')}</span>
-                                                        <div className="scale-[0.32] origin-top h-0 pb-[140%] w-[125%]">
+                                                        <div className="scale-[0.32] origin-top" style={{ width: '448px' }}>
                                                             <BusinessCard data={card.data} />
                                                         </div>
                                                     </div>
-                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center">
+                                                    <div className="flex-1 h-full min-w-0 flex flex-col items-center justify-center pt-8">
                                                         <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('Apple Wallet')}</span>
-                                                        <div className="scale-[0.45] origin-top">
+                                                        <div className="scale-[0.45] origin-top" style={{ width: '320px' }}>
                                                             <WalletPreview data={card.data} />
                                                         </div>
                                                     </div>
