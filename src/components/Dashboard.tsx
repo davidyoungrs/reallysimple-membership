@@ -254,7 +254,7 @@ export function Dashboard() {
                                                 <div className="flex h-full p-4 gap-4 items-center justify-center">
                                                     <div className="flex-1 h-full min-w-0 flex flex-col items-center">
                                                         <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">{t('Online Card')}</span>
-                                                        <div className="scale-[0.25] origin-top h-0 pb-[150%] w-[180%]">
+                                                        <div className="scale-[0.32] origin-top h-0 pb-[140%] w-[125%]">
                                                             <BusinessCard data={card.data} />
                                                         </div>
                                                     </div>
