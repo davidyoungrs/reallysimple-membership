@@ -78,7 +78,7 @@
     - [ ] Feature Gating (Restrict advanced backgrounds/limits)
     - [ ] Subscription Management Dashboard
 
-## Phase 6: Wallet Integration & Dashboard Polish (Current Focus)
+## Phase 6: Wallet Integration & Dashboard Polish (Completed)
 - [x] **Apple Wallet (.pkpass)**
     - [x] Pass Certificate generation & Server-side signing
     - [x] "Add to Apple Wallet" button
@@ -111,7 +111,7 @@
 ## Phase 8: Security & Privacy (Completed)
 - [x] **API Security**
     - [x] Rate Limiting (API endpoints, view tracking)
-    - [ ] CSRF Protection tokens
+    - [x] CSRF Protection (Origin/Referer validation)
     - [x] Input Sanitization & XSS Prevention (Lead notes, bios)
     - [x] CONTENT SECURITY POLICY (CSP) headers
 - [ ] **Growth Polish**
