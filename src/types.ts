@@ -60,11 +60,11 @@ export interface Section {
 }
 
 export const initialCardData: CardData = {
-    fullName: 'David Young',
-    jobTitle: 'Software Engineer',
-    company: 'REALLY SIMPLE APPS',
-    bio: 'Building digital experiences that matter.',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    fullName: 'Sarah Jenkins',
+    jobTitle: 'Chief Strategy Officer',
+    company: 'Really Simple Apps',
+    bio: 'Pioneering the future of digital connectivity.',
+    avatarUrl: '/hero-home.png',
     themeColor: 'blue',
     textColor: '#ffffff',
     gradientColor: '#000000',
@@ -75,13 +75,12 @@ export const initialCardData: CardData = {
     avatarPosition: { x: 0, y: 0 },
     font: 'Inter',
     phoneNumbers: [
-        { id: '1', label: 'Office', number: '+1 (555) 123-4567' },
-        { id: '2', label: 'Mobile', number: '+1 (555) 987-6543' }
+        { id: '1', label: 'Office', number: '(555) 123-4567' },
+        { id: '2', label: 'Mobile', number: '(123) 456-7890' }
     ],
     socialLinks: [
-        { id: '1', platform: 'email', url: 'mailto:david@example.com', label: 'Email' },
+        { id: '1', platform: 'email', url: 'mailto:hello@reallysimpleapps.com', label: 'Email' },
         { id: '2', platform: 'website', url: 'https://reallysimpleapps.com', label: 'Website' },
-        { id: '3', platform: 'linkedin', url: 'https://linkedin.com/in/davidyoung', label: 'LinkedIn' },
     ],
     layoutMode: 'classic',
     stickyActionBar: true,
