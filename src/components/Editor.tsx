@@ -913,6 +913,45 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                 {/* Background Settings */}
                 <div className="pt-2 border-t border-gray-100">
                     <label className="block text-sm font-medium text-gray-700 mb-2">{t('Background Style')}</label>
+
+                    {/* Cool Palettes */}
+                    <div className="mb-4">
+                        <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">{t('Cool Palettes')}</label>
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff' },
+                                { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff' },
+                                { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff' },
+                                { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff' },
+                                { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff' },
+                                { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff' },
+                                { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b' },
+                                { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff' }
+                            ].map((p) => (
+                                <button
+                                    key={p.name}
+                                    onClick={() => {
+                                        onChange({
+                                            ...data,
+                                            themeColor: p.theme,
+                                            gradientColor: p.gradient,
+                                            textColor: p.text,
+                                            backgroundType: 'gradient'
+                                        });
+                                    }}
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                                    title={p.name}
+                                >
+                                    <div className="flex -space-x-1">
+                                        <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.theme }} />
+                                        <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.gradient }} />
+                                    </div>
+                                    <span className="text-[10px] font-medium text-gray-600 group-hover:text-blue-700">{p.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="flex gap-2 mb-4">
                         <button
                             onClick={() => handleChange('backgroundType', 'solid')}
