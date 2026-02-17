@@ -101,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             {
                 serialNumber: card.uid,
                 description: 'Digital Business Card',
-                logoText: data.company || 'Digital Card',
+                logoText: data.wallet?.showLogoText === false ? '' : (data.wallet?.logoText || data.company || 'Digital Card'),
                 organizationName: data.company || 'Contact Tree',
                 passTypeIdentifier: passTypeId,
                 teamIdentifier: teamId,
@@ -113,6 +113,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         pass.type = 'storeCard';
 
+        // Add logo image if specified
+        const logoUrl = data.wallet?.logoUrl || data.logoUrl;
+        if (logoUrl) {
+            try {
+                if (logoUrl.startsWith('/')) {
+                    const publicPath = path.join(process.cwd(), 'public', logoUrl);
+                    if (fs.existsSync(publicPath)) {
+                        pass.addBuffer('logo.png', fs.readFileSync(publicPath));
+                    }
+                } else if (logoUrl.startsWith('data:image')) {
+                    const buffer = Buffer.from(logoUrl.split(',')[1], 'base64');
+                    pass.addBuffer('logo.png', buffer);
+                }
+                // Remote URLs could be added here too with fetch, but sticking to local/data for now
+            } catch (err) {
+                console.error('[PassGen] Error adding logo image:', err);
+            }
+        }
+
         // Add strip image if specified
         const stripImageUrl = data.wallet?.stripImageUrl || '/wallet-strip.png';
         if (stripImageUrl) {
@@ -123,9 +142,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     if (fs.existsSync(publicPath)) {
                         pass.addBuffer('strip.png', fs.readFileSync(publicPath));
                     }
-                } else if (stripImageUrl.startsWith('http')) {
-                    // In a real app, we'd fetch the image and add it as a buffer
-                    // For now, we'll stick to local assets or default
+                } else if (stripImageUrl.startsWith('data:image')) {
+                    const buffer = Buffer.from(stripImageUrl.split(',')[1], 'base64');
+                    pass.addBuffer('strip.png', buffer);
                 }
             } catch (err) {
                 console.error('[PassGen] Error adding strip image:', err);
@@ -138,7 +157,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             value: data.fullName || data.name || 'Your Name',
         });
 
-        if (data.jobTitle) {
+        if (data.jobTitle && data.wallet?.showRole !== false) {
             pass.secondaryFields.push({
                 key: 'role',
                 label: 'Role',
@@ -146,7 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
-        if (data.company) {
+        if (data.company && data.wallet?.showCompany !== false) {
             pass.secondaryFields.push({
                 key: 'company',
                 label: 'Company',

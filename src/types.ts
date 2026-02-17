@@ -45,7 +45,11 @@ export interface WalletData {
     foregroundColor?: string;
     labelColor?: string;
     logoText?: string;
+    showLogoText?: boolean;
+    logoUrl?: string;
     stripImageUrl?: string;
+    showRole?: boolean;
+    showCompany?: boolean;
 }
 
 export interface Section {

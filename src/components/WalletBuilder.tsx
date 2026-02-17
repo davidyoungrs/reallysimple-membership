@@ -14,7 +14,10 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
         foregroundColor: '#000000',
         labelColor: '#000000',
         logoText: data.company || '',
-        stripImageUrl: '/wallet-strip.png'
+        showLogoText: true,
+        stripImageUrl: '/wallet-strip.png',
+        showRole: true,
+        showCompany: true
     };
 
     const updateWallet = (updates: Partial<WalletData>) => {
@@ -23,6 +26,14 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
             wallet: { ...wallet, ...updates }
         });
     };
+
+    const coolPalettes = [
+        { name: 'Midnight', bg: '#000000', fg: '#ffffff', label: '#9ca3af' },
+        { name: 'Sky', bg: '#0ea5e9', fg: '#ffffff', label: '#e0f2fe' },
+        { name: 'Forest', bg: '#059669', fg: '#ffffff', label: '#d1fae5' },
+        { name: 'Royal', bg: '#4f46e5', fg: '#ffffff', label: '#e0e7ff' },
+        { name: 'Slate', bg: '#475569', fg: '#ffffff', label: '#f1f5f9' },
+    ];
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -38,67 +49,96 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Background Color */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 capitalize">
-                            {t('Background')}
+                <div className="space-y-6">
+                    {/* Cool Palettes */}
+                    <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700">
+                            {t('Cool Palettes')}
                         </label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="color"
-                                value={wallet.backgroundColor || '#ffffff'}
-                                onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
-                                className="w-12 h-12 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden"
-                            />
-                            <input
-                                type="text"
-                                value={wallet.backgroundColor || '#ffffff'}
-                                onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
-                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
-                            />
+                        <div className="flex flex-wrap gap-3">
+                            {coolPalettes.map((p) => (
+                                <button
+                                    key={p.name}
+                                    onClick={() => updateWallet({
+                                        backgroundColor: p.bg,
+                                        foregroundColor: p.fg,
+                                        labelColor: p.label
+                                    })}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                                    title={p.name}
+                                >
+                                    <div className="flex -space-x-1">
+                                        <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: p.bg }} />
+                                        <div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: p.fg }} />
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-600 group-hover:text-blue-700">{p.name}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Foreground Color */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 capitalize">
-                            {t('Text Color')}
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="color"
-                                value={wallet.foregroundColor || '#000000'}
-                                onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
-                                className="w-12 h-12 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden"
-                            />
-                            <input
-                                type="text"
-                                value={wallet.foregroundColor || '#000000'}
-                                onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
-                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
-                            />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Background Color */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 capitalize">
+                                {t('Background')}
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="color"
+                                    value={wallet.backgroundColor || '#ffffff'}
+                                    onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
+                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={wallet.backgroundColor || '#ffffff'}
+                                    onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Label Color */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 capitalize">
-                            {t('Label Color')}
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="color"
-                                value={wallet.labelColor || '#000000'}
-                                onChange={(e) => updateWallet({ labelColor: e.target.value })}
-                                className="w-12 h-12 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden"
-                            />
-                            <input
-                                type="text"
-                                value={wallet.labelColor || '#000000'}
-                                onChange={(e) => updateWallet({ labelColor: e.target.value })}
-                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
-                            />
+                        {/* Foreground Color */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 capitalize">
+                                {t('Text Color')}
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="color"
+                                    value={wallet.foregroundColor || '#000000'}
+                                    onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
+                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={wallet.foregroundColor || '#000000'}
+                                    onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Label Color */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 capitalize">
+                                {t('Label Color')}
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="color"
+                                    value={wallet.labelColor || '#000000'}
+                                    onChange={(e) => updateWallet({ labelColor: e.target.value })}
+                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={wallet.labelColor || '#000000'}
+                                    onChange={(e) => updateWallet({ labelColor: e.target.value })}
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,19 +156,94 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                            {t('Logo Text')}
-                        </label>
-                        <input
-                            type="text"
-                            value={wallet.logoText || ''}
-                            onChange={(e) => updateWallet({ logoText: e.target.value })}
-                            placeholder={data.company || t('Company Name')}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        />
-                        <p className="text-xs text-gray-500 italic">Displayed at the top left of the pass</p>
+                <div className="space-y-8">
+                    {/* Logo & Text Section */}
+                    <div className="p-4 bg-gray-50 rounded-xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-gray-900">{t('Logo & Branding')}</h3>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <span className="text-xs font-medium text-gray-600">{t('Show Logo Text')}</span>
+                                <input
+                                    type="checkbox"
+                                    checked={wallet.showLogoText !== false}
+                                    onChange={(e) => updateWallet({ showLogoText: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
+                            </label>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="block text-xs font-medium text-gray-500">
+                                    {t('Logo Text Content')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={wallet.logoText || ''}
+                                    onChange={(e) => updateWallet({ logoText: e.target.value })}
+                                    disabled={wallet.showLogoText === false}
+                                    placeholder={data.company || t('Company Name')}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-100 disabled:opacity-50"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-xs font-medium text-gray-500">
+                                    {t('Custom Wallet Logo')}
+                                </label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                                        {(wallet.logoUrl || data.logoUrl) ? (
+                                            <img src={wallet.logoUrl || data.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <div className="w-6 h-6 bg-gray-100 rounded-sm" />
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const url = prompt(t('Enter Logo URL') || 'Enter Logo URL', wallet.logoUrl || data.logoUrl || '');
+                                            if (url !== null) updateWallet({ logoUrl: url });
+                                        }}
+                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                                    >
+                                        {t('Change')}
+                                    </button>
+                                    {wallet.logoUrl && (
+                                        <button
+                                            onClick={() => updateWallet({ logoUrl: undefined })}
+                                            className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors"
+                                        >
+                                            {t('Remove')}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Field Toggles */}
+                    <div className="p-4 bg-gray-50 rounded-xl space-y-4">
+                        <h3 className="text-sm font-bold text-gray-900">{t('Visible Fields')}</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-200 transition-colors">
+                                <span className="text-sm font-medium text-gray-700">{t('Display Job Title')}</span>
+                                <input
+                                    type="checkbox"
+                                    checked={wallet.showRole !== false}
+                                    onChange={(e) => updateWallet({ showRole: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-200 transition-colors">
+                                <span className="text-sm font-medium text-gray-700">{t('Display Company')}</span>
+                                <input
+                                    type="checkbox"
+                                    checked={wallet.showCompany !== false}
+                                    onChange={(e) => updateWallet({ showCompany: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
+                            </label>
+                        </div>
                     </div>
 
                     <div className="space-y-4">
@@ -143,7 +258,13 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors">
+                                    <button
+                                        onClick={() => {
+                                            const url = prompt(t('Enter Strip Image URL') || 'Enter Strip Image URL', wallet.stripImageUrl || '/wallet-strip.png');
+                                            if (url !== null) updateWallet({ stripImageUrl: url });
+                                        }}
+                                        className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors"
+                                    >
                                         {t('Change')}
                                     </button>
                                 </div>
@@ -170,8 +291,13 @@ export function WalletPreview({ data }: { data: CardData }) {
         foregroundColor: '#000000',
         labelColor: '#000000',
         logoText: data.company || '',
-        stripImageUrl: '/wallet-strip.png'
+        showLogoText: true,
+        stripImageUrl: '/wallet-strip.png',
+        showRole: true,
+        showCompany: true
     };
+
+    const logoUrl = wallet.logoUrl || data.logoUrl;
 
     return (
         <div className="w-[320px] h-[480px] bg-gray-900/5 backdrop-blur-sm rounded-[40px] p-4 flex flex-col items-center justify-center relative shadow-2xl overflow-hidden border border-white/20">
@@ -183,17 +309,19 @@ export function WalletPreview({ data }: { data: CardData }) {
                 {/* Top Section / Header */}
                 <div className="px-4 py-3 flex justify-between items-center z-10">
                     <div className="flex items-center gap-2">
-                        {data.logoUrl ? (
-                            <img src={data.logoUrl} alt="Logo" className="w-6 h-6 object-contain" />
+                        {logoUrl ? (
+                            <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain" />
                         ) : (
                             <div className="w-6 h-6 bg-gray-200 rounded-sm" />
                         )}
-                        <span
-                            className="text-[10px] font-bold tracking-tight"
-                            style={{ color: wallet.foregroundColor }}
-                        >
-                            {(wallet.logoText || data.company || 'DIGITAL CARD').toUpperCase()}
-                        </span>
+                        {wallet.showLogoText !== false && (
+                            <span
+                                className="text-[10px] font-bold tracking-tight"
+                                style={{ color: wallet.foregroundColor }}
+                            >
+                                {(wallet.logoText || data.company || 'DIGITAL CARD').toUpperCase()}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -223,14 +351,18 @@ export function WalletPreview({ data }: { data: CardData }) {
 
                 {/* Secondary/Auxiliary Fields */}
                 <div className="px-4 py-4 grid grid-cols-2 gap-y-4 gap-x-2 flex-grow">
-                    <div>
-                        <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>ROLE</span>
-                        <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.jobTitle || 'Your Position'}</span>
-                    </div>
-                    <div>
-                        <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>COMPANY</span>
-                        <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.company || 'Your Company'}</span>
-                    </div>
+                    {wallet.showRole !== false && (
+                        <div>
+                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>ROLE</span>
+                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.jobTitle || 'Your Position'}</span>
+                        </div>
+                    )}
+                    {wallet.showCompany !== false && (
+                        <div>
+                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>COMPANY</span>
+                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.company || 'Your Company'}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* QR Code Section */}
