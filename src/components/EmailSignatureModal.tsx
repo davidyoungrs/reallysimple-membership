@@ -82,7 +82,7 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-2xl font-bold text-gray-900">{t('Email Signature')}</h2>
@@ -104,7 +104,7 @@ export function EmailSignatureModal({ data, cardUrl, isOpen, onClose }: EmailSig
                     <div className="border border-gray-200 rounded-xl p-8 bg-gray-50 mb-8 overflow-x-auto">
                         <div
                             ref={previewRef}
-                            className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 inline-block min-w-full"
+                            className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 block min-w-full"
                             dangerouslySetInnerHTML={{ __html: points }}
                         />
                     </div>

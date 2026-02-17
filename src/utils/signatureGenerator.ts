@@ -88,9 +88,9 @@ export function generateSignatureHTML(data: CardData, cardUrl?: string): string 
     }
 
     return `
-<table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; color: ${textCol};">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; color: ${textCol};">
     <tr>
-        <td style="padding-right: 15px; border-right: 2px solid ${primaryColor}; vertical-align: top;">
+        <td style="padding-right: 15px; border-right: 2px solid ${primaryColor}; vertical-align: top; width: 45%;">
             <div style="font-weight: bold; font-size: 16px; color: ${textCol}; margin-bottom: 2px;">${fullName || 'Your Name'}</div>
             <div style="font-size: 14px; color: ${primaryColor}; margin-bottom: 2px;">${jobTitle || 'Job Title'}</div>
             <div style="font-size: 13px; color: ${textCol}; opacity: 0.8;">${company || 'Company Name'}</div>
