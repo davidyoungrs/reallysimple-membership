@@ -368,7 +368,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     );
 }
 
-export function WalletPreview({ data }: { data: CardData }) {
+export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?: boolean }) {
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
         foregroundColor: '#000000',
@@ -383,10 +383,10 @@ export function WalletPreview({ data }: { data: CardData }) {
     const logoUrl = wallet.logoUrl || data.logoUrl;
 
     return (
-        <div className="w-[320px] h-[480px] bg-gray-900/5 backdrop-blur-sm rounded-[40px] p-4 flex flex-col items-center justify-center relative shadow-2xl overflow-hidden border border-white/20">
+        <div className={`${isPreview ? 'w-full h-full' : 'w-[320px] h-[480px] bg-gray-900/5 backdrop-blur-sm rounded-[40px] p-4 shadow-2xl border border-white/20'} flex flex-col items-center justify-center relative overflow-hidden`}>
             {/* Apple Wallet Pass Frame */}
             <div
-                className="w-full h-[400px] rounded-[18px] shadow-xl overflow-hidden flex flex-col relative animate-in zoom-in duration-500"
+                className={`${isPreview ? 'w-full h-full rounded-xl' : 'w-full h-[400px] rounded-[18px] shadow-xl'} overflow-hidden flex flex-col relative animate-in zoom-in duration-500`}
                 style={{ backgroundColor: wallet.backgroundColor || '#ffffff' }}
             >
                 {/* Top Section / Header */}
@@ -461,9 +461,12 @@ export function WalletPreview({ data }: { data: CardData }) {
             </div>
 
             {/* Hint of background card */}
-            <div className="absolute top-[320px] left-8 right-8 h-[200px] bg-white/40 backdrop-blur-md rounded-t-[18px] -z-10 translate-y-12 rotate-[-2deg] border border-white/20" />
-
-            <p className="absolute bottom-6 text-[10px] text-gray-400 font-medium">Apple Wallet Preview</p>
+            {!isPreview && (
+                <>
+                    <div className="absolute top-[320px] left-8 right-8 h-[200px] bg-white/40 backdrop-blur-md rounded-t-[18px] -z-10 translate-y-12 rotate-[-2deg] border border-white/20" />
+                    <p className="absolute bottom-6 text-[10px] text-gray-400 font-medium">Apple Wallet Preview</p>
+                </>
+            )}
         </div>
     );
 }

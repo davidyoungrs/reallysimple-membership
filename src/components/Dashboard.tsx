@@ -249,14 +249,14 @@ export function Dashboard() {
                                         className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1"
                                     >
                                         {/* Card Preview */}
-                                        <div className="relative bg-gray-50 h-[320px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
+                                        <div className="relative bg-gray-50 h-[380px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
                                             {card.data.wallet ? (
                                                 <div className="flex h-full p-4 gap-4 items-center justify-center overflow-hidden">
                                                     {/* Online Card */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{t('Online')}</span>
-                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '120px', height: '190px' }}>
-                                                            <div className="origin-top scale-[0.2678] pointer-events-none" style={{ width: '448px' }}>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Online')}</span>
+                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
+                                                            <div className="origin-top scale-[0.3571] pointer-events-none" style={{ width: '448px', height: '784px' }}>
                                                                 <BusinessCard data={card.data} />
                                                             </div>
                                                         </div>
@@ -264,17 +264,17 @@ export function Dashboard() {
 
                                                     {/* Apple Wallet */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{t('Wallet')}</span>
-                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '120px', height: '190px' }}>
-                                                            <div className="origin-top scale-[0.375] pointer-events-none" style={{ width: '320px' }}>
-                                                                <WalletPreview data={card.data} />
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('Wallet')}</span>
+                                                        <div className="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm" style={{ width: '160px', height: '280px' }}>
+                                                            <div className="origin-top scale-[0.5] pointer-events-none" style={{ width: '320px', height: '560px' }}>
+                                                                <WalletPreview data={card.data} isPreview={true} />
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <div className="scale-[0.35] origin-top-left translate-x-[15%] translate-y-[5%]" style={{ width: '500px', height: '800px' }}>
+                                                    <div className="scale-[0.4] origin-top translate-y-[5%]" style={{ width: '448px', height: '800px' }}>
                                                         <BusinessCard data={card.data} />
                                                     </div>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-60" />
