@@ -101,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             {
                 serialNumber: card.uid,
                 description: 'Digital Business Card',
-                logoText: data.wallet?.showLogoText === false ? '' : (data.wallet?.logoText || data.company || 'Digital Card'),
+                logoText: data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card'),
                 organizationName: data.company || 'Contact Tree',
                 passTypeIdentifier: passTypeId,
                 teamIdentifier: teamId,
