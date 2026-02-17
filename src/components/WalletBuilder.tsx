@@ -77,7 +77,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-4 max-w-md">
                         {/* Background Color */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700 capitalize">
@@ -88,13 +88,13 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     type="color"
                                     value={wallet.backgroundColor || '#ffffff'}
                                     onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
-                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                    className="w-10 h-10 rounded-xl border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
                                 />
                                 <input
                                     type="text"
                                     value={wallet.backgroundColor || '#ffffff'}
                                     onChange={(e) => updateWallet({ backgroundColor: e.target.value })}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
                                 />
                             </div>
                         </div>
@@ -109,13 +109,13 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     type="color"
                                     value={wallet.foregroundColor || '#000000'}
                                     onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
-                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                    className="w-10 h-10 rounded-xl border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
                                 />
                                 <input
                                     type="text"
                                     value={wallet.foregroundColor || '#000000'}
                                     onChange={(e) => updateWallet({ foregroundColor: e.target.value })}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
                                 />
                             </div>
                         </div>
@@ -130,13 +130,13 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     type="color"
                                     value={wallet.labelColor || '#000000'}
                                     onChange={(e) => updateWallet({ labelColor: e.target.value })}
-                                    className="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
+                                    className="w-10 h-10 rounded-xl border-2 border-white shadow-sm cursor-pointer p-0 overflow-hidden flex-shrink-0"
                                 />
                                 <input
                                     type="text"
                                     value={wallet.labelColor || '#000000'}
                                     onChange={(e) => updateWallet({ labelColor: e.target.value })}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
                                 />
                             </div>
                         </div>
