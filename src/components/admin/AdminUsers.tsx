@@ -235,6 +235,12 @@ export function AdminUsers() {
                                                         <Shield className="w-4 h-4" /> Ban User
                                                     </button>
                                                 )}
+                                                <button
+                                                    onClick={() => handleAction('reset_password', user.id)}
+                                                    className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                                >
+                                                    <AlertOctagon className="w-4 h-4" /> Reset Password
+                                                </button>
                                             </div>
                                         )}
                                     </td>
@@ -246,65 +252,67 @@ export function AdminUsers() {
             </div>
 
             {/* User Detail Modal */}
-            {showDetailModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-gray-900">User Details</h2>
-                            <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">
-                                &times;
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            {detailLoading ? (
-                                <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
-                            ) : userDetail ? (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden">
-                                            <img src={userDetail?.user.imageUrl} alt="" className="w-full h-full object-cover" />
+            {
+                showDetailModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60]">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-gray-900">User Details</h2>
+                                <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">
+                                    &times;
+                                </button>
+                            </div>
+                            <div className="p-6">
+                                {detailLoading ? (
+                                    <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+                                ) : userDetail ? (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden">
+                                                <img src={userDetail?.user.imageUrl} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold">{userDetail?.user.firstName} {userDetail?.user.lastName}</h3>
+                                                <p className="text-gray-500">{userDetail?.user.emailAddresses?.[0]?.emailAddress}</p>
+                                                <p className="text-xs text-gray-400">ID: {userDetail?.user.id}</p>
+                                            </div>
                                         </div>
+
                                         <div>
-                                            <h3 className="text-lg font-bold">{userDetail?.user.firstName} {userDetail?.user.lastName}</h3>
-                                            <p className="text-gray-500">{userDetail?.user.emailAddresses?.[0]?.emailAddress}</p>
-                                            <p className="text-xs text-gray-400">ID: {userDetail?.user.id}</p>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Business Cards</h4>
-                                        <div className="space-y-2">
-                                            {userDetail?.cards.map((card: any) => (
-                                                <div key={card.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
-                                                    <div>
-                                                        <div className="font-medium">{card.data.fullName || 'Untitled Card'}</div>
-                                                        <div className="text-xs text-gray-500">/{card.slug}</div>
+                                            <h4 className="font-semibold mb-2">Business Cards</h4>
+                                            <div className="space-y-2">
+                                                {userDetail?.cards.map((card: any) => (
+                                                    <div key={card.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                                        <div>
+                                                            <div className="font-medium">{card.data.fullName || 'Untitled Card'}</div>
+                                                            <div className="text-xs text-gray-500">/{card.slug}</div>
+                                                        </div>
+                                                        {card.isActive ? (
+                                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active</span>
+                                                        ) : (
+                                                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Inactive</span>
+                                                        )}
                                                     </div>
-                                                    {card.isActive ? (
-                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active</span>
-                                                    ) : (
-                                                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Inactive</span>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            {userDetail?.cards.length === 0 && <p className="text-gray-500 italic">No cards found.</p>}
+                                                ))}
+                                                {userDetail?.cards.length === 0 && <p className="text-gray-500 italic">No cards found.</p>}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Raw Metadata</h4>
+                                            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto">
+                                                {JSON.stringify(userDetail?.user.publicMetadata, null, 2)}
+                                            </pre>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <h4 className="font-semibold mb-2">Raw Metadata</h4>
-                                        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto">
-                                            {JSON.stringify(userDetail?.user.publicMetadata, null, 2)}
-                                        </pre>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center text-red-500">Failed to load user details.</div>
-                            )}
+                                ) : (
+                                    <div className="text-center text-red-500">Failed to load user details.</div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
