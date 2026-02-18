@@ -50,6 +50,7 @@ export interface WalletData {
     stripImageUrl?: string;
     showRole?: boolean;
     showCompany?: boolean;
+    showNameFields?: boolean;
 }
 
 export interface Section {

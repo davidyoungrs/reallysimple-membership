@@ -151,14 +151,29 @@ async function handleGetUserAnalytics(req: VercelRequest, res: VercelResponse, u
         .groupBy(sql`DATE_TRUNC('day', ${cardClicks.clickedAt})`).orderBy(sql`DATE_TRUNC('day', ${cardClicks.clickedAt})`);
 
     // Recent Activity
-    const recentViews = await db.select({ type: sql<string>`'view'`, timestamp: cardViews.viewedAt, cardId: cardViews.cardId, details: sql<string>`COALESCE(${cardViews.city}, '') || ', ' || COALESCE(${cardViews.country}, 'Unknown')` })
+    const recentViews = await db.select({
+        type: sql<string>`'view'`,
+        timestamp: cardViews.viewedAt,
+        cardId: cardViews.cardId,
+        city: cardViews.city,
+        country: cardViews.country
+    })
         .from(cardViews).where(inArray(cardViews.cardId, cardIds)).orderBy(desc(cardViews.viewedAt)).limit(5);
 
-    const recentClicks = await db.select({ type: sql<string>`'click'`, timestamp: cardClicks.clickedAt, cardId: cardClicks.cardId, details: sql<string>`type || ': ' || COALESCE(target_info, '')` })
+    const recentClicks = await db.select({
+        type: sql<string>`'click'`,
+        timestamp: cardClicks.clickedAt,
+        cardId: cardClicks.cardId,
+        clickType: cardClicks.type,
+        targetInfo: cardClicks.targetInfo
+    })
         .from(cardClicks).where(inArray(cardClicks.cardId, cardIds)).orderBy(desc(cardClicks.clickedAt)).limit(5);
 
     const cardMap = userCards.reduce((acc: any, card) => { acc[card.id] = { name: card.name || card.slug || 'Untitled', slug: card.slug }; return acc; }, {});
-    const combinedActivity = [...recentViews.map(v => ({ ...v, card: cardMap[v.cardId as number] })), ...recentClicks.map(c => ({ ...c, card: cardMap[c.cardId as number] }))]
+    const combinedActivity = [
+        ...recentViews.map(v => ({ ...v, card: cardMap[v.cardId as number] })),
+        ...recentClicks.map(c => ({ ...c, card: cardMap[c.cardId as number] }))
+    ]
         .sort((a, b) => new Date(b.timestamp as any).getTime() - new Date(a.timestamp as any).getTime()).slice(0, 5);
 
     const totalViews = await db.select({ count: sql<number>`count(*)` }).from(cardViews).where(inArray(cardViews.cardId, cardIds));

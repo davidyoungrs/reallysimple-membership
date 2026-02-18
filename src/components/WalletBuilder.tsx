@@ -19,6 +19,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
         logoText: data.company || '',
         showLogoText: true,
         stripImageUrl: '/wallet-strip.png',
+        showNameFields: true,
         showRole: true,
         showCompany: true
     };
@@ -314,6 +315,15 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                         <h3 className="text-sm font-bold text-gray-900">{t('Visible Fields')}</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-200 transition-colors">
+                                <span className="text-sm font-medium text-gray-700">{t('Display Name')}</span>
+                                <input
+                                    type="checkbox"
+                                    checked={wallet.showNameFields !== false}
+                                    onChange={(e) => updateWallet({ showNameFields: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-200 transition-colors">
                                 <span className="text-sm font-medium text-gray-700">{t('Display Job Title')}</span>
                                 <input
                                     type="checkbox"
@@ -400,6 +410,7 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
         logoText: data.company || '',
         showLogoText: true,
         stripImageUrl: '/wallet-strip.png',
+        showNameFields: true,
         showRole: true,
         showCompany: true
     };
@@ -441,18 +452,22 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
                     />
                     {/* Primary Field Over Strip */}
                     <div className="absolute inset-0 flex flex-col justify-center px-4 pt-4">
-                        <span
-                            className="text-[10px] font-medium opacity-80"
-                            style={{ color: wallet.labelColor }}
-                        >
-                            NAME
-                        </span>
-                        <span
-                            className="text-xl font-bold leading-tight"
-                            style={{ color: wallet.foregroundColor }}
-                        >
-                            {data.fullName || 'Your Name'}
-                        </span>
+                        {wallet.showNameFields !== false && (
+                            <>
+                                <span
+                                    className="text-[10px] font-medium opacity-80"
+                                    style={{ color: wallet.labelColor }}
+                                >
+                                    NAME
+                                </span>
+                                <span
+                                    className="text-xl font-bold leading-tight"
+                                    style={{ color: wallet.foregroundColor }}
+                                >
+                                    {data.fullName || 'Your Name'}
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
 

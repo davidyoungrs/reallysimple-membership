@@ -571,7 +571,7 @@ export function CardBuilder() {
             {/* Editor Side */}
             <div className={`
                 fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out border-t border-gray-200
-                h-[75vh] md:h-screen md:relative md:inset-auto md:w-[45%] lg:w-[40%] md:rounded-none md:shadow-none md:border-r md:border-t-0 md:bg-white md:translate-y-0
+                h-[85vh] md:h-[100dvh] md:relative md:inset-auto md:w-[45%] lg:w-[40%] md:rounded-none md:shadow-none md:border-r md:border-t-0 md:bg-white md:translate-y-0
                 ${isEditorOpen ? 'translate-y-0' : 'translate-y-[calc(100%-80px)] md:translate-y-0'}
             `}>
                 {/* Mobile Handle */}
@@ -599,7 +599,7 @@ export function CardBuilder() {
                     )}
                 </div>
 
-                <div className="h-full overflow-y-auto pb-24 md:pb-0">
+                <div className="h-full overflow-y-auto pb-40 md:pb-32">
                     {builderMode === 'card' ? (
                         <Editor data={data} onChange={setData} currentCardId={currentCardId} onSlugStatusChange={setSlugStatus} />
                     ) : (

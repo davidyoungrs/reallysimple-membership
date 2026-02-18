@@ -5,7 +5,12 @@ interface ActivityItem {
     type: 'view' | 'click';
     timestamp: string;
     cardId: number;
-    details: string;
+    // View details
+    city?: string;
+    country?: string;
+    // Click details
+    clickType?: string;
+    targetInfo?: string;
     card: {
         name: string;
         slug: string;
@@ -32,6 +37,17 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
         if (diffMins < 60) return `${diffMins}m ${t('ago')}`;
         if (diffHours < 24) return `${diffHours}h ${t('ago')}`;
         return `${diffDays}d ${t('ago')}`;
+    };
+
+    const getDetails = (item: ActivityItem) => {
+        if (item.type === 'view') {
+            const location = [item.city, item.country || t('Unknown')].filter(Boolean).join(', ');
+            return location || t('Unknown Location');
+        } else {
+            // Translate the click type if possible, otherwise capitalize
+            const typeLabel = item.clickType ? (t(item.clickType) !== item.clickType ? t(item.clickType) : item.clickType.charAt(0).toUpperCase() + item.clickType.slice(1)) : t('Link');
+            return `${typeLabel}: ${item.targetInfo}`;
+        }
     };
 
     return (
@@ -71,7 +87,7 @@ export function ActivityFeed({ activities, isLoading }: ActivityFeedProps) {
                                     {item.type === 'view' ? t('New View') : t('Link Clicked')}
                                 </p>
                                 <p className="text-xs text-gray-500 truncate">
-                                    {item.card.name} • {item.details}
+                                    {item.card.name} • {getDetails(item)}
                                 </p>
                                 <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-wider">
                                     {getTimeLabel(item.timestamp)}
