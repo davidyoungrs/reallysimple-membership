@@ -149,6 +149,10 @@
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->
     - [x] Build Global Analytics Dashboard (Aggregate Views/Clicks) <!-- id: 162 -->
     - [x] Create User Management Directory (Search/Status/Lifecycle) <!-- id: 163 -->
-    - [ ] Create Card Management Gallery (Audit/Moderation) <!-- id: 164 -->
+    - [x] Create Card Management Gallery (Audit/Moderation) <!-- id: 164 -->
+        - [x] Backend: Add `cards` resource to `api/admin/index.ts` (Search, Pagination) <!-- id: 242 -->
+        - [x] Frontend: Implement `AdminCards.tsx` with Table & Search <!-- id: 243 -->
+        - [x] Frontend: Add "Delete Card" functionality with confirmation <!-- id: 244 -->
+        - [x] Frontend: Add "View Public Card" action <!-- id: 245 -->
     - [ ] Build Security & API Monitoring Panel <!-- id: 165 -->
     - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->

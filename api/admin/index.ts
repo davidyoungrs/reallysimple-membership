@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { users, businessCards, cardViews, cardClicks } from '../../src/db/schema.js';
-import { count, eq, sql } from 'drizzle-orm';
+import { count, eq, sql, desc, ilike, or, and } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
@@ -8,7 +8,7 @@ import { createClerkClient, verifyToken } from '@clerk/backend';
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (req.method !== 'GET') {
+    if (req.method !== 'GET' && req.method !== 'DELETE') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
@@ -31,6 +31,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (!isAdmin) {
             return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        }
+
+        if (req.method === 'DELETE') {
+            return handleDelete(req, res, isAdmin);
         }
 
         const resource = (req.query.resource as string) || 'stats';
@@ -111,10 +115,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
+        if (resource === 'cards') {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const query = (req.query.q as string) || '';
+
+            const whereClause = query
+                ? or(
+                    ilike(businessCards.slug, `%${query}%`),
+                    sql`${businessCards.data}->>'fullName' ILIKE ${`%${query}%`}`
+                )
+                : undefined;
+
+            const [cardsData, total] = await Promise.all([
+                db.select()
+                    .from(businessCards)
+                    .where(whereClause)
+                    .limit(limit)
+                    .offset(offset)
+                    .orderBy(desc(businessCards.createdAt)),
+                db.select({ count: count() })
+                    .from(businessCards)
+                    .where(whereClause)
+            ]);
+
+            return res.status(200).json({
+                data: cardsData,
+                totalCount: total[0]?.count || 0
+            });
+        }
+
         return res.status(400).json({ error: 'Invalid resource' });
 
     } catch (error: any) {
         console.error('Admin API Error:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+// Separate function to handle DELETE manually since we can't easily export multiple handlers
+// effectively we just check method at top, but for clarity logic is here:
+async function handleDelete(req: VercelRequest, res: VercelResponse, isAdmin: boolean) {
+    if (!isAdmin) {
+        return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+
+    const { id } = req.body;
+    if (!id) {
+        return res.status(400).json({ error: 'Missing card ID' });
+    }
+
+    try {
+        console.log('Admin deleting card:', id);
+
+        // Delete analytics first (if not cascading)
+        await Promise.all([
+            db.delete(cardViews).where(eq(cardViews.cardId, id)),
+            db.delete(cardClicks).where(eq(cardClicks.cardId, id))
+        ]);
+
+        await db.delete(businessCards).where(eq(businessCards.id, id));
+
+        return res.status(200).json({ success: true });
+    } catch (error: any) {
+        console.error('Delete Error:', error);
+        return res.status(500).json({ error: 'Failed to delete card' });
     }
 }
