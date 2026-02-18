@@ -148,7 +148,7 @@
 - [ ] **Phase 13: Admin Super Dashboard** <!-- id: 160 -->
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->
     - [x] Build Global Analytics Dashboard (Aggregate Views/Clicks) <!-- id: 162 -->
-    - [ ] Create User Management Directory (Search/Status/Lifecycle) <!-- id: 163 -->
+    - [x] Create User Management Directory (Search/Status/Lifecycle) <!-- id: 163 -->
     - [ ] Create Card Management Gallery (Audit/Moderation) <!-- id: 164 -->
     - [ ] Build Security & API Monitoring Panel <!-- id: 165 -->
     - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->

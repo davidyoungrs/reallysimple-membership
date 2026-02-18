@@ -25,7 +25,7 @@ export function AdminDashboard() {
         async function fetchStats() {
             try {
                 const token = await getToken();
-                const res = await fetch('/api/admin/stats', {
+                const res = await fetch('/api/admin?resource=stats', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
