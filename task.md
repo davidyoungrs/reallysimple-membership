@@ -154,5 +154,6 @@
         - [x] Frontend: Implement `AdminCards.tsx` with Table & Search <!-- id: 243 -->
         - [x] Frontend: Add "Delete Card" functionality with confirmation <!-- id: 244 -->
         - [x] Frontend: Add "View Public Card" action <!-- id: 245 -->
+        - [x] Frontend: Add Grid View with Hover Previews <!-- id: 246 -->
     - [ ] Build Security & API Monitoring Panel <!-- id: 165 -->
     - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->
