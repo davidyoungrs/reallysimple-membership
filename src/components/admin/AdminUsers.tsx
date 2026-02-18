@@ -95,6 +95,9 @@ export function AdminUsers() {
                                                     <Mail className="w-3 h-3" />
                                                     {user.emailAddresses?.[0]?.emailAddress}
                                                 </div>
+                                                <div className="text-xs text-gray-400 mt-1">
+                                                    ID: {user.id}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>

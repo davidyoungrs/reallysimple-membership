@@ -155,5 +155,10 @@
         - [x] Frontend: Add "Delete Card" functionality with confirmation <!-- id: 244 -->
         - [x] Frontend: Add "View Public Card" action <!-- id: 245 -->
         - [x] Frontend: Add Grid View with Hover Previews <!-- id: 246 -->
-    - [ ] Build Security & API Monitoring Panel <!-- id: 165 -->
+    - [x] Built Security & API Monitoring Panel <!-- id: 165 -->
+        - [x] Backend: Add `security` resource to `api/admin/index.ts` <!-- id: 260 -->
+        - [x] Frontend: Implement `AdminSecurity.tsx` <!-- id: 261 -->
+    - [x] Fix Card Gallery Visibility Issue <!-- id: 262 -->
+        - [x] Debug: Add logging to `AdminCards.tsx` to verify data fetching <!-- id: 263 -->
+        - [x] Debug: Investigate "privacy policy" redirect issue on user links <!-- id: 264 -->
     - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->

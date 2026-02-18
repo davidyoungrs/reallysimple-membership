@@ -13,6 +13,7 @@ export function AdminCards() {
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     async function fetchCards() {
+        console.log('AdminCards: Fetching cards...');
         setLoading(true);
         try {
             const token = await getToken();
@@ -22,6 +23,7 @@ export function AdminCards() {
 
             if (!res.ok) throw new Error('Failed to fetch cards');
             const result = await res.json();
+            console.log('AdminCards fetched:', result);
             setCards(result.data || []);
         } catch (err: any) {
             console.error(err);
@@ -166,7 +168,7 @@ export function AdminCards() {
                                         </td>
                                         <td className="py-4 px-6">
                                             <code className="px-2 py-1 bg-gray-100 rounded text-sm text-gray-600">
-                                                /{card.slug || '-'}
+                                                /card/{card.slug || '-'}
                                             </code>
                                         </td>
                                         <td className="py-4 px-6">
@@ -189,7 +191,7 @@ export function AdminCards() {
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <a
-                                                    href={`/${card.slug}`}
+                                                    href={`/card/${card.slug}`}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -261,7 +263,7 @@ export function AdminCards() {
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between text-sm">
                                         <code className="bg-gray-100 px-2 py-1 rounded text-gray-600 truncate max-w-[140px]">
-                                            /{card.slug || '-'}
+                                            /card/{card.slug || '-'}
                                         </code>
                                         <span className="text-gray-400 text-xs">
                                             {new Date(card.createdAt).toLocaleDateString()}
@@ -270,7 +272,7 @@ export function AdminCards() {
 
                                     <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
                                         <a
-                                            href={`/${card.slug}`}
+                                            href={`/card/${card.slug}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
