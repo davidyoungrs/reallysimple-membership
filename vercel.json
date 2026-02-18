@@ -45,7 +45,7 @@
         }
     ],
     "functions": {
-        "api/generate-pass.ts": {
+        "api/passes.ts": {
             "includeFiles": "certs/model.pass/**"
         }
     }
