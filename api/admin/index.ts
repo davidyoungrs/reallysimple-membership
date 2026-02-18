@@ -36,15 +36,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const resource = (req.query.resource as string) || 'stats';
 
         if (resource === 'stats') {
-            // 4. Run Parallel DB Queries
+            // 4. Run Parallel DB Queries & Clerk Count
             const [
-                userStats,
+                userCount,
                 cardStats,
                 activeCardStats,
                 viewStats,
                 clickStats
             ] = await Promise.all([
-                db.select({ count: count() }).from(users),
+                clerkClient.users.getCount(),
                 db.select({ count: count() }).from(businessCards),
                 db.select({ count: count() }).from(businessCards).where(eq(businessCards.isActive, true)),
                 db.select({ count: count() }).from(cardViews),
@@ -52,8 +52,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ]);
 
             // 5. Get Last 7 Days History for Charts
-            // Note: In Drizzle with Postgres, generating series is complex without raw SQL.
-            // For now, we'll just fetch raw counts grouped by date via SQL.
+            // Note: Users history will be empty without webhook sync. 
+            // We'll keep the query for now as a placeholder.
 
             // Users History
             const usersHistory = await db.execute(sql`
@@ -74,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             `);
 
             return res.status(200).json({
-                users: userStats[0]?.count || 0,
+                users: userCount,
                 totalCards: cardStats[0]?.count || 0,
                 activeCards: activeCardStats[0]?.count || 0,
                 views: viewStats[0]?.count || 0,
