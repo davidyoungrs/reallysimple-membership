@@ -41,3 +41,10 @@ export const cardClicks = pgTable('card_clicks', {
     clickedAt: timestamp('clicked_at').defaultNow(),
     userAgent: text('user_agent'),
 });
+
+export const systemSettings = pgTable('system_settings', {
+    key: text('key').primaryKey(), // e.g., 'maintenance_mode', 'disable_registrations'
+    value: text('value').notNull(), // stored as string, parsed manually (e.g., 'true', 'false', JSON)
+    description: text('description'),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});

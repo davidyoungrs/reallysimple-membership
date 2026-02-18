@@ -168,4 +168,8 @@
         - [x] Frontend: Add Firewall Dashboard (Recent IP Blocks) to `AdminSecurity.tsx` <!-- id: 280 -->
         - [x] Frontend: Add API Performance Charts to `AdminSecurity.tsx` <!-- id: 281 -->
         - [x] Frontend: Add Sanitization Log to `AdminSecurity.tsx` <!-- id: 282 -->
-    - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->
+    - [x] Implement System-Wide Configuration Toggles <!-- id: 167 -->
+        - [x] Database: Create `system_settings` table schema (Drizzle) <!-- id: 291 -->
+        - [x] Backend: Update API to support fetching/updating system settings <!-- id: 292 -->
+        - [x] Frontend: Implement `AdminSettings.tsx` form <!-- id: 293 -->
+        - [x] Global: Implement Maintenance Mode middleware logic <!-- id: 294 -->

@@ -1,5 +1,5 @@
 import { db } from '../../src/db/index.js';
-import { users, businessCards, cardViews, cardClicks } from '../../src/db/schema.js';
+import { users, businessCards, cardViews, cardClicks, systemSettings } from '../../src/db/schema.js';
 import { count, eq, sql, desc, ilike, or, and } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
@@ -8,7 +8,7 @@ import { createClerkClient, verifyToken } from '@clerk/backend';
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (req.method !== 'GET' && req.method !== 'DELETE') {
+    if (req.method !== 'GET' && req.method !== 'DELETE' && req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
@@ -143,6 +143,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 data: cardsData,
                 totalCount: total[0]?.count || 0
             });
+        }
+
+        if (resource === 'settings') {
+            if (req.method === 'POST') {
+                const { key, value } = req.body;
+                if (!key || value === undefined) {
+                    return res.status(400).json({ error: 'Missing key or value' });
+                }
+
+                await db.insert(systemSettings)
+                    .values({ key, value })
+                    .onConflictDoUpdate({
+                        target: systemSettings.key,
+                        set: { value, updatedAt: new Date() }
+                    });
+
+                return res.status(200).json({ success: true });
+            }
+
+            const settings = await db.select().from(systemSettings);
+            const settingsMap = settings.reduce((acc, curr) => {
+                acc[curr.key] = curr.value;
+                return acc;
+            }, {} as Record<string, string>);
+
+            return res.status(200).json(settingsMap);
         }
 
         return res.status(400).json({ error: 'Invalid resource' });
