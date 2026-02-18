@@ -12,6 +12,7 @@ import { AdminUsers } from './components/admin/AdminUsers';
 import { AdminCards } from './components/admin/AdminCards';
 import { AdminSecurity } from './components/admin/AdminSecurity';
 import { AdminSettings } from './components/admin/AdminSettings';
+import { Licenses } from './components/Licenses';
 import { useEffect, useState } from 'react';
 
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp, useUser } from '@clerk/clerk-react';
@@ -135,6 +136,7 @@ function App() {
         </Route>
 
         {/* Redirect unknown routes to home */}
+        <Route path="/licenses" element={<Licenses />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
