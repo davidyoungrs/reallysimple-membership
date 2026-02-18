@@ -1,6 +1,7 @@
 // import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
+import { WordPressHome } from './components/WordPressHome';
 import { CardBuilder } from './components/CardBuilder';
 import { Dashboard } from './components/Dashboard';
 import { PublicCard } from './components/PublicCard';
@@ -66,6 +67,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/wordpress-home" element={<WordPressHome />} />
 
         {/* Auth Routes */}
         <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
