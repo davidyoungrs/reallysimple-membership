@@ -48,3 +48,23 @@ export const systemSettings = pgTable('system_settings', {
     description: text('description'),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+export const securityEvents = pgTable('security_events', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: text('type').notNull(), // 'blocked_ip', 'failed_login', 'sanitization_auto_fix'
+    severity: text('severity').notNull(), // 'low', 'medium', 'high', 'critical'
+    target: text('target'), // IP address, User ID, or Field Name
+    details: jsonb('details'), // store reason, input/output for sanitization, location
+    createdAt: timestamp('created_at').defaultNow(),
+    resolved: boolean('resolved').default(false),
+});
+
+export const apiLogs = pgTable('api_logs', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    endpoint: text('endpoint').notNull(),
+    method: text('method').notNull(),
+    statusCode: integer('status_code').notNull(),
+    duration: integer('duration').notNull(), // in ms
+    ipAddress: text('ip_address'),
+    createdAt: timestamp('created_at').defaultNow(),
+});

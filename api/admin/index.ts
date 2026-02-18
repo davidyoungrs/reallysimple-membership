@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
-import { users, businessCards, cardViews, cardClicks, systemSettings } from '../../src/db/schema.js';
-import { count, eq, sql, desc, ilike, or, and } from 'drizzle-orm';
+import { users, businessCards, cardViews, cardClicks, systemSettings, securityEvents, apiLogs } from '../../src/db/schema.js';
+import { count, eq, sql, desc, ilike, or, and, gte } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
@@ -286,6 +286,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }, {} as Record<string, string>);
 
             return res.status(200).json(settingsMap);
+        }
+
+        if (resource === 'security_stats') {
+            const now = new Date();
+            const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+            // Parallel queries for performance
+            const [
+                blockedIps,
+                sanitizationLogs,
+                apiPerformanceData
+            ] = await Promise.all([
+                // 1. Blocked IPs (last 24h)
+                db.select({
+                    ip: securityEvents.target,
+                    reason: sql<string>`details->>'reason'`,
+                    timestamp: securityEvents.createdAt,
+                    location: sql<string>`details->>'location'`
+                })
+                    .from(securityEvents)
+                    .where(and(
+                        eq(securityEvents.type, 'blocked_ip'),
+                        gte(securityEvents.createdAt, twentyFourHoursAgo)
+                    ))
+                    .orderBy(desc(securityEvents.createdAt))
+                    .limit(5), // Top 5 recent blocks
+
+                // 2. Sanitization Logs (last 24h)
+                db.select({
+                    id: securityEvents.id,
+                    field: securityEvents.target,
+                    input: sql<string>`details->>'input'`,
+                    output: sql<string>`details->>'output'`,
+                    user: sql<string>`details->>'userId'`,
+                    timestamp: securityEvents.createdAt
+                })
+                    .from(securityEvents)
+                    .where(and(
+                        eq(securityEvents.type, 'sanitization_auto_fix'),
+                        gte(securityEvents.createdAt, twentyFourHoursAgo)
+                    ))
+                    .orderBy(desc(securityEvents.createdAt))
+                    .limit(10),
+
+                // 3. API Performance (Aggregation)
+                // Note: In a real app we'd group by endpoint. 
+                // For now, if table is empty, we might return empty array.
+                db.select({
+                    name: apiLogs.endpoint,
+                    avgTime: sql<number>`CAST(AVG(duration) AS INTEGER)`,
+                    calls: count()
+                })
+                    .from(apiLogs)
+                    .where(gte(apiLogs.createdAt, twentyFourHoursAgo))
+                    .groupBy(apiLogs.endpoint)
+                    .orderBy(desc(count()))
+                    .limit(5)
+            ]);
+
+            // Calculate active sessions (mock estimation based on distinct IPs in last 15 mins)
+            // or just use Clerk count if available? 
+            // Clerk doesn't give "active sessions" count easily in one call without iterating.
+            // We'll estimate based on recent API logs if available, or fallback to 0.
+            const fifteenMinsAgo = new Date(now.getTime() - 15 * 60 * 1000);
+            const activeSessionsResult = await db.select({ count: count(sql`DISTINCT ${apiLogs.ipAddress}`) })
+                .from(apiLogs)
+                .where(gte(apiLogs.createdAt, fifteenMinsAgo));
+
+            const activeSessions = activeSessionsResult[0]?.count || 0;
+
+            // Security Status Logic
+            const highSeverityCount = await db.select({ count: count() })
+                .from(securityEvents)
+                .where(and(
+                    eq(securityEvents.severity, 'critical'),
+                    eq(securityEvents.resolved, false)
+                ));
+
+            const systemStatus = (highSeverityCount[0]?.count || 0) > 0 ? 'critical' : 'secure';
+
+            return res.status(200).json({
+                status: systemStatus,
+                lastAudit: new Date().toISOString(),
+                activeSessions: activeSessions,
+                failedLoginAttempts: 0, // Need integration with Clerk webhooks for this
+                blockedIps: blockedIps,
+                apiPerformance: apiPerformanceData,
+                sanitizationLogs: sanitizationLogs
+            });
         }
 
         return res.status(400).json({ error: 'Invalid resource' });

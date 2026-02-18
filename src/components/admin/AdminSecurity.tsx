@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { Shield, Activity, Lock, CheckCircle, RefreshCw, AlertOctagon, Timer, FileWarning } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -6,34 +7,35 @@ export function AdminSecurity() {
     const [stats, setStats] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'firewall' | 'performance' | 'sanitization'>('overview');
 
-    useEffect(() => {
-        // Mock data for now
-        const timer = setTimeout(() => {
-            setStats({
-                status: 'secure',
-                lastAudit: new Date().toISOString(),
-                activeSessions: 12,
-                failedLoginAttempts: 2,
-                blockedIps: [
-                    { ip: '192.168.1.105', reason: 'Rate Limit Exceeded', timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), location: 'Unknown' },
-                    { ip: '45.22.19.11', reason: 'SQL Injection Attempt', timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), location: 'Russia' },
-                    { ip: '103.21.244.0', reason: 'Repeated Failed Logins', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), location: 'China' },
-                ],
-                apiPerformance: [
-                    { name: '/api/cards', avgTime: 120, calls: 1540 },
-                    { name: '/api/track', avgTime: 45, calls: 3200 },
-                    { name: '/api/auth', avgTime: 210, calls: 850 },
-                    { name: '/api/admin', avgTime: 350, calls: 120 },
-                    { name: '/api/upload', avgTime: 850, calls: 65 },
-                ],
-                sanitizationLogs: [
-                    { id: 1, field: 'bio', input: '<script>alert("xss")</script>Hello', output: 'Hello', timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), user: 'user_2x...' },
-                    { id: 2, field: 'customLink', input: 'javascript:void(0)', output: '#', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), user: 'user_9z...' },
-                    { id: 3, field: 'jobTitle', input: 'Senior <img src=x onerror=alert(1)> Dev', output: 'Senior Dev', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), user: 'user_1a...' },
-                ]
+    const { getToken } = useAuth();
+    const [loading, setLoading] = useState(true);
+
+    const fetchSecurityStats = async () => {
+        try {
+            setLoading(true);
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=security_stats', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
-        }, 800);
-        return () => clearTimeout(timer);
+
+            if (!res.ok) throw new Error('Failed to fetch security stats');
+
+            const data = await res.json();
+            setStats(data);
+        } catch (error) {
+            console.error('Error fetching security stats:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSecurityStats();
+        // Poll every 30 seconds
+        const interval = setInterval(fetchSecurityStats, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const tabs = [
@@ -43,6 +45,14 @@ export function AdminSecurity() {
         { id: 'sanitization', label: 'Sanitization Log', icon: FileWarning },
     ];
 
+    if (loading && !stats) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
@@ -51,7 +61,7 @@ export function AdminSecurity() {
                     <p className="text-gray-500 mt-2">Monitor system security, performance, and automated protections.</p>
                 </div>
                 <button
-                    onClick={() => window.location.reload()}
+                    onClick={fetchSecurityStats}
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                 >
                     <RefreshCw className="w-4 h-4" />
