@@ -391,8 +391,11 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                 <StripDesigner
                     cardData={data}
                     initialWalletData={wallet}
-                    onSave={(dataUrl) => {
-                        updateWallet({ stripImageUrl: dataUrl });
+                    onSave={(dataUrl, config) => {
+                        updateWallet({
+                            stripImageUrl: dataUrl,
+                            stripConfig: config
+                        });
                         setShowStripDesigner(false);
                     }}
                     onClose={() => setShowStripDesigner(false)}

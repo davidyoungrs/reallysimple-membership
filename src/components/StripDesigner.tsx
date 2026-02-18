@@ -1,31 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Image as ImageIcon, Type, Check, Palette } from 'lucide-react';
-import { type CardData } from '../types';
+import { type CardData, type StripConfig } from '../types';
 
 interface StripDesignerProps {
     cardData: CardData;
     initialWalletData: any;
-    onSave: (dataUrl: string) => void;
+    onSave: (dataUrl: string, config: StripConfig) => void;
     onClose: () => void;
 }
 
 export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: StripDesignerProps) {
     const { t } = useTranslation();
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const savedConfig: StripConfig | undefined = initialWalletData.stripConfig;
 
     // State
-    const [bgType, setBgType] = useState<'match' | 'color' | 'gradient' | 'image'>('match');
-    const [bgColor, setBgColor] = useState(initialWalletData.backgroundColor || '#ffffff');
-    const [bgGradient, setBgGradient] = useState(['#4f46e5', '#9333ea']); // Default gradient
-    const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
-    const [bgFilters, setBgFilters] = useState({ grayscale: 0, sepia: 0, opacity: 100 });
+    const [bgType, setBgType] = useState<'match' | 'color' | 'gradient' | 'image'>(savedConfig?.bgType || 'match');
+    const [bgColor, setBgColor] = useState(savedConfig?.bgColor || initialWalletData.backgroundColor || '#ffffff');
+    const [bgGradient, setBgGradient] = useState(savedConfig?.bgGradient || ['#4f46e5', '#9333ea']);
+    const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null); // Re-loading image from ref/url if needed is tricky without URL, but for now we rely on user re-upload if session lost context of blob, OR we could store dataURL in config but that's heavy. For now, assume image needs re-upload if not solid/gradient, OR we don't persist 'image' blob in type yet. Let's start with basic params.
+    const [bgFilters, setBgFilters] = useState(savedConfig?.bgFilters || { grayscale: 0, sepia: 0, opacity: 100 });
 
-    const [textConfig, setTextConfig] = useState({
+    const [textConfig, setTextConfig] = useState(savedConfig?.textConfig || {
         showName: true,
         nameColor: initialWalletData.foregroundColor || '#000000',
-        nameX: 50, // Percentage
-        nameY: 40, // Percentage
+        nameX: 50,
+        nameY: 40,
 
         showTitle: true,
         titleColor: initialWalletData.labelColor || '#666666',
@@ -38,12 +39,14 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
         taglineX: 50,
         taglineY: 75,
 
-        align: 'left' as 'left' | 'center' | 'right',
+        align: 'left' as const,
     });
 
-    const [photoConfig, setPhotoConfig] = useState({
+    const [photoConfig, setPhotoConfig] = useState(savedConfig?.photoConfig || {
         show: true,
         position: 'left' as 'left' | 'right',
+        x: 10,
+        y: 50,
         scale: 100,
         border: 'none' as 'none' | 'thin' | 'thick',
     });
@@ -101,22 +104,27 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
         // 2. Photo
         if (photoConfig.show && profileImage) {
             const size = 280 * (photoConfig.scale / 100);
-            const y = (height - size) / 2;
-            const x = photoConfig.position === 'left' ? 60 : width - size - 60;
+
+            // let's use percent of width/height
+            const posX = width * (photoConfig.x / 100) - size / 2;
+            const posY = height * (photoConfig.y / 100) - size / 2;
+
+            // Fallback for transition from old 'position' only
+            // If x/y not set (should be set by default state above), but let's be safe
 
             ctx.save();
             // Circular clip
             ctx.beginPath();
-            ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+            ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
-            ctx.drawImage(profileImage, x, y, size, size);
+            ctx.drawImage(profileImage, posX, posY, size, size);
             ctx.restore();
 
             // Border
             if (photoConfig.border !== 'none') {
                 ctx.beginPath();
-                ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+                ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
                 ctx.lineWidth = photoConfig.border === 'thin' ? 4 : 12;
                 ctx.strokeStyle = '#ffffff';
                 ctx.stroke();
@@ -391,17 +399,28 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
                                 <div className="space-y-4">
                                     <div className="flex bg-gray-100 p-1 rounded-lg">
                                         <button
-                                            onClick={() => setPhotoConfig({ ...photoConfig, position: 'left' })}
+                                            onClick={() => setPhotoConfig({ ...photoConfig, position: 'left', x: 10 })}
                                             className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${photoConfig.position === 'left' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
                                         >
                                             Left
                                         </button>
                                         <button
-                                            onClick={() => setPhotoConfig({ ...photoConfig, position: 'right' })}
+                                            onClick={() => setPhotoConfig({ ...photoConfig, position: 'right', x: 90 })}
                                             className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${photoConfig.position === 'right' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
                                         >
                                             Right
                                         </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos X</span>
+                                            <input type="range" min="0" max="100" value={photoConfig.x} onChange={(e) => setPhotoConfig({ ...photoConfig, x: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos Y</span>
+                                            <input type="range" min="0" max="100" value={photoConfig.y} onChange={(e) => setPhotoConfig({ ...photoConfig, y: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-1">
@@ -447,7 +466,15 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
                     <button
                         onClick={() => {
                             if (canvasRef.current) {
-                                onSave(canvasRef.current.toDataURL('image/png'));
+                                const config: StripConfig = {
+                                    bgType,
+                                    bgColor,
+                                    bgGradient,
+                                    bgFilters,
+                                    textConfig,
+                                    photoConfig
+                                };
+                                onSave(canvasRef.current.toDataURL('image/png'), config);
                             }
                         }}
                         className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2"

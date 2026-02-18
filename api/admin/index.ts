@@ -168,9 +168,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (action === 'toggle_status') {
                 // Toggle isActive in publicMetadata
-                // Note: value should be boolean provided by frontend
-                await clerkClient.users.updateUserMetadata(userId, {
+                const user = await clerkClient.users.getUser(userId);
+                const currentMetadata = user.publicMetadata || {};
+
+                await clerkClient.users.updateUser(userId, {
                     publicMetadata: {
+                        ...currentMetadata,
                         isActive: value
                     }
                 });
@@ -188,68 +191,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             if (action === 'reset_password') {
-                // Trigger password reset flow (usually sends an email if configured, or sets a temp password)
-                // Note: The specific Clerk backend method for "triggering a reset email" might vary.
-                // Assuming raw password reset isn't desired (setting a known password), 
-                // but usually admins want to send a reset link. 
-                // Clerk's standard backend SDK might use `createSignInToken` or similar for "magic links".
-                // HOWEVER, based on the plan, we will try `resetPassword` if it allows skipping the password to trigger email, 
-                // OR more likely, we might need to assume the user wants to DELETE the password so the user has to reset it?
-                // Actually, `clerkClient.users.resetPassword` is not standard for *emailing*.
-                // Correct path for admin-triggered reset usually involves deleting the password or creating a ticket.
-                // But let's stick to the prompt's instruction: "Server-side call to clerkClient.users.resetPassword"
-                // If this method expects a password, we might need to generate a random one and send it? 
-                // No, the prompt implies triggering an email.
-                // Let's trying `await clerkClient.users.resetPassword(userId)` is valid if the SDK supports it. 
-                // If not, we'll log it.
-                // Actually, a safer admin action is often `destroySession` + maybe let them recover?
-                // Let's implement what was asked, but wrapped in try/catch to return specific error if method doesn't exist.
+                // Generate a temporary password
+                const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
 
-                // Actually, checking Clerk docs (from memory), `resetPassword` is likely strictly for *setting* a password.
-                // To *trigger* a reset, we usually delete the password.
-                // But let's try the requested method. If it fails, we will see.
-                // Actually, re-reading the user prompt: "Server-side call to clerkClient.users.resetPassword". 
-                // I will use that.
+                // Update user with new password
+                await clerkClient.users.updateUser(userId, {
+                    password: tempPassword,
+                    skipPasswordChecks: true
+                });
 
-                // Oops, the method in Node SDK is typically `updateUser(userId, { password: ... })`.
-                // There is no `resetPassword` on `users` usually. 
-                // But there IS `clerkClient.allowlistIdentifiers...` etc.
-                // Let's assume the user knows what they are talking about or I'll implement a reasonable fallback (like removing password).
-
-                // WAIT! `clerkClient.users.resetPassword` DOES NOT EXIST in typical Clerk Backend SDK.
-                // `clerkClient.users.update` exists.
-                // The prompt might be slightly hallucinated or referring to a specific wrapper.
-                // I'll assume they meant "Remove Password" so the user can reset it? 
-                // OR "Create an invitation"?
-
-                // Let's look at `node_modules`... no I can't.
-
-                // Let's implement a fallback: Create a new password (random) and return it to the admin? 
-                // No, that's bad UX.
-                // Let's try to just `console.log` and return success for now if we are unsure? 
-                // No, that's dishonest.
-
-                // Let's look at the codebase imports again.
-                // `import { createClerkClient } from '@clerk/backend';`
-
-                // I will assume for now that I should call `clerkClient.users.updateUser(userId, { skipPasswordChecks: true, password: ... })` if I were setting it.
-                // But to trigger a RESET? 
-                // Maybe `clerkClient.sessions.revokeAllSessions(userId)` is a good start.
-
-                // Let's try to stick to the plan: `clerkClient.users.resetPassword`. 
-                // I will implement it. If it throws "is not a function", I'll fix it.
-                await (clerkClient.users as any).resetPassword(userId);
-                return res.status(200).json({ success: true });
+                return res.status(200).json({ success: true, temporaryPassword: tempPassword });
             }
 
             if (action === 'toggle_feature') {
                 const { feature, enabled } = value;
                 const user = await clerkClient.users.getUser(userId);
-                const currentFeatures = (user.publicMetadata as any)?.features || {};
+                const currentMetadata = user.publicMetadata || {};
+                const currentFeatures = (currentMetadata as any).features || {};
 
-                await clerkClient.users.updateUserMetadata(userId, {
+                await clerkClient.users.updateUser(userId, {
                     publicMetadata: {
-                        ...user.publicMetadata,
+                        ...currentMetadata,
                         features: {
                             ...currentFeatures,
                             [feature]: enabled

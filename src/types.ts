@@ -51,6 +51,38 @@ export interface WalletData {
     showRole?: boolean;
     showCompany?: boolean;
     showNameFields?: boolean;
+    stripConfig?: StripConfig;
+}
+
+export interface StripConfig {
+    bgType: 'match' | 'color' | 'gradient' | 'image';
+    bgColor: string;
+    bgGradient: string[];
+    bgFilters: { grayscale: number; sepia: number; opacity: number };
+    textConfig: {
+        showName: boolean;
+        nameColor: string;
+        nameX: number;
+        nameY: number;
+        showTitle: boolean;
+        titleColor: string;
+        titleX: number;
+        titleY: number;
+        showTagline: boolean;
+        tagline: string;
+        taglineColor: string;
+        taglineX: number;
+        taglineY: number;
+        align: 'left' | 'center' | 'right';
+    };
+    photoConfig: {
+        show: boolean;
+        position: 'left' | 'right';
+        x: number;
+        y: number;
+        scale: number;
+        border: 'none' | 'thin' | 'thick';
+    };
 }
 
 export interface Section {

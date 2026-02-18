@@ -61,6 +61,7 @@ export function AdminUsers() {
             });
 
             if (!res.ok) throw new Error('Action failed');
+            const data = await res.json();
 
             // Refresh users
             const updatedUsers = users.map(u => {
@@ -74,7 +75,12 @@ export function AdminUsers() {
                 return u;
             });
             setUsers(updatedUsers);
-            alert('Action successful');
+
+            if (action === 'reset_password' && data.temporaryPassword) {
+                alert(`SUCCESS: Password reset for user.\n\nTemporary Password: ${data.temporaryPassword}\n\nPlease copy this and send it to the user immediately. They should change it after logging in.`);
+            } else {
+                alert('Action successful');
+            }
         } catch (err) {
             console.error(err);
             alert('Failed to perform action');
