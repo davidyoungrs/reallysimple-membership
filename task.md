@@ -171,5 +171,7 @@
     - [x] Implement System-Wide Configuration Toggles <!-- id: 167 -->
         - [x] Database: Create `system_settings` table schema (Drizzle) <!-- id: 291 -->
         - [x] Backend: Update API to support fetching/updating system settings <!-- id: 292 -->
-        - [x] Frontend: Implement `AdminSettings.tsx` form <!-- id: 293 -->
+        - [x] Backend: Update `api/admin` for User Actions (Status, Details, Ban) <!-- id: 350 -->
+        - [x] Frontend: Implement Actions Dropdown in `AdminUsers.tsx` <!-- id: 351 -->
+        - [x] Frontend: Implement User Detail View (Modal) <!-- id: 352 -->
         - [x] Global: Implement Maintenance Mode middleware logic <!-- id: 294 -->

@@ -145,6 +145,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
+        if (resource === 'user_detail') {
+            const userId = req.query.id as string;
+            if (!userId) return res.status(400).json({ error: 'Missing user ID' });
+
+            const [clerkUser, userCards] = await Promise.all([
+                clerkClient.users.getUser(userId),
+                db.select().from(businessCards).where(eq(businessCards.userId, userId))
+            ]);
+
+            return res.status(200).json({
+                user: clerkUser,
+                cards: userCards
+            });
+        }
+
+        if (resource === 'user_actions') {
+            if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+            const { action, userId, value } = req.body;
+            if (!userId || !action) return res.status(400).json({ error: 'Missing parameters' });
+
+            if (action === 'toggle_status') {
+                // Toggle isActive in publicMetadata
+                // Note: value should be boolean provided by frontend
+                await clerkClient.users.updateUserMetadata(userId, {
+                    publicMetadata: {
+                        isActive: value
+                    }
+                });
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'ban') {
+                await clerkClient.users.banUser(userId);
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'unban') {
+                await clerkClient.users.unbanUser(userId);
+                return res.status(200).json({ success: true });
+            }
+
+            return res.status(400).json({ error: 'Invalid action' });
+        }
+
         if (resource === 'settings') {
             if (req.method === 'POST') {
                 const { key, value } = req.body;

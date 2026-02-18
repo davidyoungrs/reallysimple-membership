@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical } from 'lucide-react';
+import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon } from 'lucide-react';
 
 export function AdminUsers() {
     const { getToken } = useAuth();
@@ -36,8 +36,71 @@ export function AdminUsers() {
         return () => clearTimeout(timeoutId);
     }, [getToken, search]);
 
+    const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [userDetail, setUserDetail] = useState<{ user: any, cards: any[] } | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setActionMenuOpen(null);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const handleAction = async (action: string, userId: string, value?: any) => {
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=user_actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action, userId, value })
+            });
+
+            if (!res.ok) throw new Error('Action failed');
+
+            // Refresh users
+            const updatedUsers = users.map(u => {
+                if (u.id === userId) {
+                    if (action === 'toggle_status') {
+                        return { ...u, publicMetadata: { ...u.publicMetadata, isActive: value } };
+                    }
+                    if (action === 'ban') return { ...u, banned: true };
+                    if (action === 'unban') return { ...u, banned: false };
+                }
+                return u;
+            });
+            setUsers(updatedUsers);
+            alert('Action successful');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to perform action');
+        }
+    };
+
+    const openDetailModal = async (userId: string) => {
+        setShowDetailModal(true);
+        setDetailLoading(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`/api/admin?resource=user_detail&id=${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            setUserDetail(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
     return (
         <div>
+            {/* Header ... */}
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
@@ -61,15 +124,15 @@ export function AdminUsers() {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-visible">
+                <div className="overflow-x-auto overflow-y-visible min-h-[400px]">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
-                                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Active</th>
                                 <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -84,22 +147,35 @@ export function AdminUsers() {
                                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                                                {user.firstName ? user.firstName[0] : <User className="w-5 h-5" />}
+                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium overflow-hidden">
+                                                {user.imageUrl ? (
+                                                    <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    user.firstName ? user.firstName[0] : <User className="w-5 h-5" />
+                                                )}
                                             </div>
                                             <div>
                                                 <div className="font-medium text-gray-900">
                                                     {user.firstName} {user.lastName}
+                                                    {user.banned && <span className="ml-2 text-xs text-red-600 font-bold">(BANNED)</span>}
                                                 </div>
                                                 <div className="text-sm text-gray-500 flex items-center gap-1">
                                                     <Mail className="w-3 h-3" />
                                                     {user.emailAddresses?.[0]?.emailAddress}
                                                 </div>
-                                                <div className="text-xs text-gray-400 mt-1">
-                                                    ID: {user.id}
-                                                </div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {user.publicMetadata?.isActive === false ? (
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                                Inactive
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                Active
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="py-4 px-6">
                                         {user.publicMetadata?.role === 'admin' ? (
@@ -118,25 +194,117 @@ export function AdminUsers() {
                                             {new Date(user.createdAt).toLocaleDateString()}
                                         </div>
                                     </td>
-                                    <td className="py-4 px-6 text-sm text-gray-500">
-                                        {user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleDateString() : 'Never'}
-                                    </td>
-                                    <td className="py-4 px-6 text-right">
-                                        <button className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full">
+                                    <td className="py-4 px-6 text-right relative">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActionMenuOpen(actionMenuOpen === user.id ? null : user.id);
+                                            }}
+                                            className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full"
+                                        >
                                             <MoreVertical className="w-5 h-5" />
                                         </button>
+
+                                        {actionMenuOpen === user.id && (
+                                            <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-50 text-left overflow-hidden">
+                                                <button
+                                                    onClick={() => openDetailModal(user.id)}
+                                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                >
+                                                    <User className="w-4 h-4" /> View Details
+                                                </button>
+                                                <button
+                                                    onClick={() => handleAction('toggle_status', user.id, !(user.publicMetadata?.isActive !== false))}
+                                                    className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                >
+                                                    {user.publicMetadata?.isActive === false ? <CheckCircle className="w-4 h-4 text-green-600" /> : <AlertOctagon className="w-4 h-4 text-orange-600" />}
+                                                    {user.publicMetadata?.isActive === false ? 'Activate User' : 'Deactivate User'}
+                                                </button>
+                                                {user.banned ? (
+                                                    <button
+                                                        onClick={() => handleAction('unban', user.id)}
+                                                        className="w-full px-4 py-2 text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
+                                                    >
+                                                        <Shield className="w-4 h-4" /> Unban User
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleAction('ban', user.id)}
+                                                        className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                                    >
+                                                        <Shield className="w-4 h-4" /> Ban User
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                {!loading && users.length === 0 && (
-                    <div className="p-12 text-center text-gray-500">
-                        No users found matching "{search}"
-                    </div>
-                )}
             </div>
+
+            {/* User Detail Modal */}
+            {showDetailModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-gray-900">User Details</h2>
+                            <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">
+                                &times;
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            {detailLoading ? (
+                                <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
+                            ) : userDetail ? (
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden">
+                                            <img src={userDetail?.user.imageUrl} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold">{userDetail?.user.firstName} {userDetail?.user.lastName}</h3>
+                                            <p className="text-gray-500">{userDetail?.user.emailAddresses?.[0]?.emailAddress}</p>
+                                            <p className="text-xs text-gray-400">ID: {userDetail?.user.id}</p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-semibold mb-2">Business Cards</h4>
+                                        <div className="space-y-2">
+                                            {userDetail?.cards.map((card: any) => (
+                                                <div key={card.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                                    <div>
+                                                        <div className="font-medium">{card.data.fullName || 'Untitled Card'}</div>
+                                                        <div className="text-xs text-gray-500">/{card.slug}</div>
+                                                    </div>
+                                                    {card.isActive ? (
+                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active</span>
+                                                    ) : (
+                                                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Inactive</span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {userDetail?.cards.length === 0 && <p className="text-gray-500 italic">No cards found.</p>}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-semibold mb-2">Raw Metadata</h4>
+                                        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto">
+                                            {JSON.stringify(userDetail?.user.publicMetadata, null, 2)}
+                                        </pre>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center text-red-500">Failed to load user details.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
