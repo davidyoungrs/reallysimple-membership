@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { type CardData, type WalletData } from '../types';
 import { useTranslation } from 'react-i18next';
 import { Palette, Type, Info, Upload, X } from 'lucide-react';
+import { StripDesigner } from './StripDesigner';
 
 interface WalletBuilderProps {
     data: CardData;
@@ -10,6 +11,7 @@ interface WalletBuilderProps {
 
 export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     const { t } = useTranslation();
+    const [showStripDesigner, setShowStripDesigner] = useState(false);
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
         foregroundColor: '#000000',
@@ -345,13 +347,20 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                 />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button
+                                        onClick={() => setShowStripDesigner(true)}
+                                        className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                    >
+                                        <Palette className="w-4 h-4 ml-1" />
+                                        {t('Open Designer')}
+                                    </button>
+                                    <button
                                         onClick={() => {
                                             const url = prompt(t('Enter Strip Image URL') || 'Enter Strip Image URL', wallet.stripImageUrl || '/wallet-strip.png');
                                             if (url !== null) updateWallet({ stripImageUrl: url });
                                         }}
-                                        className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors"
+                                        className="bg-white/90 text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors"
                                     >
-                                        {t('Change')}
+                                        {t('Link')}
                                     </button>
                                 </div>
                             </div>
@@ -367,7 +376,19 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     </div>
                 </div>
             </section>
-        </div >
+
+            {showStripDesigner && (
+                <StripDesigner
+                    cardData={data}
+                    initialWalletData={wallet}
+                    onSave={(dataUrl) => {
+                        updateWallet({ stripImageUrl: dataUrl });
+                        setShowStripDesigner(false);
+                    }}
+                    onClose={() => setShowStripDesigner(false)}
+                />
+            )}
+        </div>
     );
 }
 
