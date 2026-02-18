@@ -187,7 +187,9 @@ const resources = {
             "device.tablet": "Tablet",
             "source.qr": "QR Code",
             "source.direct": "Direct",
-            "source.other": "Other"
+            "source.other": "Other",
+            "Unknown": "Unknown",
+            "External Link": "External Link"
         }
     },
     es: {
@@ -337,7 +339,9 @@ const resources = {
             "device.tablet": "Tableta",
             "source.qr": "Código QR",
             "source.direct": "Directo",
-            "source.other": "Otro"
+            "source.other": "Otro",
+            "Unknown": "Desconocido",
+            "External Link": "Enlace Externo"
         }
     },
     fr: {
@@ -475,6 +479,21 @@ const resources = {
             "Export": "Exporter",
             "Export as CSV": "Exporter en CSV",
             "Export as JSON": "Exporter en JSON",
+            "Geographic Distribution": "Distribution géographique",
+            "Recent Locations": "Lieux récents",
+            "Unknown Location": "Lieu inconnu",
+            "No location data available for this range": "Aucune donnée de localisation disponible pour cette période",
+            "Only views from the last 100 card accesses are shown": "Seules les vues des 100 derniers accès à la carte sont affichées",
+            "Device Distribution": "Répartition par appareil",
+            "Traffic Sources": "Sources de trafic",
+            "device.mobile": "Mobile",
+            "device.desktop": "Bureau",
+            "device.tablet": "Tablette",
+            "source.qr": "QR Code",
+            "source.direct": "Direct",
+            "source.other": "Autre",
+            "Unknown": "Inconnu",
+            "External Link": "Lien Externe",
 
         }
     },
@@ -625,7 +644,9 @@ const resources = {
             "device.tablet": "Tablet",
             "source.qr": "QR-Code",
             "source.direct": "Direkt",
-            "source.other": "Andere"
+            "source.other": "Andere",
+            "Unknown": "Unbekannt",
+            "External Link": "Externer Link"
         }
     },
     ar: {
@@ -775,7 +796,9 @@ const resources = {
             "device.tablet": "تابلت",
             "source.qr": "رمز QR",
             "source.direct": "مباشر",
-            "source.other": "أخرى"
+            "source.other": "أخرى",
+            "Unknown": "مجهول",
+            "External Link": "رابط خارجي"
         }
     },
     ru: {
@@ -925,7 +948,9 @@ const resources = {
             "device.tablet": "Планшет",
             "source.qr": "QR-код",
             "source.direct": "Прямой",
-            "source.other": "Другое"
+            "source.other": "Другое",
+            "Unknown": "Неизвестно",
+            "External Link": "Внешняя ссылка"
         }
     }
 };

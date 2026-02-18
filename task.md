@@ -144,7 +144,7 @@
     - [x] /bug: Fix Email Signature Modal flickering/positioning (Portal implementation)
 - [x] **Analytics & Maps Fixes**
     - [x] Fix Map visibility by updating CSP in `vercel.json`
-    - [x] Add social icons to Analytics Dashboard (Interactions, Sources, Devices)
+    - [x] Fix Localization issues in Analytics Dashboard <!-- id: 233 -->
 - [ ] **Phase 13: Admin Super Dashboard** <!-- id: 160 -->
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->
     - [x] Build Global Analytics Dashboard (Aggregate Views/Clicks) <!-- id: 162 -->

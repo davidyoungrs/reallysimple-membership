@@ -254,7 +254,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
     }, [slug, cardId, rangeOption, customStart, customEnd]);
 
     const formatPlatformName = (platform: string) => {
-        if (!platform) return 'Unknown';
+        if (!platform) return t('Unknown');
 
         // Handle URLs
         if (platform.startsWith('http')) {
@@ -262,7 +262,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                 const hostname = new URL(platform).hostname.replace(/^www\./, '');
                 return hostname;
             } catch {
-                return 'External Link';
+                return t('External Link');
             }
         }
 
