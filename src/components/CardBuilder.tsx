@@ -123,7 +123,7 @@ export function CardBuilder() {
             const token = await window.Clerk?.session?.getToken();
             if (!token) return [];
 
-            const response = await fetch('/api/get-cards', {
+            const response = await fetch('/api/cards', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -179,12 +179,11 @@ export function CardBuilder() {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch('/api/delete-card', {
-                method: 'POST',
+            const response = await fetch(`/api/cards?id=${cardId}`, {
+                method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`,
                 },
-                body: JSON.stringify({ cardId, userId }),
             });
 
             if (!response.ok) {
@@ -274,7 +273,7 @@ export function CardBuilder() {
                     params.append('cardId', currentCardId.toString());
                 }
 
-                const slugCheckResponse = await fetch(`/api/check-slug?${params}`);
+                const slugCheckResponse = await fetch(`/api/cards?action=check-slug&${params}`);
                 const slugCheckData = await slugCheckResponse.json();
 
                 if (!slugCheckData.available) {
@@ -290,12 +289,13 @@ export function CardBuilder() {
                         setData(updatedData);
 
                         // Retry save with the new slug
-                        const retryResponse = await fetch('/api/save-card', {
+                        const retryResponse = await fetch('/api/cards', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`,
                             },
-                            body: JSON.stringify({ cardData: updatedData, cardId: currentCardId, userId }),
+                            body: JSON.stringify({ cardData: updatedData, cardId: currentCardId }),
                         });
 
                         if (!retryResponse.ok) {
@@ -322,12 +322,13 @@ export function CardBuilder() {
                 }
             }
 
-            const response = await fetch('/api/save-card', {
+            const response = await fetch('/api/cards', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`,
                 },
-                body: JSON.stringify({ cardData: data, cardId: currentCardId, userId }),
+                body: JSON.stringify({ cardData: data, cardId: currentCardId }),
             });
 
             if (!response.ok) {

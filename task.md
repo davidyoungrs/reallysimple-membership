@@ -145,6 +145,15 @@
 - [x] **Analytics & Maps Fixes**
     - [x] Fix Map visibility by updating CSP in `vercel.json`
     - [x] Fix Localization issues in Analytics Dashboard <!-- id: 233 -->
+    - [/] API Consolidation (Serverless Limit Fix) <!-- id: 380 -->
+    - [ ] Create `api/cards.ts` (Consolidate CRUD, public fetch, check-slug, track) <!-- id: 381 -->
+    - [ ] Create `api/analytics.ts` (Consolidate user/card analytics) <!-- id: 382 -->
+    - [ ] Create `api/passes.ts` (Consolidate Apple/Google wallet generation) <!-- id: 383 -->
+    - [ ] Create `api/public.ts` (Consolidate system-status) <!-- id: 384 -->
+    - [ ] Frontend: Update all API fetch calls <!-- id: 385 -->
+    - [ ] Delete old API files <!-- id: 386 -->
+    - [ ] Verify all flows <!-- id: 387 -->
+
 - [ ] **Phase 13: Admin Super Dashboard** <!-- id: 160 -->
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->
     - [x] Build Global Analytics Dashboard (Aggregate Views/Clicks) <!-- id: 162 -->

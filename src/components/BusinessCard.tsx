@@ -81,7 +81,7 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
 
         setLoading(true);
         try {
-            const response = await fetch(`/api/generate-pass?slug=${data.slug}`);
+            const response = await fetch(`/api/passes?type=apple&slug=${data.slug}`);
 
             if (!response.ok) {
                 let errorMessage = `Server returned ${response.status} ${response.statusText}`;

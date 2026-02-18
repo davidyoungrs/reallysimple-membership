@@ -59,12 +59,11 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
         }
 
         try {
-            const response = await fetch('/api/generate-google-pass', {
-                method: 'POST',
+            const response = await fetch(`/api/passes?type=google&slug=${data.slug}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ slug: data.slug }),
             });
 
             if (!response.ok) {
@@ -138,7 +137,7 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
     const handleAddToWallet = async () => {
         setLoadingWallet(true);
         try {
-            const response = await fetch(`/api/generate-pass?slug=${cardSlug}`);
+            const response = await fetch(`/api/passes?type=apple&slug=${cardSlug}`);
 
             if (!response.ok) {
                 let errorMessage = `Server returned ${response.status} ${response.statusText}`;

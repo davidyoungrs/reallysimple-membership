@@ -26,7 +26,7 @@ export function PublicCard() {
                 const searchParams = new URLSearchParams(window.location.search);
                 const source = searchParams.get('src') || 'direct';
 
-                const response = await fetch(`/api/get-card-by-slug/${slug}`);
+                const response = await fetch(`/api/cards?slug=${slug}`);
 
                 if (!response.ok) {
                     if (response.status === 404) {
@@ -45,10 +45,10 @@ export function PublicCard() {
                 // Track view (fire-and-forget) - prevent double counting in StrictMode
                 if (lastTrackedSlug.current !== slug) {
                     lastTrackedSlug.current = slug;
-                    fetch('/api/track', {
+                    fetch('/api/cards', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ slug, source, action: 'view' }),
+                        body: JSON.stringify({ slug, source, action: 'track', type: 'view' }),
                     }).catch(err => console.error('Failed to track view:', err));
                 }
 
@@ -71,10 +71,10 @@ export function PublicCard() {
         console.log('Tracking click:', { slug, type, targetInfo });
 
         // Use track endpoint
-        fetch('/api/track', {
+        fetch('/api/cards', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug, type, targetInfo, action: 'click' }),
+            body: JSON.stringify({ slug, type: 'click', typeDetail: type, targetInfo, action: 'track' }),
         }).catch(err => console.error('Failed to track click:', err));
     };
 

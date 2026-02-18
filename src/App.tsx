@@ -22,7 +22,7 @@ function App() {
   const { user } = useUser();
 
   useEffect(() => {
-    fetch('/api/system-status')
+    fetch('/api/public?resource=status')
       .then(res => res.json())
       .then(data => {
         setSettings(data);

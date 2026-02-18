@@ -226,7 +226,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                 params.append('startDate', start.toISOString());
                 params.append('endDate', end.toISOString());
 
-                const res = await fetch(`/api/get-analytics?${params.toString()}`);
+                const res = await fetch(`/api/analytics?${params.toString()}`);
                 if (!res.ok) throw new Error('Failed to fetch analytics');
                 const jsonData = await res.json();
 

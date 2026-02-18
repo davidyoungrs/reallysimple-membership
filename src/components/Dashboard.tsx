@@ -56,7 +56,7 @@ export function Dashboard() {
             const token = await getToken();
             if (!token) return;
 
-            const response = await fetch('/api/get-cards', {
+            const response = await fetch('/api/cards', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -79,7 +79,7 @@ export function Dashboard() {
             const token = await getToken();
             if (!token) return;
 
-            const response = await fetch('/api/get-user-analytics', {
+            const response = await fetch('/api/analytics?scope=user', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -106,16 +106,11 @@ export function Dashboard() {
         setIsDeleting(true);
         try {
             const token = await getToken();
-            const response = await fetch('/api/delete-card', {
+            const response = await fetch(`/api/cards?id=${cardId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    cardId,
-                    userId: user.id,
-                }),
             });
 
             if (response.ok) {

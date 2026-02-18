@@ -67,7 +67,7 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
                     params.append('cardId', currentCardId.toString());
                 }
 
-                const response = await fetch(`/api/check-slug?${params}`);
+                const response = await fetch(`/api/cards?action=check-slug&${params}`);
                 const data = await response.json();
 
                 if (data.available) {
