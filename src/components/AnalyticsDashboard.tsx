@@ -43,6 +43,7 @@ import {
     Tv
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@clerk/clerk-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import i18n from '../i18n';
@@ -198,6 +199,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
     const [customEnd, setCustomEnd] = useState('');
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const { getToken } = useAuth();
 
     useEffect(() => {
         if (!slug && !cardId) return;
@@ -226,7 +228,12 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                 params.append('startDate', start.toISOString());
                 params.append('endDate', end.toISOString());
 
-                const res = await fetch(`/api/analytics?${params.toString()}`);
+                const token = await getToken();
+                const res = await fetch(`/api/analytics?${params.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 if (!res.ok) throw new Error('Failed to fetch analytics');
                 const jsonData = await res.json();
 
