@@ -24,11 +24,21 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     const [textConfig, setTextConfig] = useState({
         showName: true,
         nameColor: initialWalletData.foregroundColor || '#000000',
+        nameX: 50, // Percentage
+        nameY: 40, // Percentage
+
         showTitle: true,
         titleColor: initialWalletData.labelColor || '#666666',
+        titleX: 50,
+        titleY: 60,
+
         showTagline: false,
         tagline: '',
         taglineColor: initialWalletData.labelColor || '#666666',
+        taglineX: 50,
+        taglineY: 75,
+
+        align: 'left' as 'left' | 'center' | 'right',
     });
 
     const [photoConfig, setPhotoConfig] = useState({
@@ -114,33 +124,24 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
         }
 
         // 3. Text
-        ctx.textAlign = photoConfig.position === 'left' ? 'left' : 'right';
-        const textX = photoConfig.position === 'left' ? (photoConfig.show ? 400 : 60) : (photoConfig.show ? width - 400 : width - 60);
-        const centerY = height / 2;
-
-        let cursorY = centerY;
-
-        const totalHeight = (textConfig.showName ? 80 : 0) + (textConfig.showTitle ? 50 : 0) + (textConfig.showTagline ? 50 : 0);
-        cursorY = (height - totalHeight) / 2 + 60; // Start position
+        ctx.textAlign = textConfig.align;
 
         if (textConfig.showName) {
             ctx.font = 'bold 70px system-ui, -apple-system, sans-serif';
             ctx.fillStyle = textConfig.nameColor;
-            ctx.fillText(cardData.fullName || 'Your Name', textX, cursorY);
-            cursorY += 70;
+            ctx.fillText(cardData.fullName || 'Your Name', width * (textConfig.nameX / 100), height * (textConfig.nameY / 100));
         }
 
         if (textConfig.showTitle) {
             ctx.font = '500 40px system-ui, -apple-system, sans-serif';
             ctx.fillStyle = textConfig.titleColor;
-            ctx.fillText(cardData.jobTitle || 'Job Title', textX, cursorY);
-            cursorY += 50;
+            ctx.fillText(cardData.jobTitle || 'Job Title', width * (textConfig.titleX / 100), height * (textConfig.titleY / 100));
         }
 
         if (textConfig.showTagline && textConfig.tagline) {
             ctx.font = 'italic 36px system-ui, -apple-system, sans-serif';
             ctx.fillStyle = textConfig.taglineColor;
-            ctx.fillText(textConfig.tagline, textX, cursorY + 10);
+            ctx.fillText(textConfig.tagline, width * (textConfig.taglineX / 100), height * (textConfig.taglineY / 100));
         }
 
     }, [bgType, bgColor, bgGradient, bgImage, bgFilters, textConfig, photoConfig, profileImage, initialWalletData, cardData]);
@@ -162,10 +163,10 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">{t('Strip Image Designer')}</h2>
                         <p className="text-sm text-gray-500">{t('Create a custom banner for your Apple Wallet pass')}</p>
@@ -177,24 +178,25 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-                    {/* Preview Area */}
-                    <div className="flex-1 bg-gray-100 p-8 flex flex-col items-center justify-center overflow-auto">
-                        <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+                    {/* Preview Area - Larger */}
+                    <div className="flex-[2] bg-gray-100 p-8 flex flex-col items-center justify-center overflow-auto relative">
+                        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] opacity-50 pointer-events-none" />
+
+                        <div className="w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 z-10">
                             {/* Canvas Display */}
                             <canvas
                                 ref={canvasRef}
                                 className="w-full h-auto block"
-                                style={{ maxHeight: '400px' }}
                             />
                         </div>
-                        <p className="mt-4 text-xs text-gray-400 font-medium uppercase tracking-wide">
-                            {t('Preview')}
+                        <p className="mt-6 text-sm text-gray-400 font-medium uppercase tracking-widest z-10">
+                            {t('Live Preview')}
                         </p>
                     </div>
 
                     {/* Controls */}
-                    <div className="w-full md:w-96 bg-white border-l border-gray-100 flex flex-col h-full overflow-y-auto">
+                    <div className="w-full lg:w-[400px] bg-white border-l border-gray-100 flex flex-col h-full overflow-y-auto shrink-0">
 
                         {/* Background Controls */}
                         <div className="p-6 border-b border-gray-100 space-y-4">
@@ -276,43 +278,99 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
 
                         {/* Text Controls */}
                         <div className="p-6 border-b border-gray-100 space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Type className="w-4 h-4 text-purple-600" />
-                                <h3 className="text-sm font-bold text-gray-900">{t('Text Overlays')}</h3>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <Type className="w-4 h-4 text-purple-600" />
+                                    <h3 className="text-sm font-bold text-gray-900">{t('Text Overlays')}</h3>
+                                </div>
+                                <div className="flex bg-gray-100 p-0.5 rounded-lg">
+                                    {['left', 'center', 'right'].map((align) => (
+                                        <button
+                                            key={align}
+                                            onClick={() => setTextConfig({ ...textConfig, align: align as any })}
+                                            className={`px-2 py-1 rounded text-xs capitalize ${textConfig.align === align ? 'bg-white shadow-sm text-purple-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
+                                        >
+                                            {align}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
-                            <label className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Name</span>
-                                <div className="flex items-center gap-2">
-                                    <input type="color" value={textConfig.nameColor} onChange={(e) => setTextConfig({ ...textConfig, nameColor: e.target.value })} className="w-6 h-6 rounded overflow-hidden p-0 border-0" />
-                                    <input type="checkbox" checked={textConfig.showName} onChange={(e) => setTextConfig({ ...textConfig, showName: e.target.checked })} className="rounded text-blue-600" />
-                                </div>
-                            </label>
-
-                            <label className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Title</span>
-                                <div className="flex items-center gap-2">
-                                    <input type="color" value={textConfig.titleColor} onChange={(e) => setTextConfig({ ...textConfig, titleColor: e.target.value })} className="w-6 h-6 rounded overflow-hidden p-0 border-0" />
-                                    <input type="checkbox" checked={textConfig.showTitle} onChange={(e) => setTextConfig({ ...textConfig, showTitle: e.target.checked })} className="rounded text-blue-600" />
-                                </div>
-                            </label>
-
-                            <div className="space-y-2">
+                            {/* Name Control */}
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-xl">
                                 <label className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Tagline</span>
+                                    <span className="text-sm font-bold text-gray-700">Name</span>
+                                    <div className="flex items-center gap-2">
+                                        <input type="color" value={textConfig.nameColor} onChange={(e) => setTextConfig({ ...textConfig, nameColor: e.target.value })} className="w-6 h-6 rounded overflow-hidden p-0 border-0" />
+                                        <input type="checkbox" checked={textConfig.showName} onChange={(e) => setTextConfig({ ...textConfig, showName: e.target.checked })} className="rounded text-blue-600" />
+                                    </div>
+                                </label>
+                                {textConfig.showName && (
+                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos X</span>
+                                            <input type="range" min="0" max="100" value={textConfig.nameX} onChange={(e) => setTextConfig({ ...textConfig, nameX: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos Y</span>
+                                            <input type="range" min="0" max="100" value={textConfig.nameY} onChange={(e) => setTextConfig({ ...textConfig, nameY: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Title Control */}
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-xl">
+                                <label className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-700">Title</span>
+                                    <div className="flex items-center gap-2">
+                                        <input type="color" value={textConfig.titleColor} onChange={(e) => setTextConfig({ ...textConfig, titleColor: e.target.value })} className="w-6 h-6 rounded overflow-hidden p-0 border-0" />
+                                        <input type="checkbox" checked={textConfig.showTitle} onChange={(e) => setTextConfig({ ...textConfig, showTitle: e.target.checked })} className="rounded text-blue-600" />
+                                    </div>
+                                </label>
+                                {textConfig.showTitle && (
+                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos X</span>
+                                            <input type="range" min="0" max="100" value={textConfig.titleX} onChange={(e) => setTextConfig({ ...textConfig, titleX: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] uppercase font-bold text-gray-400">Pos Y</span>
+                                            <input type="range" min="0" max="100" value={textConfig.titleY} onChange={(e) => setTextConfig({ ...textConfig, titleY: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Tagline Control */}
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-xl">
+                                <label className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-700">Tagline</span>
                                     <div className="flex items-center gap-2">
                                         <input type="color" value={textConfig.taglineColor} onChange={(e) => setTextConfig({ ...textConfig, taglineColor: e.target.value })} className="w-6 h-6 rounded overflow-hidden p-0 border-0" />
                                         <input type="checkbox" checked={textConfig.showTagline} onChange={(e) => setTextConfig({ ...textConfig, showTagline: e.target.checked })} className="rounded text-blue-600" />
                                     </div>
                                 </label>
                                 {textConfig.showTagline && (
-                                    <input
-                                        type="text"
-                                        value={textConfig.tagline}
-                                        onChange={(e) => setTextConfig({ ...textConfig, tagline: e.target.value })}
-                                        placeholder="Add a tagline..."
-                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                                    />
+                                    <div className="space-y-3 pt-2">
+                                        <input
+                                            type="text"
+                                            value={textConfig.tagline}
+                                            onChange={(e) => setTextConfig({ ...textConfig, tagline: e.target.value })}
+                                            placeholder="Add a tagline..."
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                                        />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-[10px] uppercase font-bold text-gray-400">Pos X</span>
+                                                <input type="range" min="0" max="100" value={textConfig.taglineX} onChange={(e) => setTextConfig({ ...textConfig, taglineX: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] uppercase font-bold text-gray-400">Pos Y</span>
+                                                <input type="range" min="0" max="100" value={textConfig.taglineY} onChange={(e) => setTextConfig({ ...textConfig, taglineY: parseInt(e.target.value) })} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
