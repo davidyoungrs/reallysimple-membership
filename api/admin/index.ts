@@ -90,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Fetch users from Clerk
             const limit = Number(req.query.limit) || 10;
             const offset = Number(req.query.offset) || 0;
-            const query = (req.query.q as string) || '';
+            const query = (req.query.q as string) ? (req.query.q as string) : undefined;
 
             const clerkUsers = await clerkClient.users.getUserList({
                 limit,
@@ -99,9 +99,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 orderBy: '-created_at'
             });
 
+            // console.log('Clerk Users Response:', JSON.stringify(clerkUsers, null, 2));
+
+            // Handle potential difference in Clerk SDK versions (getUserList usually returns User[])
+            const userData = Array.isArray(clerkUsers) ? clerkUsers : (clerkUsers as any).data;
+            const totalCount = Array.isArray(clerkUsers) ? await clerkClient.users.getCount() : (clerkUsers as any).totalCount;
+
             return res.status(200).json({
-                data: clerkUsers.data,
-                totalCount: clerkUsers.totalCount
+                data: userData,
+                totalCount: totalCount
             });
         }
 
