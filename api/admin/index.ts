@@ -385,7 +385,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({
                 recentUsers,
                 recentViews: enrichedViews,
-                heatmapData
+                heatmapData,
+                deviceStats: await db.select({
+                    name: cardViews.deviceType,
+                    value: count()
+                })
+                    .from(cardViews)
+                    .groupBy(cardViews.deviceType)
+                    .orderBy(desc(count())),
+                browserStats: await db.select({
+                    name: cardViews.userAgent, // Simplified: In real app, parse UA. For now, grouping by raw UA or source if available
+                    value: count()
+                })
+                    .from(cardViews)
+                    .groupBy(cardViews.userAgent)
+                    .orderBy(desc(count()))
+                    .limit(5)
             });
         }
 

@@ -1,8 +1,10 @@
 import { Loader2, Users, CreditCard, MousePointer, Eye, Activity, Globe } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 interface AdminStats {
     users: number;
@@ -20,6 +22,8 @@ interface AnalyticsData {
     recentUsers: any[];
     recentViews: any[];
     heatmapData: { lat: string; lng: string; count: number }[];
+    deviceStats?: { name: string; value: number }[];
+    browserStats?: { name: string; value: number }[];
 }
 
 export function AdminDashboard() {
@@ -90,8 +94,8 @@ export function AdminDashboard() {
                 <button
                     onClick={() => setActiveTab('overview')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview'
-                            ? 'bg-white text-blue-600 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
                         }`}
                 >
                     Overview
@@ -99,8 +103,8 @@ export function AdminDashboard() {
                 <button
                     onClick={() => setActiveTab('analytics')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'analytics'
-                            ? 'bg-white text-blue-600 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
                         }`}
                 >
                     Global Analytics
@@ -282,9 +286,12 @@ export function AdminDashboard() {
                         </div>
                     </div>
 
-                    {/* Right Column: Globe/Map */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-[600px] flex flex-col">
+
+
+                    {/* Right Column: Globe/Map & Device Stats */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Map */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-[400px] flex flex-col">
                             <div className="flex items-center gap-2 mb-4">
                                 <Globe className="w-5 h-5 text-blue-600" />
                                 <h3 className="text-lg font-bold text-gray-900">Global Heatmap</h3>
@@ -322,6 +329,53 @@ export function AdminDashboard() {
                                         );
                                     })}
                                 </MapContainer>
+                            </div>
+                        </div>
+
+                        {/* Device Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="text-lg font-bold text-gray-900 mb-6">Device Breakdown</h3>
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={analytics.deviceStats || []}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                fill="#8884d8"
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {(analytics.deviceStats || []).map((_entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend wrapperStyle={{ fontSize: '12px' }} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="text-lg font-bold text-gray-900 mb-6">Top Browsers</h3>
+                                <div className="space-y-4">
+                                    {(analytics.browserStats || []).map((item, index) => (
+                                        <div key={index} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                                <span className="text-sm text-gray-600 truncate max-w-[150px]" title={item.name}>{item.name || 'Unknown'}</span>
+                                            </div>
+                                            <span className="text-sm font-semibold text-gray-900">{item.value}</span>
+                                        </div>
+                                    ))}
+                                    {(!analytics.browserStats || analytics.browserStats.length === 0) && (
+                                        <p className="text-sm text-gray-400">No browser data available.</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

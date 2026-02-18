@@ -222,6 +222,10 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
                                     </>
                                 )}
                             </button>
+
+                            <p className="text-xs text-center text-gray-400 mt-4">
+                                {t('We respect your privacy. Your information is shared only with this card owner.')}
+                            </p>
                         </form>
                     )}
                 </div>
