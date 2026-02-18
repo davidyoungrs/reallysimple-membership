@@ -377,6 +377,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
+        if (resource === 'global_analytics') {
+            const [recentUsers, recentViews, heatmapData] = await Promise.all([
+                // Recent Signups
+                db.select()
+                    .from(users)
+                    .orderBy(desc(users.createdAt))
+                    .limit(5),
+
+                // Recent Views with Card Details (join would be better but separate query is easier for now)
+                db.select({
+                    viewedAt: cardViews.viewedAt,
+                    city: cardViews.city,
+                    country: cardViews.country,
+                    cardId: cardViews.cardId,
+                    flag: cardViews.country // placeholder for flag logic if needed, or just use country code
+                })
+                    .from(cardViews)
+                    .orderBy(desc(cardViews.viewedAt))
+                    .limit(10),
+
+                // Heatmap Data (lat/lng)
+                db.select({
+                    lat: cardViews.latitude,
+                    lng: cardViews.longitude,
+                    count: count()
+                })
+                    .from(cardViews)
+                    .where(sql`${cardViews.latitude} IS NOT NULL AND ${cardViews.longitude} IS NOT NULL`)
+                    .groupBy(cardViews.latitude, cardViews.longitude)
+            ]);
+
+            // Fetch card details for the views (to show card name)
+            const cardIds = recentViews.map(v => v.cardId).filter((id): id is number => id !== null);
+            const cardsInfo = cardIds.length > 0
+                ? await db.select({ id: businessCards.id, data: businessCards.data }).from(businessCards).where(sql`${businessCards.id} IN ${cardIds}`)
+                : [];
+
+            const enrichedViews = recentViews.map(view => {
+                const card = cardsInfo.find(c => c.id === view.cardId);
+                const cardName = (card?.data as any)?.fullName || (card?.data as any)?.name || 'Unknown Card';
+                return { ...view, cardName };
+            });
+
+            return res.status(200).json({
+                recentUsers,
+                recentViews: enrichedViews,
+                heatmapData
+            });
+        }
+
         return res.status(400).json({ error: 'Invalid resource' });
 
     } catch (error: any) {
