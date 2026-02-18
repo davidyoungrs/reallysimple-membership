@@ -81,6 +81,28 @@ export function AdminUsers() {
         }
     };
 
+    const handleFeatureToggle = async (userId: string, feature: string, enabled: boolean) => {
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=user_actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: 'toggle_feature', userId, value: { feature, enabled } })
+            });
+
+            if (!res.ok) throw new Error('Action failed');
+
+            // Refresh details
+            openDetailModal(userId);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to toggle feature');
+        }
+    };
+
     const openDetailModal = async (userId: string) => {
         setShowDetailModal(true);
         setDetailLoading(true);
@@ -299,12 +321,30 @@ export function AdminUsers() {
                                         </div>
 
                                         <div>
+                                            <h4 className="font-semibold mb-2">Feature Flags</h4>
+                                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                                <label className="relative inline-flex items-center cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only peer"
+                                                        checked={!!(userDetail?.user.publicMetadata as any)?.features?.wallet_access}
+                                                        onChange={(e) => handleFeatureToggle(userDetail?.user.id, 'wallet_access', e.target.checked)}
+                                                    />
+                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    <span className="ml-3 text-sm font-medium text-gray-900">Wallet Access</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div>
                                             <h4 className="font-semibold mb-2">Raw Metadata</h4>
                                             <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto">
                                                 {JSON.stringify(userDetail?.user.publicMetadata, null, 2)}
                                             </pre>
                                         </div>
                                     </div>
+
+
                                 ) : (
                                     <div className="text-center text-red-500">Failed to load user details.</div>
                                 )}
@@ -313,6 +353,6 @@ export function AdminUsers() {
                     </div>
                 )
             }
-        </div >
+        </div>
     );
 }

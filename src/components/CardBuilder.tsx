@@ -10,6 +10,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
 import { OnboardingTour } from './OnboardingTour';
 import { WalletBuilder, WalletPreview } from './WalletBuilder';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
 
 // Declare Clerk on window for TypeScript
 declare global {
@@ -101,6 +102,14 @@ export function CardBuilder() {
     const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
     const [showTour, setShowTour] = useState(false);
     const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
+    const { hasFeature, loading: featuresLoading } = useFeatureFlag();
+
+    // Reset to card mode if wallet access is revoked
+    useEffect(() => {
+        if (builderMode === 'wallet' && !featuresLoading && !hasFeature('wallet_access')) {
+            setBuilderMode('card');
+        }
+    }, [builderMode, featuresLoading, hasFeature]);
 
     // Initialize state from URL or default
     const [data, setData] = useState<CardData>(() => {
@@ -580,12 +589,14 @@ export function CardBuilder() {
                     >
                         {t('Main Card')}
                     </button>
-                    <button
-                        onClick={() => setBuilderMode('wallet')}
-                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
-                    >
-                        {t('Apple Wallet')}
-                    </button>
+                    {hasFeature('wallet_access') && (
+                        <button
+                            onClick={() => setBuilderMode('wallet')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                        >
+                            {t('Apple Wallet')}
+                        </button>
+                    )}
                 </div>
 
                 <div className="h-full overflow-y-auto pb-24 md:pb-0">
@@ -615,53 +626,57 @@ export function CardBuilder() {
             </div>
 
             {/* Delete Confirmation Dialog */}
-            {deleteConfirmCard && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('Confirm Delete')}</h3>
-                        <p className="text-gray-600 mb-4">
-                            {t('Are you sure you want to delete this card? This action cannot be undone.')}
-                        </p>
-                        <div className="bg-gray-50 rounded p-3 mb-4">
-                            <div className="font-medium text-gray-900">{deleteConfirmCard.name}</div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteConfirmCard(null)}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-                            >
-                                {t('Cancel')}
-                            </button>
-                            <button
-                                onClick={() => handleDeleteCard(deleteConfirmCard.id)}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-2 rounded-lg font-medium transition-all bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        {t('Deleting...')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Trash2 className="w-4 h-4" />
-                                        {t('Delete')}
-                                    </>
-                                )}
-                            </button>
+            {
+                deleteConfirmCard && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('Confirm Delete')}</h3>
+                            <p className="text-gray-600 mb-4">
+                                {t('Are you sure you want to delete this card? This action cannot be undone.')}
+                            </p>
+                            <div className="bg-gray-50 rounded p-3 mb-4">
+                                <div className="font-medium text-gray-900">{deleteConfirmCard.name}</div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDeleteConfirmCard(null)}
+                                    disabled={isDeleting}
+                                    className="flex-1 px-4 py-2 rounded-lg font-medium transition-all bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+                                >
+                                    {t('Cancel')}
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteCard(deleteConfirmCard.id)}
+                                    disabled={isDeleting}
+                                    className="flex-1 px-4 py-2 rounded-lg font-medium transition-all bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isDeleting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            {t('Deleting...')}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 className="w-4 h-4" />
+                                            {t('Delete')}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Onboarding Tour */}
-            {showTour && (
-                <OnboardingTour onComplete={() => {
-                    setShowTour(false);
-                    localStorage.setItem('hasSeenOnboardingTour', 'true');
-                }} />
-            )}
-        </div>
+            {
+                showTour && (
+                    <OnboardingTour onComplete={() => {
+                        setShowTour(false);
+                        localStorage.setItem('hasSeenOnboardingTour', 'true');
+                    }} />
+                )
+            }
+        </div >
     );
 }

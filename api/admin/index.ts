@@ -242,6 +242,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(200).json({ success: true });
             }
 
+            if (action === 'toggle_feature') {
+                const { feature, enabled } = value;
+                const user = await clerkClient.users.getUser(userId);
+                const currentFeatures = (user.publicMetadata as any)?.features || {};
+
+                await clerkClient.users.updateUserMetadata(userId, {
+                    publicMetadata: {
+                        ...user.publicMetadata,
+                        features: {
+                            ...currentFeatures,
+                            [feature]: enabled
+                        }
+                    }
+                });
+                return res.status(200).json({ success: true });
+            }
+
             return res.status(400).json({ error: 'Invalid action' });
         }
 
