@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // --- PUBLIC ENDPOINTS ---
 
         // A. TRACKING (POST with ?action=track)
-        if (method === 'POST' && query.action === 'track') {
+        if (method === 'POST' && (query.action === 'track' || req.body?.action === 'track')) {
             return await handleTrack(req, res);
         }
 

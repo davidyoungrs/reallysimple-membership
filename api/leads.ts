@@ -6,7 +6,6 @@ import { eq, desc, and } from 'drizzle-orm';
 import { z } from 'zod'; // You mentioned zod in plan, ensure it's installed. If not, use manual validation.
 // Assuming zod is available.
 import { verifyToken } from '@clerk/backend'; // Verify headers if needed
-import { clerkClient } from '@clerk/clerk-sdk-node';
 
 // Validation Schema
 const leadSchema = z.object({
@@ -36,14 +35,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const body = leadSchema.parse(req.body);
 
             // 1. Resolve cardId (UID/Slug) to DB ID
-            // Check if input is UID or Slug? Frontend should send the internal ID or UID.
-            // Let's assume frontend sends the 'uid' (public ID) or we resolve it.
-            // Ideally frontend sends the `cardId` which is the integer ID? 
-            // No, exposing integer ID is fine but UID is better.
-            // Let's look up by UID or Slug.
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.cardId);
 
             const card = await db.query.businessCards.findFirst({
-                where: (table, { eq, or }) => or(eq(table.uid, body.cardId), eq(table.slug, body.cardId)),
+                where: (table, { eq, or }) => {
+                    if (isUuid) {
+                        return or(eq(table.uid, body.cardId), eq(table.slug, body.cardId));
+                    }
+                    return eq(table.slug, body.cardId);
+                },
                 columns: { id: true, userId: true }
             });
 
@@ -84,27 +84,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
             const token = authHeader.split(' ')[1];
 
-            // Verify token (simplified)
-            // In a real app we'd verify the token properly with Clerk
-            // For now, assuming the token identifies the user.
-            // We can use the same pattern as `api/me.ts` or `api/cards.ts`
-            // Let's assume we can trust the token verification or use a helper if available.
-            // Actually, `api/cards.ts` uses `verifyToken` from `@clerk/backend`.
             let userId: string;
             try {
-                // We need to decode the token to get the sub (userId)
-                // Or use clerkClient. verifyToken is deprecated? 
-                // Let's rely on `Authorization` header and clerk backend request verification?
-                // Or simpler: just use `req.auth` if using Vercel middleware? 
-                // Let's assume we must verify.
-                // CONSTANT PATTERN:
-                // const { userId } = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
-                // Let's try to stick to what works in `api/admin/index.ts`.
-
-                // Reuse verify logic from other APIs
-                // Temporary: assuming valid user for speed, but really should verify.
-                // let's try to verify.
-                const verified = await clerkClient.verifyToken(token);
+                const verified = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
                 userId = verified.sub;
             } catch (e) {
                 return res.status(401).json({ error: 'Invalid Token' });
