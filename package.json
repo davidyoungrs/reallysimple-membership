@@ -21,6 +21,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@tailwindcss/vite": "^4.1.18",
     "@types/leaflet": "^1.9.21",
@@ -40,12 +41,14 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.1",
     "react-i18next": "^16.5.4",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^6.30.3",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
-    "vcard-creator": "^0.7.2"
+    "vcard-creator": "^0.7.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

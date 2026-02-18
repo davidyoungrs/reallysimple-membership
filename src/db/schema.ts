@@ -68,3 +68,16 @@ export const apiLogs = pgTable('api_logs', {
     ipAddress: text('ip_address'),
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const leads = pgTable('leads', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    cardId: integer('card_id').references(() => businessCards.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone'),
+    jobTitle: text('job_title'),
+    company: text('company'),
+    note: text('note'),
+    submittedAt: timestamp('submitted_at').defaultNow(),
+    isRead: boolean('is_read').default(false),
+});

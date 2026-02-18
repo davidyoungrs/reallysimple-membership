@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser, useAuth, UserButton } from '@clerk/clerk-react';
-import { ArrowLeft, Edit, Trash2, Eye, Plus, LayoutGrid, Settings as SettingsIcon, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Eye, Plus, LayoutGrid, Settings as SettingsIcon, BarChart2, Users } from 'lucide-react';
 import { BusinessCard } from './BusinessCard';
 import { ShareMenu } from './ShareMenu';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './LanguageSelector';
-import { ActivityFeed } from './ActivityFeed';
+// import { ActivityFeed } from './ActivityFeed'; // Ensure this exists or imported if used
+import { ActivityFeed } from './ActivityFeed'; // Re-adding in case it was missed, tool requires exact match usually or complete block replacement.
 import { DashboardCharts } from './DashboardCharts';
 import { ProfileSettings } from './ProfileSettings';
 import { WalletPreview } from './WalletBuilder';
+import { LeadsManager } from './leads/LeadsManager';
 
 interface Card {
     id: number;
@@ -35,7 +37,7 @@ export function Dashboard() {
     const { getToken } = useAuth();
     const [cards, setCards] = useState<Card[]>([]);
     const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null);
-    const [activeTab, setActiveTab] = useState<'cards' | 'settings'>('cards');
+    const [activeTab, setActiveTab] = useState<'cards' | 'leads' | 'settings'>('cards'); // Added 'leads'
     const [isLoading, setIsLoading] = useState(true);
     const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
     const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: number; name: string } | null>(null);
@@ -141,10 +143,10 @@ export function Dashboard() {
                                 <span className="text-sm font-medium hidden sm:inline">{t('Home')}</span>
                             </Link>
 
-                            <nav className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+                            <nav className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl overflow-x-auto">
                                 <button
                                     onClick={() => setActiveTab('cards')}
-                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'cards'
+                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'cards'
                                         ? 'bg-white text-blue-600 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
@@ -153,8 +155,18 @@ export function Dashboard() {
                                     {t('My Cards')}
                                 </button>
                                 <button
+                                    onClick={() => setActiveTab('leads')}
+                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'leads'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                >
+                                    <Users className="w-4 h-4" />
+                                    {t('Leads')}
+                                </button>
+                                <button
                                     onClick={() => setActiveTab('settings')}
-                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${activeTab === 'settings'
+                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'settings'
                                         ? 'bg-white text-blue-600 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
@@ -174,7 +186,7 @@ export function Dashboard() {
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-100 hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 <Plus className="w-4 h-4" />
-                                <span className="text-sm font-bold">{t('Create New')}</span>
+                                <span className="text-sm font-bold hidden sm:inline">{t('Create New')}</span>
                             </Link>
                             <UserButton afterSignOutUrl="/" />
                         </div>
@@ -186,6 +198,8 @@ export function Dashboard() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {activeTab === 'settings' ? (
                     <ProfileSettings />
+                ) : activeTab === 'leads' ? (
+                    <LeadsManager />
                 ) : (
                     <>
                         {/* Cards Section */}
