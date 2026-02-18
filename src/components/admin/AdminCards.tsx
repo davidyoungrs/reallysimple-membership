@@ -148,7 +148,7 @@ export function AdminCards() {
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3 relative">
                                                 {/* Hover Preview Thumbnail for List View */}
-                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 group-hover:scale-110 transition-transform">
                                                     {card.data?.profileImage ? (
                                                         <img src={card.data.profileImage} alt="" className="w-full h-full object-cover" />
                                                     ) : (
@@ -162,6 +162,9 @@ export function AdminCards() {
                                                     </div>
                                                     <div className="text-sm text-gray-500">
                                                         {card.data?.jobTitle || 'No Job Title'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-0.5">
+                                                        Owner: {card.userId.slice(0, 8)}...
                                                     </div>
                                                 </div>
                                             </div>
@@ -256,8 +259,11 @@ export function AdminCards() {
                                 <h3 className="font-bold text-gray-900 truncate">
                                     {card.data?.fullName || 'Untitled Card'}
                                 </h3>
-                                <p className="text-sm text-gray-500 truncate mb-4">
+                                <p className="text-sm text-gray-500 truncate mb-2">
                                     {card.data?.jobTitle || 'No Job Title'}
+                                </p>
+                                <p className="text-xs text-gray-400 mb-4 font-mono">
+                                    Owner: {card.userId.slice(0, 15)}...
                                 </p>
 
                                 <div className="space-y-3">

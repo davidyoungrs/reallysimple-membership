@@ -161,4 +161,11 @@
     - [x] Fix Card Gallery Visibility Issue <!-- id: 262 -->
         - [x] Debug: Add logging to `AdminCards.tsx` to verify data fetching <!-- id: 263 -->
         - [x] Debug: Investigate "privacy policy" redirect issue on user links <!-- id: 264 -->
+    - [x] Enhance Content Moderation (Card Management) <!-- id: 274 -->
+        - [x] Frontend: Display Owner ID in `AdminCards.tsx` for ownership verification <!-- id: 275 -->
+        - [x] Frontend: Verify "Newest first" sorting and Grid View hover effects <!-- id: 276 -->
+    - [x] Enhance Security & System Health Dashboard <!-- id: 279 -->
+        - [x] Frontend: Add Firewall Dashboard (Recent IP Blocks) to `AdminSecurity.tsx` <!-- id: 280 -->
+        - [x] Frontend: Add API Performance Charts to `AdminSecurity.tsx` <!-- id: 281 -->
+        - [x] Frontend: Add Sanitization Log to `AdminSecurity.tsx` <!-- id: 282 -->
     - [ ] Implement System-Wide Configuration Toggles <!-- id: 167 -->
