@@ -65,12 +65,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             return res.status(200).json({ success: true });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Lead submission error:', error);
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ error: error.errors });
+                return res.status(400).json({ error: error.issues });
             }
-            return res.status(500).json({ error: 'Internal Server Error' });
+            return res.status(500).json({ error: 'Internal Server Error', details: error?.message });
         }
     }
 

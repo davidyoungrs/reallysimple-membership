@@ -83,7 +83,7 @@ const ScaleToFit = ({ children }: { children: React.ReactNode }) => {
 };
 
 export function CardBuilder() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useUser();
     const location = useLocation();
     const [isEditorOpen, setIsEditorOpen] = useState(true);
@@ -260,8 +260,8 @@ export function CardBuilder() {
     const handleSaveCard = async () => {
         // Check if user is trying to create a new card when they already have 2
         if (!currentCardId && savedCards.length >= 2) {
+            alert(t('You can only save up to 2 cards. Please load an existing card to update it, or delete one first.'));
             setSaveStatus('error');
-            alert('You can only save up to 2 cards. Please load an existing card to update it, or delete one first.');
             setTimeout(() => setSaveStatus('idle'), 3000);
             return;
         }
@@ -289,7 +289,9 @@ export function CardBuilder() {
                     // Slug is taken, show error with suggestion
                     const suggestion = slugCheckData.suggestion || `${data.slug}-2`;
                     const useSuggestion = confirm(
-                        `The slug "${data.slug}" is already taken.\n\nWould you like to use "${suggestion}" instead?\n\nClick OK to use the suggestion, or Cancel to change it manually.`
+                        t('The slug "{{slug}}" is already taken.', { slug: data.slug }) + '\n\n' +
+                        t('Would you like to use "{{suggestion}}" instead?', { suggestion }) + '\n\n' +
+                        t('Click OK to use the suggestion, or Cancel to change it manually.')
                     );
 
                     if (useSuggestion) {
@@ -346,7 +348,9 @@ export function CardBuilder() {
                 // Special handling for slug already taken
                 if (error.error === 'Slug already taken' && error.suggestion) {
                     const useSuggestion = confirm(
-                        `The slug "${data.slug}" is already taken.\n\nWould you like to use "${error.suggestion}" instead?\n\nClick OK to use the suggestion, or Cancel to change it manually.`
+                        t('The slug "{{slug}}" is already taken.', { slug: data.slug }) + '\n\n' +
+                        t('Would you like to use "{{suggestion}}" instead?', { suggestion: error.suggestion }) + '\n\n' +
+                        t('Click OK to use the suggestion, or Cancel to change it manually.')
                     );
 
                     if (useSuggestion) {
@@ -478,7 +482,7 @@ export function CardBuilder() {
                                                     </div>
                                                 )}
                                                 <div className="text-xs text-gray-500 mt-1">
-                                                    {t('Last updated')}: {new Date(card.updatedAt).toLocaleDateString()}
+                                                    {t('Last updated')}: {new Date(card.updatedAt).toLocaleDateString(i18n.language)}
                                                 </div>
                                             </div>
                                             <button

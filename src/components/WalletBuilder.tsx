@@ -68,11 +68,11 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     };
 
     const coolPalettes = [
-        { name: 'Midnight', bg: '#000000', fg: '#ffffff', label: '#9ca3af' },
-        { name: 'Sky', bg: '#0ea5e9', fg: '#ffffff', label: '#e0f2fe' },
-        { name: 'Forest', bg: '#059669', fg: '#ffffff', label: '#d1fae5' },
-        { name: 'Royal', bg: '#4f46e5', fg: '#ffffff', label: '#e0e7ff' },
-        { name: 'Slate', bg: '#475569', fg: '#ffffff', label: '#f1f5f9' },
+        { name: t('Midnight'), bg: '#000000', fg: '#ffffff', label: '#9ca3af' },
+        { name: t('Sky'), bg: '#0ea5e9', fg: '#ffffff', label: '#e0f2fe' },
+        { name: t('Forest'), bg: '#059669', fg: '#ffffff', label: '#d1fae5' },
+        { name: t('Royal'), bg: '#4f46e5', fg: '#ffffff', label: '#e0e7ff' },
+        { name: t('Slate'), bg: '#475569', fg: '#ffffff', label: '#f1f5f9' },
     ];
 
     return (
@@ -406,6 +406,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
 }
 
 export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?: boolean }) {
+    const { t } = useTranslation();
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
         foregroundColor: '#000000',
@@ -440,7 +441,7 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
                                 className="text-[10px] font-bold tracking-tight"
                                 style={{ color: wallet.foregroundColor }}
                             >
-                                {(wallet.logoText || data.company || 'DIGITAL CARD').toUpperCase()}
+                                {(wallet.logoText || data.company || t('DIGITAL CARD')).toUpperCase()}
                             </span>
                         )}
                     </div>
@@ -461,13 +462,13 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
                                     className="text-[10px] font-medium opacity-80"
                                     style={{ color: wallet.labelColor }}
                                 >
-                                    NAME
+                                    {t('NAME')}
                                 </span>
                                 <span
                                     className="text-xl font-bold leading-tight"
                                     style={{ color: wallet.foregroundColor }}
                                 >
-                                    {data.fullName || 'Your Name'}
+                                    {data.fullName || t('Your Name')}
                                 </span>
                             </>
                         )}
@@ -478,14 +479,14 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
                 <div className="px-4 py-4 grid grid-cols-2 gap-y-4 gap-x-2 flex-grow">
                     {wallet.showRole !== false && (
                         <div>
-                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>ROLE</span>
-                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.jobTitle || 'Your Position'}</span>
+                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>{t('ROLE')}</span>
+                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.jobTitle || t('Your Position')}</span>
                         </div>
                     )}
                     {wallet.showCompany !== false && (
                         <div>
-                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>COMPANY</span>
-                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.company || 'Your Company'}</span>
+                            <span className="block text-[8px] font-medium opacity-70" style={{ color: wallet.labelColor }}>{t('COMPANY')}</span>
+                            <span className="block text-xs font-semibold" style={{ color: wallet.foregroundColor }}>{data.company || t('Your Company')}</span>
                         </div>
                     )}
                 </div>
@@ -506,7 +507,7 @@ export function WalletPreview({ data, isPreview }: { data: CardData; isPreview?:
             {!isPreview && (
                 <>
                     <div className="absolute top-[320px] left-8 right-8 h-[200px] bg-white/40 backdrop-blur-md rounded-t-[18px] -z-10 translate-y-12 rotate-[-2deg] border border-white/20" />
-                    <p className="absolute bottom-6 text-[10px] text-gray-400 font-medium">Apple Wallet Preview</p>
+                    <p className="absolute bottom-6 text-[10px] text-gray-400 font-medium">{t('Apple Wallet Preview')}</p>
                 </>
             )}
         </div>

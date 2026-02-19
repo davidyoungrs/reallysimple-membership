@@ -8,9 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 // Schema
-const leadFormSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().email('Invalid email address'),
+const leadFormSchema = (t: any) => z.object({
+    name: z.string().min(1, t('Name is required')),
+    email: z.string().email(t('Invalid email address')),
     phone: z.string().optional(),
     jobTitle: z.string().optional(),
     company: z.string().optional(),
@@ -32,8 +32,9 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<LeadFormData>({
-        resolver: zodResolver(leadFormSchema),
+    const schema = useState(() => leadFormSchema(t))[0];
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<z.infer<ReturnType<typeof leadFormSchema>>>({
+        resolver: zodResolver(schema),
     });
 
     const onSubmit = async (data: LeadFormData) => {
@@ -43,7 +44,7 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
             const response = await fetch('/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...data, cardId }),
+                body: JSON.stringify({ ...(data as any), cardId }),
             });
 
             if (!response.ok) {

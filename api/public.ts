@@ -24,18 +24,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function handleSystemStatus(req: VercelRequest, res: VercelResponse) {
     try {
         // Fetch only public settings
-        const settings = await db.select()
-            .from(systemSettings)
-            .where(inArray(systemSettings.key, ['maintenance_mode', 'disable_registrations']));
+        let settings: any[] = [];
+        try {
+            settings = await db.select()
+                .from(systemSettings)
+                .where(inArray(systemSettings.key, ['maintenance_mode', 'disable_registrations']));
+        } catch (dbError) {
+            console.error('Database query for status failed:', dbError);
+            // Non-blocking error, we'll return defaults
+        }
 
         const status = settings.reduce((acc, curr) => {
             acc[curr.key] = curr.value === 'true';
             return acc;
-        }, {} as Record<string, boolean>);
+        }, {
+            maintenance_mode: false,
+            disable_registrations: false
+        } as Record<string, boolean>);
 
         return res.status(200).json(status);
-    } catch (error) {
+    } catch (error: any) {
         console.error('System Status API Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error', details: error?.message });
     }
 }

@@ -55,7 +55,7 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
         // Open window immediately to avoid popup blockers
         const newWindow = window.open('', '_blank');
         if (newWindow) {
-            newWindow.document.write('<html><body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;"><div>Generating your Google Wallet pass...</div></body></html>');
+            newWindow.document.write(`<html><body style="font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;"><div>${t('Generating your Google Wallet pass...')}</div></body></html>`);
         }
 
         try {
@@ -82,7 +82,7 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
         } catch (error) {
             console.error('Error generating Google Wallet pass:', error);
             if (newWindow) newWindow.close();
-            alert('Failed to generate Google Wallet pass. Please try again.');
+            alert(t('Failed to generate Google Wallet pass. Please try again.'));
         } finally {
             setLoadingGoogle(false);
         }
@@ -117,14 +117,14 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
     };
 
     const handleEmailShare = () => {
-        const subject = encodeURIComponent(`${data.fullName || 'Digital Business Card'}`);
-        const body = encodeURIComponent(`Here is my digital business card:\n\n${publicUrl}`);
+        const subject = encodeURIComponent(`${data.fullName || t('Digital Business Card')}`);
+        const body = encodeURIComponent(`${t('Here is my digital business card:')}\n\n${publicUrl}`);
         window.open(`mailto:?subject=${subject}&body=${body}`);
         setShowMenu(false);
     };
 
     const handleWhatsAppShare = () => {
-        const text = encodeURIComponent(`Here is my digital business card: ${publicUrl}`);
+        const text = encodeURIComponent(`${t('Here is my digital business card:')} ${publicUrl}`);
         window.open(`https://wa.me/?text=${text}`);
         setShowMenu(false);
     };
@@ -140,7 +140,7 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
             const response = await fetch(`/api/passes?type=apple&slug=${cardSlug}`);
 
             if (!response.ok) {
-                let errorMessage = `Server returned ${response.status} ${response.statusText}`;
+                let errorMessage = t('Server returned {{status}} {{statusText}}', { status: response.status, statusText: response.statusText });
                 try {
                     const errorData = await response.json();
                     if (errorData.error) {
@@ -165,7 +165,7 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
             setShowMenu(false);
         } catch (error: any) {
             console.error('Error generating pass:', error);
-            alert(`Failed to generate Apple Wallet pass: ${error.message}`);
+            alert(t('Failed to generate Apple Wallet pass: {{error}}', { error: error.message }));
         } finally {
             setLoadingWallet(false);
         }

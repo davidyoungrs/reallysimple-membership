@@ -369,7 +369,7 @@ export function Dashboard() {
                         <div className="absolute top-0 left-0 w-full h-2 bg-red-600" />
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">{t('Delete Card?')}</h3>
                         <p className="text-gray-600 mb-8 leading-relaxed">
-                            {t('Are you sure you want to delete')} "<strong>{deleteConfirmCard.name}</strong>"? {t('This will permanently remove all analytics data associated with this card.')}
+                            {t('Are you sure you want to delete "{{name}}"?', { name: deleteConfirmCard.name })} {t('This will permanently remove all analytics data associated with this card.')}
                         </p>
                         <div className="flex gap-4">
                             <button

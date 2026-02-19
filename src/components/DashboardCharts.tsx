@@ -25,7 +25,7 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ data, totalViews, totalClicks, isLoading }: DashboardChartsProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     if (isLoading) {
         return (
@@ -80,11 +80,22 @@ export function DashboardCharts({ data, totalViews, totalClicks, isLoading }: Da
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
                             <XAxis
-                                dataKey="date"
+                                dataKey="fullDate"
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fill: '#9CA3AF', fontSize: 11 }}
                                 minTickGap={30}
+                                tickFormatter={(str) => {
+                                    try {
+                                        const date = new Date(str);
+                                        return new Intl.DateTimeFormat(i18n.language, {
+                                            month: 'short',
+                                            day: 'numeric'
+                                        }).format(date);
+                                    } catch (e) {
+                                        return str;
+                                    }
+                                }}
                             />
                             <YAxis
                                 axisLine={false}
@@ -94,6 +105,18 @@ export function DashboardCharts({ data, totalViews, totalClicks, isLoading }: Da
                             <Tooltip
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                                 labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+                                labelFormatter={(label) => {
+                                    try {
+                                        const date = new Date(label);
+                                        return new Intl.DateTimeFormat(i18n.language, {
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        }).format(date);
+                                    } catch (e) {
+                                        return label;
+                                    }
+                                }}
                             />
                             <Area
                                 type="monotone"

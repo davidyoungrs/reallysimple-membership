@@ -92,7 +92,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function handleTrack(req: VercelRequest, res: VercelResponse) {
     try {
         const { slug, source = 'direct', type: actionType, targetInfo, action } = req.body;
-        const effectiveAction = action || (req.body.type ? 'click' : 'view');
+        // If action is 'track', it's coming from PublicCard.tsx which sends type='view' or type='click'
+        // We should use 'action' if it's view/click, otherwise use 'type'
+        const effectiveAction = (action === 'view' || action === 'click') ? action : (actionType === 'view' || actionType === 'click' ? actionType : 'view');
 
         if (!slug) return res.status(400).json({ error: 'Missing slug' });
 
@@ -118,15 +120,15 @@ async function handleTrack(req: VercelRequest, res: VercelResponse) {
 
             await db.insert(cardViews).values({ cardId, referrer, userAgent, city, region, country, latitude, longitude, ipAddress, deviceType, source });
         } else if (effectiveAction === 'click') {
-            if (!actionType) return res.status(400).json({ error: 'Missing click type' });
-            await db.insert(cardClicks).values({ cardId, type: actionType, targetInfo, userAgent });
+            const clickType = actionType || req.body.typeDetail || 'unknown';
+            await db.insert(cardClicks).values({ cardId, type: clickType, targetInfo, userAgent });
         } else {
-            return res.status(400).json({ error: 'Invalid action' });
+            return res.status(400).json({ error: `Invalid action: ${effectiveAction}` });
         }
         return res.status(200).json({ success: true });
     } catch (error: any) {
         console.error('Track error:', error);
-        return res.status(200).json({ success: false, error: error?.message });
+        return res.status(500).json({ success: false, error: 'Database tracking failed', details: error?.message });
     }
 }
 

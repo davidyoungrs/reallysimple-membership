@@ -21,7 +21,7 @@ interface Lead {
 }
 
 export function LeadsManager() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { getToken } = useAuth();
     const { user } = useUser();
     const [leads, setLeads] = useState<Lead[]>([]);
@@ -103,7 +103,7 @@ export function LeadsManager() {
     );
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString(undefined, {
+        return new Date(dateString).toLocaleDateString(i18n.language, {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
