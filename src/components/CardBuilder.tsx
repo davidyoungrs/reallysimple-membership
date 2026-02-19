@@ -104,7 +104,7 @@ export function CardBuilder() {
     const [showTour, setShowTour] = useState(false);
     const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
     const { hasFeature, loading: featuresLoading } = useFeatureFlag();
-    const { tier, isFeatureEnabled } = useTier();
+    const { tier } = useTier();
 
     // Reset to card mode if wallet access is revoked
     useEffect(() => {
