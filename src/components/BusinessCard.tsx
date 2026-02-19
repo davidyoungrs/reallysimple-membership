@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 interface BusinessCardProps {
     data: CardData;
     onLinkClick?: (type: string, targetInfo: string) => void;
+    ownerTier?: 'starter' | 'pro' | 'pro_plus' | 'business' | 'grandfathered';
 }
 
 export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {

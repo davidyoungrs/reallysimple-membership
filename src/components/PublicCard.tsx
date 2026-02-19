@@ -9,6 +9,7 @@ export function PublicCard() {
     const { slug } = useParams<{ slug: string }>();
     const { t } = useTranslation();
     const [cardData, setCardData] = useState<CardData | null>(null);
+    const [ownerTier, setOwnerTier] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const lastTrackedSlug = useRef<string | null>(null);
@@ -40,6 +41,7 @@ export function PublicCard() {
 
                 const result = await response.json();
                 setCardData(result.card.data);
+                setOwnerTier(result.card.ownerTier || 'starter');
                 setLoading(false);
 
                 // Track view (fire-and-forget) - prevent double counting in StrictMode
@@ -124,29 +126,31 @@ export function PublicCard() {
             {/* Card Display */}
             <div className="flex-1 flex items-center justify-center p-6">
                 <div className="w-full max-w-md">
-                    <BusinessCard data={cardData} onLinkClick={handleLinkClick} />
+                    <BusinessCard data={cardData} onLinkClick={handleLinkClick} ownerTier={ownerTier as any} />
                 </div>
             </div>
 
             {/* Footer CTA */}
-            <div className={`bg-white border-t border-gray-200 py-6 px-6 ${cardData.stickyActionBar ? 'mb-20' : ''}`}>
-                <div className="max-w-4xl mx-auto text-center">
-                    <p className="text-gray-600 mb-3">Impressed? Create your own digital business card in minutes.</p>
-                    <Link
-                        to="/"
-                        className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors mb-6"
-                    >
-                        Get Started Free
-                    </Link>
+            {!(cardData.removeBranding && ownerTier !== 'starter') && (
+                <div className={`bg-white border-t border-gray-200 py-6 px-6 ${cardData.stickyActionBar ? 'mb-20' : ''}`}>
+                    <div className="max-w-4xl mx-auto text-center">
+                        <p className="text-gray-600 mb-3">{t('Impressed? Create your own digital business card in minutes.')}</p>
+                        <Link
+                            to="/"
+                            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors mb-6"
+                        >
+                            {t('Get Started Free')}
+                        </Link>
 
-                    <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-400 border-t border-gray-100 pt-6">
-                        <span>© {new Date().getFullYear()} Really Simple Apps</span>
-                        <Link to="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
-                        <Link to="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
-                        <Link to="/cookies" className="hover:text-gray-600 transition-colors">Cookies</Link>
+                        <div className="flex flex-wrap justify-center gap-6 text-xs text-gray-400 border-t border-gray-100 pt-6">
+                            <span>© {new Date().getFullYear()} Really Simple Apps</span>
+                            <Link to="/privacy" className="hover:text-gray-600 transition-colors">{t('Privacy')}</Link>
+                            <Link to="/terms" className="hover:text-gray-600 transition-colors">{t('Terms')}</Link>
+                            <Link to="/cookies" className="hover:text-gray-600 transition-colors">{t('Cookies')}</Link>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

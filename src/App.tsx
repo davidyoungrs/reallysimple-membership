@@ -4,6 +4,7 @@ import { LandingPage } from './components/LandingPage';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { TierProvider } from './contexts/TierContext';
 
 // Lazy Load Pages
 const WordPressHome = lazy(() => import('./components/WordPressHome').then(module => ({ default: module.WordPressHome })));
@@ -63,84 +64,86 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/wordpress-home" element={<WordPressHome />} />
+      <TierProvider>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/wordpress-home" element={<WordPressHome />} />
 
-          {/* Auth Routes - Keep eager or lazy? Clerk components are heavy but these are wrappers. Let's keep inline for now as they are small wrappers */}
-          <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
-          <Route
-            path="/sign-up/*"
-            element={
-              settings['disable_registrations'] ? (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Registrations Closed</h1>
-                  <p className="text-gray-600 max-w-md">
-                    New account registrations are currently disabled. Please try again later.
-                  </p>
-                  <a href="/" className="mt-6 text-blue-600 hover:text-blue-800 font-medium">Return Home</a>
-                </div>
-              ) : (
-                <div className="flex justify-center items-center min-h-screen bg-gray-50"><SignUp routing="path" path="/sign-up" /></div>
-              )
-            }
-          />
+            {/* Auth Routes */}
+            <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
+            <Route
+              path="/sign-up/*"
+              element={
+                settings['disable_registrations'] ? (
+                  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Registrations Closed</h1>
+                    <p className="text-gray-600 max-w-md">
+                      New account registrations are currently disabled. Please try again later.
+                    </p>
+                    <a href="/" className="mt-6 text-blue-600 hover:text-blue-800 font-medium">Return Home</a>
+                  </div>
+                ) : (
+                  <div className="flex justify-center items-center min-h-screen bg-gray-50"><SignUp routing="path" path="/sign-up" /></div>
+                )
+              }
+            />
 
-          {/* Public Card Route */}
-          <Route path="/card/:slug" element={<PublicCard />} />
+            {/* Public Card Route */}
+            <Route path="/card/:slug" element={<PublicCard />} />
 
-          {/* Policy Routes */}
-          <Route path="/:type" element={<PolicyPage />} />
+            {/* Policy Routes */}
+            <Route path="/:type" element={<PolicyPage />} />
 
-          {/* Protected App Route */}
-          <Route
-            path="/app"
-            element={
-              <>
-                <SignedIn>
-                  <RequireVerifiedEmail>
-                    <CardBuilder />
-                  </RequireVerifiedEmail>
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
+            {/* Protected App Route */}
+            <Route
+              path="/app"
+              element={
+                <>
+                  <SignedIn>
+                    <RequireVerifiedEmail>
+                      <CardBuilder />
+                    </RequireVerifiedEmail>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
 
-          {/* Protected Dashboard Route */}
-          <Route
-            path="/dashboard"
-            element={
-              <>
-                <SignedIn>
-                  <RequireVerifiedEmail>
-                    <Dashboard />
-                  </RequireVerifiedEmail>
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
+            {/* Protected Dashboard Route */}
+            <Route
+              path="/dashboard"
+              element={
+                <>
+                  <SignedIn>
+                    <RequireVerifiedEmail>
+                      <Dashboard />
+                    </RequireVerifiedEmail>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
 
-          {/* Super Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="cards" element={<AdminCards />} />
-            <Route path="security" element={<AdminSecurity />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            {/* Super Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="cards" element={<AdminCards />} />
+              <Route path="security" element={<AdminSecurity />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* Redirect unknown routes to home */}
-          <Route path="/licenses" element={<Licenses />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+            {/* Redirect unknown routes to home */}
+            <Route path="/licenses" element={<Licenses />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </TierProvider>
     </BrowserRouter>
   );
 }

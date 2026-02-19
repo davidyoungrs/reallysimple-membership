@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { businessCards } from '../src/db/schema.js';
+import { businessCards, users } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { PKPass } from 'passkit-generator';
 import fs from 'fs';
@@ -40,10 +40,18 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
     try {
         console.log(`[PassGen] Generating Apple Pass for slug: ${slug}`);
 
-        const cards = await db.select().from(businessCards).where(eq(businessCards.slug, slug)).limit(1);
-        if (cards.length === 0) return res.status(404).send('Card not found');
+        const results = await db.select({
+            card: businessCards,
+            user: users
+        })
+            .from(businessCards)
+            .leftJoin(users, eq(businessCards.userId, users.clerkId))
+            .where(eq(businessCards.slug, slug))
+            .limit(1);
 
-        const card = cards[0];
+        if (results.length === 0) return res.status(404).send('Card not found');
+
+        const { card, user } = results[0];
         const data = card.data as any;
 
         const teamId = process.env.APPLE_TEAM_ID;
@@ -91,6 +99,13 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
                 labelColor: data.wallet?.labelColor || 'rgb(0,0,0)',
             }
         );
+
+        if (user && user.tier !== 'grandfathered' && user.tier !== 'business' && user.currentPeriodEnd) {
+            (pass as any).setExpirationDate(user.currentPeriodEnd);
+            if (user.subscriptionStatus === 'canceled' || (user.subscriptionStatus === 'past_due' && user.currentPeriodEnd < new Date())) {
+                (pass as any).voided = true;
+            }
+        }
 
         pass.type = 'storeCard';
 
@@ -184,10 +199,18 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
 
     try {
         console.log(`[PassGen] Generating Google Pass for slug: ${slug}`);
-        const cards = await db.select().from(businessCards).where(eq(businessCards.slug, slug)).limit(1);
-        if (!cards.length) return res.status(404).json({ error: 'Card not found' });
+        const results = await db.select({
+            cardRecord: businessCards,
+            user: users
+        })
+            .from(businessCards)
+            .leftJoin(users, eq(businessCards.userId, users.clerkId))
+            .where(eq(businessCards.slug, slug))
+            .limit(1);
 
-        const cardRecord = cards[0];
+        if (!results.length) return res.status(404).json({ error: 'Card not found' });
+
+        const { cardRecord, user } = results[0];
         const card = cardRecord.data as any;
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v2`;
@@ -216,6 +239,20 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                 genericObjects: [{
                     id: objectId,
                     classId: classId,
+                    ...(user?.currentPeriodEnd && user.tier !== 'grandfathered' && user.tier !== 'business' ? {
+                        validTimeInterval: {
+                            end: {
+                                date: {
+                                    year: user.currentPeriodEnd.getFullYear(),
+                                    month: user.currentPeriodEnd.getMonth() + 1,
+                                    day: user.currentPeriodEnd.getDate(),
+                                    hours: user.currentPeriodEnd.getHours(),
+                                    minutes: user.currentPeriodEnd.getMinutes(),
+                                    seconds: user.currentPeriodEnd.getSeconds()
+                                }
+                            }
+                        }
+                    } : {}),
                     genericType: 'GENERIC_TYPE_UNSPECIFIED',
                     hexBackgroundColor: card.wallet?.backgroundColor || card.color_primary || '#4f46e5',
                     logo: {

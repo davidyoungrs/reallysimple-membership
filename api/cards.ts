@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { businessCards, cardViews, cardClicks } from '../src/db/schema.js';
+import { businessCards, cardViews, cardClicks, users } from '../src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import { secureEndpoint } from './_utils/security.js';
@@ -156,7 +156,19 @@ async function handleGetPublicCard(req: VercelRequest, res: VercelResponse) {
     }
     if (!slug) return res.status(400).json({ error: 'Missing slug' });
 
-    const cards = await db.select().from(businessCards).where(eq(businessCards.slug, slug)).limit(1);
+    const cards = await db.select({
+        id: businessCards.id,
+        uid: businessCards.uid,
+        userId: businessCards.userId,
+        data: businessCards.data,
+        slug: businessCards.slug,
+        ownerTier: users.tier
+    })
+        .from(businessCards)
+        .leftJoin(users, eq(users.clerkId, businessCards.userId))
+        .where(eq(businessCards.slug, slug))
+        .limit(1);
+
     if (cards.length === 0) return res.status(404).json({ error: 'Card not found' });
     return res.status(200).json({ success: true, card: cards[0] });
 }

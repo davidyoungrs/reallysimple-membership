@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { generateSlug, validateSlugFormat } from '../utils/slugUtils';
+import { Link } from 'react-router-dom';
 
 interface SlugCustomizerProps {
     value: string | undefined;
@@ -9,11 +10,12 @@ interface SlugCustomizerProps {
     fullName: string;
     currentCardId?: number | null;
     onStatusChange?: (status: SlugStatus, suggestion?: string) => void;
+    disabled?: boolean;
 }
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid';
 
-export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange }: SlugCustomizerProps) {
+export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled }: SlugCustomizerProps) {
     const { t } = useTranslation();
     const [slug, setSlug] = useState(value || '');
     const [status, setStatus] = useState<SlugStatus>('idle');
@@ -165,18 +167,29 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
                             type="text"
                             value={slug}
                             onChange={(e) => handleSlugChange(e.target.value)}
+                            disabled={disabled}
                             placeholder="your-name"
                             className={`w-full px-4 py-2 pr-10 rounded-lg border ${status === 'available' ? 'border-green-500' :
                                 status === 'taken' || status === 'reserved' || status === 'invalid' ? 'border-red-500' :
                                     'border-gray-300'
-                                } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                                } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {getStatusIcon()}
+                            {disabled ? <AlertCircle className="w-4 h-4 text-gray-400" /> : getStatusIcon()}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {disabled && (
+                <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-lg">
+                    <AlertCircle className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs text-blue-700 font-medium">
+                        {t('Custom URLs are available on Professional plans and above.')}
+                    </span>
+                    <Link to="/pricing" className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</Link>
+                </div>
+            )}
 
             <div className="flex items-center justify-between text-xs">
                 <div>{getStatusText()}</div>

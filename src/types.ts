@@ -38,6 +38,7 @@ export interface CardData {
     embeds: { type: 'youtube' | 'spotify' | 'vimeo' | 'tiktok' | 'instagram'; url: string; title?: string }[];
     sections?: Section[];
     wallet?: WalletData;
+    removeBranding?: boolean; // Tiers above starter can remove "Powered by"
 }
 
 export interface WalletData {

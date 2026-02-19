@@ -11,6 +11,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { OnboardingTour } from './OnboardingTour';
 import { WalletBuilder, WalletPreview } from './WalletBuilder';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { useTier } from '../contexts/TierContext';
 
 // Declare Clerk on window for TypeScript
 declare global {
@@ -103,6 +104,7 @@ export function CardBuilder() {
     const [showTour, setShowTour] = useState(false);
     const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
     const { hasFeature, loading: featuresLoading } = useFeatureFlag();
+    const { tier, isFeatureEnabled } = useTier();
 
     // Reset to card mode if wallet access is revoked
     useEffect(() => {
@@ -258,9 +260,11 @@ export function CardBuilder() {
 
     // Save card to database
     const handleSaveCard = async () => {
-        // Check if user is trying to create a new card when they already have 2
-        if (!currentCardId && savedCards.length >= 2) {
-            alert(t('You can only save up to 2 cards. Please load an existing card to update it, or delete one first.'));
+        // Check if user is trying to create a new card based on tier limits
+        const maxCards = tier === 'starter' ? 1 : 5; // Starter: 1, Pro/Pro+: 5, Business/Grandfathered: allowed by isFeatureEnabled
+
+        if (!currentCardId && savedCards.length >= maxCards && tier !== 'grandfathered' && tier !== 'business') {
+            alert(t('You have reached the maximum number of cards for your plan ({{count}}). Please upgrade to create more.', { count: maxCards }));
             setSaveStatus('error');
             setTimeout(() => setSaveStatus('idle'), 3000);
             return;
@@ -435,13 +439,13 @@ export function CardBuilder() {
                                 {/* New Card Option */}
                                 <button
                                     onClick={handleNewCard}
-                                    disabled={savedCards.length >= 2 && !currentCardId}
-                                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-200 flex items-center gap-2 ${savedCards.length >= 2 && !currentCardId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    title={savedCards.length >= 2 && !currentCardId ? 'Maximum 2 cards allowed' : ''}
+                                    disabled={!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business'}
+                                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-200 flex items-center gap-2 ${(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    title={(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') ? t('Maximum cards allowed for your plan reached') : ''}
                                 >
                                     <span className="font-medium text-blue-600">{t('New Card')}</span>
-                                    {savedCards.length >= 2 && !currentCardId && (
-                                        <span className="text-xs text-gray-500 ml-auto">(Limit reached)</span>
+                                    {(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') && (
+                                        <span className="text-xs text-gray-500 ml-auto">({t('Limit reached')})</span>
                                     )}
                                 </button>
 

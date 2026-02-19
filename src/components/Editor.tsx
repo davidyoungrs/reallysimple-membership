@@ -1,11 +1,13 @@
 import { type CardData, type SocialLink, type SocialPlatform, type PhoneNumber } from '../types';
-import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle } from 'lucide-react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlugCustomizer } from './SlugCustomizer';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useTier } from '../contexts/TierContext';
+import { Link } from 'react-router-dom';
 
 interface SortableSocialLinkProps {
     link: SocialLink;
@@ -213,6 +215,7 @@ interface EditorProps {
 
 export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: EditorProps) {
     const { t } = useTranslation();
+    const { isFeatureEnabled } = useTier();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
@@ -440,6 +443,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         fullName={data.fullName}
                         currentCardId={currentCardId}
                         onStatusChange={onSlugStatusChange}
+                        disabled={!isFeatureEnabled('custom_slug')}
                     />
                 </div>
             </div>
@@ -525,11 +529,22 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Rich Visual Media')}</h3>
                     <button
                         onClick={addEmbed}
-                        className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors"
+                        disabled={!isFeatureEnabled('rich_media')}
+                        className={`text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors ${!isFeatureEnabled('rich_media') ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <Plus className="w-4 h-4" /> {t('Add Embed')}
                     </button>
                 </div>
+
+                {!isFeatureEnabled('rich_media') && (
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                        <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs text-blue-800">
+                            {t('Rich media embeds (YouTube, Spotify, etc.) are available on Professional Plus plans.')}
+                        </span>
+                        <Link to="/pricing" className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</Link>
+                    </div>
+                )}
 
                 <div className="space-y-3">
                     {(data.embeds || []).map((embed, index) => (
@@ -1045,6 +1060,38 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                                 <span className="text-gray-500 text-xs uppercase">{data.textColor || '#ffffff'}</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            {/* Remove Branding Setting */}
+            <div className="pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">{t('Remove Branding')}</label>
+                        <p className="text-xs text-gray-500">{t('Hide "Powered by" footer on public card')}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                            <button
+                                disabled={!isFeatureEnabled('remove_branding')}
+                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => handleChange('removeBranding', true)}
+                            >
+                                {t('On')}
+                            </button>
+                            <button
+                                disabled={!isFeatureEnabled('remove_branding')}
+                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${!data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => handleChange('removeBranding', false)}
+                            >
+                                {t('Off')}
+                            </button>
+                        </div>
+                        {!isFeatureEnabled('remove_branding') && (
+                            <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline">
+                                {t('UPGRADE TO REMOVE')}
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

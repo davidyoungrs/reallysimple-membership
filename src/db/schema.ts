@@ -2,7 +2,12 @@ import { pgTable, serial, text, timestamp, jsonb, boolean, uuid, integer } from 
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
+    clerkId: text('clerk_id').unique(), // External ID from Clerk
     email: text('email').notNull().unique(),
+    tier: text('tier').default('starter').notNull(), // 'starter', 'pro', 'pro_plus', 'business', 'grandfathered'
+    stripeCustomerId: text('stripe_customer_id'),
+    subscriptionStatus: text('subscription_status'), // 'active', 'trailing', 'past_due', 'canceled'
+    currentPeriodEnd: timestamp('current_period_end'),
     createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -80,4 +85,15 @@ export const leads = pgTable('leads', {
     note: text('note'),
     submittedAt: timestamp('submitted_at').defaultNow(),
     isRead: boolean('is_read').default(false),
+});
+
+export const walletPushRegistrations = pgTable('wallet_push_registrations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: text('user_id'), // Link to auth provider ID
+    deviceLibraryIdentifier: text('device_library_identifier').notNull(),
+    pushToken: text('push_token').notNull(),
+    passTypeIdentifier: text('pass_type_identifier').notNull(),
+    serialNumber: text('serial_number').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 });

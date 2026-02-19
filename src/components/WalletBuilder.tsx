@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { type CardData, type WalletData } from '../types';
 import { useTranslation } from 'react-i18next';
-import { Palette, Type, Info, Upload, X } from 'lucide-react';
+import { Palette, Type, Info, Upload, X, AlertCircle } from 'lucide-react';
 import { StripDesigner } from './StripDesigner';
+import { useTier } from '../contexts/TierContext';
+import { Link } from 'react-router-dom';
 
 interface WalletBuilderProps {
     data: CardData;
@@ -11,6 +13,7 @@ interface WalletBuilderProps {
 
 export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     const { t } = useTranslation();
+    const { isFeatureEnabled } = useTier();
     const [showStripDesigner, setShowStripDesigner] = useState(false);
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
@@ -357,11 +360,17 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                 />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button
-                                        onClick={() => setShowStripDesigner(true)}
-                                        className="bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                        onClick={() => {
+                                            if (isFeatureEnabled('strip_designer')) {
+                                                setShowStripDesigner(true);
+                                            }
+                                        }}
+                                        disabled={!isFeatureEnabled('strip_designer')}
+                                        className={`bg-white text-gray-900 px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-colors flex items-center gap-2 ${!isFeatureEnabled('strip_designer') ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <Palette className="w-4 h-4 ml-1" />
                                         {t('Open Designer')}
+                                        {!isFeatureEnabled('strip_designer') && <Link to="/pricing" className="text-[10px] text-blue-600 font-bold ml-1 hover:underline">UPGRADE</Link>}
                                     </button>
                                     <button
                                         onClick={() => {
@@ -381,6 +390,18 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                         {t('The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.')}
                                     </p>
                                 </div>
+
+                                {!isFeatureEnabled('strip_designer') && (
+                                    <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
+                                        <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                        <div className="flex-1">
+                                            <p className="text-xs text-blue-800 font-medium">
+                                                {t('The Strip Image Designer is a Professional Plus feature.')}
+                                            </p>
+                                        </div>
+                                        <Link to="/pricing" className="text-xs text-blue-600 font-bold hover:underline">{t('Upgrade')}</Link>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
