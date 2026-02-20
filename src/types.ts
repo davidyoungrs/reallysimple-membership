@@ -53,6 +53,7 @@ export interface WalletData {
     showCompany?: boolean;
     showNameFields?: boolean;
     stripConfig?: StripConfig;
+    enabled?: boolean;
 }
 
 export interface StripConfig {

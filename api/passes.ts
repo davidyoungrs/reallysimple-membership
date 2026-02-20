@@ -62,6 +62,11 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
 
         const data = applyTierLimits(card.data as any, effectiveTier);
 
+        // Block Wallet generation for Starter tier (lapsed or free)
+        if (effectiveTier === 'starter') {
+            return res.status(403).json({ error: 'Wallet passes are a premium feature. Please upgrade your subscription.' });
+        }
+
         const teamId = process.env.APPLE_TEAM_ID;
         const passTypeId = process.env.APPLE_PASS_TYPE_ID;
 
@@ -231,6 +236,11 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         });
 
         const card = applyTierLimits(cardRecord.data as any, effectiveTier);
+
+        // Block Wallet generation for Starter tier (lapsed or free)
+        if (effectiveTier === 'starter') {
+            return res.status(403).json({ error: 'Wallet passes are a premium feature. Please upgrade your subscription.' });
+        }
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v3`;
         const objectId = `${GOOGLE_ISSUER_ID}.${slug.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`; // Stable ID for auto-syncing

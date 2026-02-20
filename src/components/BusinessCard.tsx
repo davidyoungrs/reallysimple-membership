@@ -13,7 +13,7 @@ interface BusinessCardProps {
     ownerTier?: 'starter' | 'pro' | 'pro_plus' | 'business' | 'grandfathered';
 }
 
-export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
+export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps) {
     const { t } = useTranslation();
     const {
         fullName,
@@ -354,8 +354,8 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                             </div>
                         );
                     })}
-
-                    {data.stickyActionBar ? (
+                    {/* Action Bar (Only for non-starter tiers) */}
+                    {ownerTier !== 'starter' && (data.stickyActionBar ? (
                         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent z-50 backdrop-blur-sm">
                             <div className="flex gap-3 max-w-md mx-auto">
                                 <button
@@ -409,40 +409,40 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                                 </button>
                             </div>
                         </div>
-                    )}
+                    ))}
 
-                    {/* Lead Form Modal */}
-                    <LeadForm
-                        cardId={data.slug || 'unknown'}
-                        isOpen={isLeadFormOpen}
-                        onClose={() => setIsLeadFormOpen(false)}
-                        ownerName={fullName.split(' ')[0]}
-                    />
-
-                    <div className={`flex justify-center pt-2 ${data.stickyActionBar ? 'mb-4' : ''}`}>
-                        <div className="p-2 bg-white rounded-xl shadow-lg">
-                            {/* QR Code - use base URL if current URL is too long */}
-                            {(() => {
-                                try {
-                                    const currentUrl = window.location.href;
-                                    // QR codes have a max capacity. If URL is too long, use base URL
-                                    const qrUrl = currentUrl.length > 2000
-                                        ? window.location.origin + window.location.pathname
-                                        : currentUrl;
-                                    return <QRCodeSVG value={qrUrl} size={48} />;
-                                } catch (error) {
-                                    console.error('QR code generation failed:', error);
-                                    return (
-                                        <div className="w-12 h-12 flex items-center justify-center text-xs text-gray-400">
-                                            QR
-                                        </div>
-                                    );
-                                }
-                            })()}
-                        </div>
-                    </div>
                 </div>
+            </div>
 
+            {/* Lead Form Modal */}
+            <LeadForm
+                cardId={data.slug || 'unknown'}
+                isOpen={isLeadFormOpen}
+                onClose={() => setIsLeadFormOpen(false)}
+                ownerName={fullName.split(' ')[0]}
+            />
+
+            <div className={`flex justify-center pt-2 ${data.stickyActionBar ? 'mb-4' : ''}`}>
+                <div className="p-2 bg-white rounded-xl shadow-lg">
+                    {/* QR Code - use base URL if current URL is too long */}
+                    {(() => {
+                        try {
+                            const currentUrl = window.location.href;
+                            // QR codes have a max capacity. If URL is too long, use base URL
+                            const qrUrl = currentUrl.length > 2000
+                                ? window.location.origin + window.location.pathname
+                                : currentUrl;
+                            return <QRCodeSVG value={qrUrl} size={48} />;
+                        } catch (error) {
+                            console.error('QR code generation failed:', error);
+                            return (
+                                <div className="w-12 h-12 flex items-center justify-center text-xs text-gray-400">
+                                    QR
+                                </div>
+                            );
+                        }
+                    })()}
+                </div>
             </div>
         </div>
     );

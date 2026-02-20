@@ -56,6 +56,11 @@ export function applyTierLimits(data: CardData, tier: SubscriptionTier): CardDat
     limitedData.removeBranding = false;
     limitedData.stickyActionBar = false;
 
+    // Explicitly disable Wallet features on Starter
+    if (limitedData.wallet) {
+        (limitedData.wallet as any).enabled = false;
+    }
+
     // Limit Layouts
     if (limitedData.layoutMode !== 'classic') {
         limitedData.layoutMode = 'classic';
