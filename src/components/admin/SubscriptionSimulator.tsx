@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Play, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Shield, Play, AlertTriangle, ExternalLink, CreditCard } from 'lucide-react';
 import type { SubscriptionTier, SubscriptionStatus } from '../../utils/tier-limits';
 
 export function SubscriptionSimulator() {
@@ -19,6 +19,44 @@ export function SubscriptionSimulator() {
             simulator: 'true'
         });
         return `/card/${slug}?${params.toString()}`;
+    };
+
+    const getApplePassUrl = () => {
+        const params = new URLSearchParams({
+            type: 'apple',
+            slug: slug,
+            sim_tier: tier,
+            sim_status: status || '',
+            sim_end: periodEnd
+        });
+        return `/api/passes?${params.toString()}`;
+    };
+
+    const getGooglePassUrl = () => {
+        const params = new URLSearchParams({
+            type: 'google',
+            slug: slug,
+            sim_tier: tier,
+            sim_status: status || '',
+            sim_end: periodEnd
+        });
+        return `/api/passes?${params.toString()}`;
+    };
+
+    const triggerPushUpdate = async () => {
+        if (!slug) return;
+        try {
+            const res = await fetch('/api/admin/push-test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug })
+            });
+            const data = await res.json();
+            alert(data.message || 'Push triggered');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to trigger push');
+        }
     };
 
     return (
@@ -104,14 +142,42 @@ export function SubscriptionSimulator() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end pt-4">
+                <div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-gray-100 mt-4">
+                    <button
+                        onClick={() => window.open(getApplePassUrl(), '_blank')}
+                        disabled={!slug}
+                        className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-black transition-colors disabled:opacity-50"
+                    >
+                        <CreditCard className="w-4 h-4" />
+                        Download Apple Pass (Sim)
+                    </button>
+
+                    <button
+                        onClick={() => window.open(getGooglePassUrl(), '_blank')}
+                        disabled={!slug}
+                        className="flex items-center gap-2 bg-[#1a73e8] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    >
+                        <CreditCard className="w-4 h-4" />
+                        Save to Google (Sim)
+                    </button>
+
+                    <button
+                        onClick={triggerPushUpdate}
+                        disabled={!slug}
+                        className="flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-amber-700 transition-colors disabled:opacity-50"
+                        title="Simulate an APNs push to trigger phones to check for updates"
+                    >
+                        <Shield className="w-4 h-4" />
+                        Trigger Push Update
+                    </button>
+
                     <button
                         onClick={() => window.open(getSimulatedUrl(), '_blank')}
                         disabled={!slug}
                         className="flex items-center gap-2 bg-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Play className="w-4 h-4" />
-                        Launch Simulation
+                        Preview Digital Card
                         <ExternalLink className="w-3.5 h-3.5" />
                     </button>
                 </div>

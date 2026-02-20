@@ -54,9 +54,13 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
         const { card, user } = results[0];
         const { getEffectiveTier, applyTierLimits } = await import('../src/utils/tier-limits.js');
 
+        // Allow simulator overrides for testing
+        const simStatus = req.query.sim_status as string;
+        const simTier = req.query.sim_tier as string;
+
         const effectiveTier = getEffectiveTier({
-            tier: (user?.tier as any) || 'starter',
-            status: user?.subscriptionStatus as any,
+            tier: (simTier as any) || (user?.tier as any) || 'starter',
+            status: (simStatus as any) || (user?.subscriptionStatus as any),
             currentPeriodEnd: user?.currentPeriodEnd ?? null
         });
 
@@ -100,30 +104,22 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
             { model: modelPath, certificates: certs as any },
             {
                 serialNumber: card.uid,
-                webServiceURL: `${protocol}://${host}/api/passes`,
+                webServiceURL: `${protocol}://${host}/api/v1/passes`, // Standard path for Passbook Web service
                 authenticationToken: Buffer.from(card.uid).toString('base64'),
-                description: 'Digital Business Card',
-                logoText: data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card'),
+                description: effectiveTier === 'starter' ? 'Digital Card - Subscription Lapsed' : 'Digital Business Card',
+                logoText: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : (data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card')),
                 organizationName: data.company || 'Contact Tree',
                 passTypeIdentifier: passTypeId,
                 teamIdentifier: teamId,
                 backgroundColor: data.wallet?.backgroundColor || 'rgb(255,255,255)',
                 foregroundColor: data.wallet?.foregroundColor || 'rgb(0,0,0)',
                 labelColor: data.wallet?.labelColor || 'rgb(0,0,0)',
+                voided: effectiveTier === 'starter'
             }
         );
 
         if (user && user.tier !== 'grandfathered' && user.tier !== 'business' && user.currentPeriodEnd) {
             (pass as any).setExpirationDate(user.currentPeriodEnd);
-            if (user.subscriptionStatus === 'canceled' || (user.subscriptionStatus === 'past_due' && user.currentPeriodEnd < new Date())) {
-                (pass as any).voided = true;
-            }
-        }
-
-        // --- LAPSED / STARTER TIER VOIDING ---
-        if (effectiveTier === 'starter') {
-            (pass as any).voided = true;
-            (pass as any).description = 'Digital Card - Subscription Lapsed';
         }
 
         pass.type = 'storeCard';
@@ -255,9 +251,13 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         const { cardRecord, user } = results[0];
         const { getEffectiveTier, applyTierLimits } = await import('../src/utils/tier-limits.js');
 
+        // Allow simulator overrides for testing
+        const simStatus = req.query.sim_status as string;
+        const simTier = req.query.sim_tier as string;
+
         const effectiveTier = getEffectiveTier({
-            tier: (user?.tier as any) || 'starter',
-            status: user?.subscriptionStatus as any,
+            tier: (simTier as any) || (user?.tier as any) || 'starter',
+            status: (simStatus as any) || (user?.subscriptionStatus as any),
             currentPeriodEnd: user?.currentPeriodEnd ?? null
         });
 
