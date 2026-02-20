@@ -106,8 +106,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // console.log('Clerk Users Response:', JSON.stringify(clerkUsers, null, 2));
 
             // Handle potential difference in Clerk SDK versions (getUserList usually returns User[])
-            const userData = Array.isArray(clerkUsers) ? clerkUsers : (clerkUsers as any).data;
-            const totalCount = Array.isArray(clerkUsers) ? await clerkClient.users.getCount() : (clerkUsers as any).totalCount;
+            const userData = (Array.isArray(clerkUsers) ? clerkUsers : (clerkUsers as any)?.data) || [];
+            const totalCount = Array.isArray(clerkUsers) ? await clerkClient.users.getCount() : (clerkUsers as any)?.totalCount || 0;
 
             // Enrich with local tier data
             if (userData.length > 0) {
