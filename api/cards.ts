@@ -162,7 +162,9 @@ async function handleGetPublicCard(req: VercelRequest, res: VercelResponse) {
         userId: businessCards.userId,
         data: businessCards.data,
         slug: businessCards.slug,
-        ownerTier: users.tier
+        ownerTier: users.tier,
+        subscriptionStatus: users.subscriptionStatus,
+        currentPeriodEnd: users.currentPeriodEnd
     })
         .from(businessCards)
         .leftJoin(users, eq(users.clerkId, businessCards.userId))
@@ -170,7 +172,52 @@ async function handleGetPublicCard(req: VercelRequest, res: VercelResponse) {
         .limit(1);
 
     if (cards.length === 0) return res.status(404).json({ error: 'Card not found' });
-    return res.status(200).json({ success: true, card: cards[0] });
+
+    const card = cards[0];
+    const { getEffectiveTier, applyTierLimits } = await import('../src/utils/tier-limits.js');
+
+    let effectiveTier = getEffectiveTier({
+        tier: (card.ownerTier as any) || 'starter',
+        status: card.subscriptionStatus as any,
+        currentPeriodEnd: card.currentPeriodEnd
+    });
+
+    // Handle Admin Simulation
+    const { sim_tier, sim_status, sim_end, simulator } = req.query;
+    if (simulator === 'true' && (sim_tier || sim_status || sim_end)) {
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const { verifyToken, createClerkClient } = await import('@clerk/backend');
+                const verifiedToken = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+                const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+                const requester = await clerk.users.getUser(verifiedToken.sub);
+
+                if (requester.publicMetadata?.role === 'admin') {
+                    effectiveTier = getEffectiveTier({
+                        tier: (sim_tier as any) || effectiveTier,
+                        status: (sim_status as any) || 'active',
+                        currentPeriodEnd: sim_end ? new Date(sim_end as string) : null
+                    });
+                }
+            } catch (err) {
+                console.error('Simulator Auth Error:', err);
+            }
+        }
+    }
+
+    // Apply limits to data
+    const limitedData = applyTierLimits(card.data as any, effectiveTier);
+
+    return res.status(200).json({
+        success: true,
+        card: {
+            ...card,
+            data: limitedData,
+            ownerTier: effectiveTier // Override with effective tier for UI
+        }
+    });
 }
 
 async function handleListCards(req: VercelRequest, res: VercelResponse, userId: string) {

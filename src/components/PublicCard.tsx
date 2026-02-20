@@ -4,9 +4,11 @@ import { BusinessCard } from './BusinessCard';
 import { type CardData } from '../types';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@clerk/clerk-react';
 
 export function PublicCard() {
     const { slug } = useParams<{ slug: string }>();
+    const { getToken } = useAuth();
     const { t } = useTranslation();
     const [cardData, setCardData] = useState<CardData | null>(null);
     const [ownerTier, setOwnerTier] = useState<string | null>(null);
@@ -23,11 +25,24 @@ export function PublicCard() {
             }
 
             try {
-                // Get source from search params
+                // Get source and simulation params
                 const searchParams = new URLSearchParams(window.location.search);
                 const source = searchParams.get('src') || 'direct';
+                const isSimulator = searchParams.get('simulator') === 'true';
 
-                const response = await fetch(`/api/cards?slug=${slug}`);
+                let headers: Record<string, string> = {};
+                if (isSimulator) {
+                    try {
+                        const token = await getToken();
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+                    } catch (e) {
+                        console.error('Failed to get simulator token:', e);
+                    }
+                }
+
+                const response = await fetch(`/api/cards?slug=${slug}&${searchParams.toString()}`, {
+                    headers
+                });
 
                 if (!response.ok) {
                     if (response.status === 404) {

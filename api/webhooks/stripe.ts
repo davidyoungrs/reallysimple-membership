@@ -1,5 +1,5 @@
 import { db } from '../../src/db/index.js';
-import { users } from '../../src/db/schema.js';
+import { users, walletPushRegistrations, businessCards } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -102,6 +102,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
             currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
         } as any)
         .where(eq(users.stripeCustomerId, customerId));
+
+    const user = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
+    if (user[0]?.clerkId) {
+        await notifyDevices(user[0].clerkId);
+    }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -115,6 +120,40 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         } as any)
         .where(eq(users.stripeCustomerId, customerId));
 
-    // Trigger Wallet update logic here in a real scenario
+    const user = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
+    if (user[0]?.clerkId) {
+        await notifyDevices(user[0].clerkId);
+    }
+
     console.log(`[Stripe] Subscription deleted for customer ${customerId}. Reset to starter.`);
+}
+
+async function notifyDevices(userId: string) {
+    try {
+        // 1. Find all registered devices for this user's cards
+        const devices = await db.select({
+            pushToken: walletPushRegistrations.pushToken,
+            passType: walletPushRegistrations.passTypeIdentifier
+        })
+            .from(walletPushRegistrations)
+            .innerJoin(businessCards, eq(walletPushRegistrations.serialNumber, businessCards.uid))
+            .where(eq(businessCards.userId, userId));
+
+        if (devices.length === 0) return;
+
+        console.log(`[Push] Triggering updates for ${devices.length} devices...`);
+
+        // 2. Group by pass type and send push
+        // Note: Real implementation requires APNs certificates and HTTP/2 requests.
+        // We'll log the intention here for the user to configure.
+        for (const device of devices) {
+            // Placeholder for APNs HTTP/2 request:
+            // POST https://api.push.apple.com/3/device/${device.pushToken}
+            // Headers: apns-topic: ${device.passType}
+            // Body: {}
+            console.log(`[Push] Mock APNs push sent to ${device.pushToken} for topic ${device.passType}`);
+        }
+    } catch (err) {
+        console.error('Failed to notify devices:', err);
+    }
 }

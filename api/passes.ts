@@ -52,7 +52,15 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
         if (results.length === 0) return res.status(404).send('Card not found');
 
         const { card, user } = results[0];
-        const data = card.data as any;
+        const { getEffectiveTier, applyTierLimits } = await import('../src/utils/tier-limits.js');
+
+        const effectiveTier = getEffectiveTier({
+            tier: (user?.tier as any) || 'starter',
+            status: user?.subscriptionStatus as any,
+            currentPeriodEnd: user?.currentPeriodEnd ?? null
+        });
+
+        const data = applyTierLimits(card.data as any, effectiveTier);
 
         const teamId = process.env.APPLE_TEAM_ID;
         const passTypeId = process.env.APPLE_PASS_TYPE_ID;
@@ -85,10 +93,15 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
             return res.status(500).json({ error: 'Model.pass not found' });
         }
 
+        const host = req.headers.host || 'contact-tree.vercel.app';
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+
         const pass = await PKPass.from(
             { model: modelPath, certificates: certs as any },
             {
                 serialNumber: card.uid,
+                webServiceURL: `${protocol}://${host}/api/passes`,
+                authenticationToken: Buffer.from(card.uid).toString('base64'),
                 description: 'Digital Business Card',
                 logoText: data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card'),
                 organizationName: data.company || 'Contact Tree',
@@ -125,7 +138,7 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
         addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
 
         // Fields
-        pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || data.name || 'Your Name' });
+        pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || 'Your Name' });
 
         if (data.jobTitle && data.wallet?.showRole !== false) {
             pass.secondaryFields.push({ key: 'role', label: 'Role', value: data.jobTitle });
@@ -135,8 +148,6 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
         }
 
         // Back Fields
-        const protocol = req.headers['x-forwarded-proto'] || 'http';
-        const host = req.headers.host || 'localhost';
         const publicCardUrl = `${protocol}://${host}/card/${slug}`;
 
         pass.backFields.push({ key: 'card-url', label: 'My Digital Card', value: 'Open Card', attributedValue: `<a href="${publicCardUrl}">Open Card</a>` } as any);
@@ -211,7 +222,15 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         if (!results.length) return res.status(404).json({ error: 'Card not found' });
 
         const { cardRecord, user } = results[0];
-        const card = cardRecord.data as any;
+        const { getEffectiveTier, applyTierLimits } = await import('../src/utils/tier-limits.js');
+
+        const effectiveTier = getEffectiveTier({
+            tier: (user?.tier as any) || 'starter',
+            status: user?.subscriptionStatus as any,
+            currentPeriodEnd: user?.currentPeriodEnd ?? null
+        });
+
+        const card = applyTierLimits(cardRecord.data as any, effectiveTier);
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v3`;
         const objectId = `${GOOGLE_ISSUER_ID}.${slug.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`; // Stable ID for auto-syncing
@@ -234,7 +253,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
 
         const textModules: any[] = [
             { header: 'Phone', body: card.phoneNumbers?.[0]?.number || '', id: 'phone' },
-            { header: 'Email', body: card.email || '', id: 'email' },
+            { header: 'Email', body: card.socialLinks?.find((l: any) => l.platform === 'email')?.url.replace('mailto:', '') || user?.email || '', id: 'email' },
             { header: 'Website', body: `https://contact-tree.vercel.app/card/${slug}`, id: 'website' }
         ];
 

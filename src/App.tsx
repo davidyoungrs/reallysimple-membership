@@ -19,6 +19,7 @@ const AdminUsers = lazy(() => import('./components/admin/AdminUsers').then(modul
 const AdminCards = lazy(() => import('./components/admin/AdminCards').then(module => ({ default: module.AdminCards })));
 const AdminSecurity = lazy(() => import('./components/admin/AdminSecurity').then(module => ({ default: module.AdminSecurity })));
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(module => ({ default: module.AdminSettings })));
+const SubscriptionSimulator = lazy(() => import('./components/admin/SubscriptionSimulator').then(module => ({ default: module.SubscriptionSimulator })));
 const Licenses = lazy(() => import('./components/Licenses').then(module => ({ default: module.Licenses })));
 
 function App() {
@@ -136,6 +137,7 @@ function App() {
               <Route path="cards" element={<AdminCards />} />
               <Route path="security" element={<AdminSecurity />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="simulator" element={<SubscriptionSimulator />} />
             </Route>
 
             {/* Redirect unknown routes to home */}
