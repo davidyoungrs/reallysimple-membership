@@ -6,7 +6,7 @@ export const users = pgTable('users', {
     email: text('email').notNull().unique(),
     tier: text('tier').default('starter').notNull(), // 'starter', 'pro', 'pro_plus', 'business', 'grandfathered'
     stripeCustomerId: text('stripe_customer_id'),
-    subscriptionStatus: text('subscription_status'), // 'active', 'trailing', 'past_due', 'canceled'
+    subscriptionStatus: text('subscription_status'), // 'active', 'trialing', 'past_due', 'canceled'
     currentPeriodEnd: timestamp('current_period_end'),
     createdAt: timestamp('created_at').defaultNow(),
 });

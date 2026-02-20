@@ -9,7 +9,7 @@ export function SubscriptionSimulator() {
     const [periodEnd, setPeriodEnd] = useState(new Date().toISOString().split('T')[0]);
 
     const tiers: SubscriptionTier[] = ['starter', 'pro', 'pro_plus', 'business', 'grandfathered'];
-    const statuses: SubscriptionStatus[] = ['active', 'trailing', 'past_due', 'canceled', 'incomplete', 'unpaid'];
+    const statuses: SubscriptionStatus[] = ['active', 'trialing', 'past_due', 'canceled', 'incomplete', 'unpaid'];
 
     const getSimulatedUrl = () => {
         const params = new URLSearchParams({

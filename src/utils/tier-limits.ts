@@ -1,7 +1,7 @@
 import type { CardData } from '../types';
 
 export type SubscriptionTier = 'starter' | 'pro' | 'pro_plus' | 'business' | 'grandfathered';
-export type SubscriptionStatus = 'active' | 'trailing' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'unpaid' | null;
+export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'unpaid' | null;
 
 export interface UserSubscriptionInfo {
     tier: SubscriptionTier;
@@ -18,8 +18,8 @@ export function getEffectiveTier(info: UserSubscriptionInfo): SubscriptionTier {
     // Grandfathered and Business accounts are always active in this logic
     if (tier === 'grandfathered' || tier === 'business') return tier;
 
-    // Active or Trialing accounts are good
-    if (status === 'active' || status === 'trailing') return tier;
+    // Active, Trialing, or Null (legacy/manual) accounts are good
+    if (status === 'active' || status === 'trialing' || !status) return tier;
 
     const now = new Date();
     const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : now;
