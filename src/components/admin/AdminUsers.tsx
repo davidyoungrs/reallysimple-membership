@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon } from 'lucide-react';
+import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon, Zap, Star, Briefcase, Award } from 'lucide-react';
 
 export function AdminUsers() {
     const { getToken } = useAuth();
@@ -109,6 +109,26 @@ export function AdminUsers() {
         }
     };
 
+    const renderTierBadge = (tier: string) => {
+        const tiers: Record<string, { label: string, color: string, icon: any }> = {
+            'starter': { label: 'Starter', color: 'bg-gray-100 text-gray-700', icon: Zap },
+            'pro': { label: 'Pro', color: 'bg-blue-100 text-blue-700', icon: Star },
+            'pro_plus': { label: 'Pro+', color: 'bg-green-100 text-green-700', icon: Award },
+            'business': { label: 'Business', color: 'bg-purple-100 text-purple-700', icon: Briefcase },
+            'grandfathered': { label: 'Original', color: 'bg-orange-100 text-orange-700', icon: Shield },
+            'unknown': { label: 'Unknown', color: 'bg-red-100 text-red-700', icon: AlertOctagon }
+        };
+
+        const config = tiers[tier] || tiers['unknown'];
+        const Icon = config.icon;
+
+        return (
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+                <Icon className="w-3 h-3 mr-1" /> {config.label}
+            </span>
+        );
+    };
+
     const openDetailModal = async (userId: string) => {
         setShowDetailModal(true);
         setDetailLoading(true);
@@ -159,6 +179,7 @@ export function AdminUsers() {
                             <tr className="bg-gray-50 border-b border-gray-100">
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                                 <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -204,6 +225,9 @@ export function AdminUsers() {
                                                 Active
                                             </span>
                                         )}
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        {renderTierBadge(user.tier || 'starter')}
                                     </td>
                                     <td className="py-4 px-6">
                                         {user.publicMetadata?.role === 'admin' ? (
@@ -303,6 +327,32 @@ export function AdminUsers() {
                                                 <h3 className="text-lg font-bold">{userDetail?.user.firstName} {userDetail?.user.lastName}</h3>
                                                 <p className="text-gray-500">{userDetail?.user.emailAddresses?.[0]?.emailAddress}</p>
                                                 <p className="text-xs text-gray-400">ID: {userDetail?.user.id}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-semibold">Subscription Plan</h4>
+                                                {renderTierBadge((userDetail?.user as any).tier || 'starter')}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <select
+                                                    defaultValue={(userDetail?.user as any).tier || 'starter'}
+                                                    onChange={(e) => handleAction('update_tier', userDetail.user.id, { tier: e.target.value })}
+                                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="starter">Starter (Free)</option>
+                                                    <option value="pro">Pro ($9/mo)</option>
+                                                    <option value="pro_plus">Pro+ ($19/mo)</option>
+                                                    <option value="business">Business ($49/mo)</option>
+                                                    <option value="grandfathered">Grandfathered</option>
+                                                </select>
+                                                <button
+                                                    onClick={() => openDetailModal(userDetail.user.id)}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                                >
+                                                    Update
+                                                </button>
                                             </div>
                                         </div>
 

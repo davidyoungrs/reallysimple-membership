@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { users, businessCards, cardViews, cardClicks, systemSettings, securityEvents, apiLogs } from '../../src/db/schema.js';
-import { count, eq, sql, desc, ilike, or, and, gte } from 'drizzle-orm';
+import { count, eq, sql, desc, ilike, or, and, gte, inArray } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
@@ -109,6 +109,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const userData = Array.isArray(clerkUsers) ? clerkUsers : (clerkUsers as any).data;
             const totalCount = Array.isArray(clerkUsers) ? await clerkClient.users.getCount() : (clerkUsers as any).totalCount;
 
+            // Enrich with local tier data
+            if (userData.length > 0) {
+                const clerkIds = userData.map((u: any) => u.id);
+                const localUsers = await db.select({
+                    clerkId: users.clerkId,
+                    tier: users.tier
+                })
+                    .from(users)
+                    .where(inArray(users.clerkId, clerkIds));
+
+                const tierMap = localUsers.reduce((acc, curr) => {
+                    if (curr.clerkId) acc[curr.clerkId] = curr.tier;
+                    return acc;
+                }, {} as Record<string, string>);
+
+                const enrichedUsers = userData.map((user: any) => ({
+                    ...user,
+                    tier: tierMap[user.id] || 'starter'
+                }));
+
+                return res.status(200).json({
+                    data: enrichedUsers,
+                    totalCount: totalCount
+                });
+            }
+
             return res.status(200).json({
                 data: userData,
                 totalCount: totalCount
@@ -149,13 +175,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const userId = req.query.id as string;
             if (!userId) return res.status(400).json({ error: 'Missing user ID' });
 
-            const [clerkUser, userCards] = await Promise.all([
+            const [clerkUser, userCards, localUser] = await Promise.all([
                 clerkClient.users.getUser(userId),
-                db.select().from(businessCards).where(eq(businessCards.userId, userId))
+                db.select().from(businessCards).where(eq(businessCards.userId, userId)),
+                db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, userId)).limit(1)
             ]);
 
             return res.status(200).json({
-                user: clerkUser,
+                user: { ...clerkUser, tier: localUser[0]?.tier || 'starter' },
                 cards: userCards
             });
         }
@@ -218,6 +245,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         }
                     }
                 });
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'update_tier') {
+                const { tier } = value;
+                if (!tier) return res.status(400).json({ error: 'Missing tier value' });
+
+                const availableTiers = ['starter', 'pro', 'pro_plus', 'business', 'grandfathered'];
+                if (!availableTiers.includes(tier)) return res.status(400).json({ error: 'Invalid tier' });
+
+                // Fetch current user from Clerk to get email for the local DB
+                const clerkUser = await clerkClient.users.getUser(userId);
+                const email = clerkUser.emailAddresses?.[0]?.emailAddress || 'admin-updated@pending.com';
+
+                await db.insert(users)
+                    .values({ clerkId: userId, tier, email })
+                    .onConflictDoUpdate({
+                        target: users.clerkId,
+                        set: { tier }
+                    });
+
                 return res.status(200).json({ success: true });
             }
 
