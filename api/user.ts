@@ -1,8 +1,10 @@
 import { db } from '../src/db/index.js';
 import { users } from '../src/db/schema.js';
 import { eq, or, sql } from 'drizzle-orm';
-import { verifyToken } from '@clerk/backend';
+import { verifyToken, createClerkClient } from '@clerk/backend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') {
@@ -19,10 +21,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             secretKey: process.env.CLERK_SECRET_KEY,
         });
         const clerkUserId = verifiedToken.sub;
-        const email = (verifiedToken.email as string)?.toLowerCase();
+
+        // Fetch user from Clerk to get the definitive email
+        const fullClerkUser = await clerkClient.users.getUser(clerkUserId);
+        const email = fullClerkUser.emailAddresses?.[0]?.emailAddress?.toLowerCase();
 
         if (!email) {
-            return res.status(400).json({ error: 'Email missing from token' });
+            return res.status(400).json({ error: 'User has no email address in Clerk' });
         }
 
         // Fetch user from DB - Prioritize clerkId, fallback to email
@@ -45,13 +50,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             user = newUser[0];
         } else {
             user = userRecords[0];
-            // Update clerkId if it's missing or different (e.g. email match but first time with clerkId)
-            // Or update email if it changed in Clerk
+            // Fix: If we found user by email but clerkId was missing/wrong, update it
             if (user.clerkId !== clerkUserId || user.email.toLowerCase() !== email) {
                 const updatedUser = await db.update(users)
                     .set({
                         clerkId: clerkUserId,
-                        email: email // Keep email in sync with Clerk's primary
+                        email: email
                     })
                     .where(eq(users.id, user.id))
                     .returning();
