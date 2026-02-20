@@ -5,7 +5,7 @@ import { BusinessCard } from './BusinessCard';
 import { Editor } from './Editor';
 import { loadFromUrl, saveToUrl } from '../utils/urlState';
 import { useTranslation } from 'react-i18next';
-import { ChevronUp, ChevronDown, ArrowLeft, Copy, Check, Trash2, Eye, LayoutDashboard } from 'lucide-react';
+import { ChevronUp, ChevronDown, ArrowLeft, Copy, Check, Trash2, LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
 import { OnboardingTour } from './OnboardingTour';
@@ -84,7 +84,7 @@ const ScaleToFit = ({ children }: { children: React.ReactNode }) => {
 };
 
 export function CardBuilder() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { user } = useUser();
     const location = useLocation();
     const [isEditorOpen, setIsEditorOpen] = useState(true);
@@ -93,7 +93,6 @@ export function CardBuilder() {
     const [showShareCard, setShowShareCard] = useState(false);
     const [copyStatus, setCopyStatus] = useState(false);
     const [savedCards, setSavedCards] = useState<any[]>([]);
-    const [isLoadingCards, setIsLoadingCards] = useState(false);
     const [showCardsDropdown, setShowCardsDropdown] = useState(false);
     const [currentCardId, setCurrentCardId] = useState<number | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -129,7 +128,6 @@ export function CardBuilder() {
 
     // Load saved cards from database
     const loadSavedCards = async () => {
-        setIsLoadingCards(true);
         try {
             const token = await window.Clerk?.session?.getToken();
             if (!token) return [];
@@ -148,8 +146,6 @@ export function CardBuilder() {
             }
         } catch (error) {
             console.error('Error loading cards:', error);
-        } finally {
-            setIsLoadingCards(false);
         }
         return [];
     };
@@ -173,13 +169,6 @@ export function CardBuilder() {
             }
         }
     }, [location.state, savedCards]);
-
-    // Load new/blank card
-    const handleNewCard = () => {
-        setData(initialCardData);
-        setCurrentCardId(null);
-        setShowCardsDropdown(false);
-    };
 
     // Delete a card
     const handleDeleteCard = async (cardId: number) => {
@@ -425,87 +414,6 @@ export function CardBuilder() {
                         {t('My Dashboard')}
                     </Link>
 
-                    {/* Load Card Dropdown */}
-                    <div className="relative w-full" ref={dropdownRef}>
-                        <button
-                            onClick={() => setShowCardsDropdown(!showCardsDropdown)}
-                            className="w-full px-4 py-2 rounded-lg font-medium transition-all shadow-md bg-gray-600 text-white hover:bg-gray-700"
-                        >
-                            {t('Load Card')}
-                        </button>
-
-                        {showCardsDropdown && (
-                            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto">
-                                {/* New Card Option */}
-                                <button
-                                    onClick={handleNewCard}
-                                    disabled={!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business'}
-                                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-200 flex items-center gap-2 ${(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    title={(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') ? t('Maximum cards allowed for your plan reached') : ''}
-                                >
-                                    <span className="font-medium text-blue-600">{t('New Card')}</span>
-                                    {(!currentCardId && savedCards.length >= (tier === 'starter' ? 1 : 5) && tier !== 'grandfathered' && tier !== 'business') && (
-                                        <span className="text-xs text-gray-500 ml-auto">({t('Limit reached')})</span>
-                                    )}
-                                </button>
-
-                                {/* Saved Cards List */}
-                                {isLoadingCards ? (
-                                    <div className="px-4 py-3 text-gray-500 text-sm">{t('Loading...')}</div>
-                                ) : savedCards.length === 0 ? (
-                                    <div className="px-4 py-3 text-gray-500 text-sm">{t('No saved cards')}</div>
-                                ) : (
-                                    savedCards.map((card) => (
-                                        <div
-                                            key={card.id}
-                                            onClick={() => handleLoadCard(card)}
-                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0 flex items-center gap-3 group cursor-pointer"
-                                        >
-                                            {/* Card Preview Thumbnail */}
-                                            <div className="flex-shrink-0 w-20 h-28 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                                <div className="scale-[0.2] origin-top-left" style={{ width: '500px', height: '700px' }}>
-                                                    <BusinessCard data={card.data} />
-                                                </div>
-                                            </div>
-
-                                            {/* Card Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="font-medium text-gray-900 truncate">
-                                                        {card.data.name || card.data.fullName || t('Untitled Card')}
-                                                    </div>
-                                                    {/* View Count Badge */}
-                                                    <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium flex-shrink-0">
-                                                        <Eye className="w-3 h-3" />
-                                                        <span>{card.viewCount || 0}</span>
-                                                    </div>
-                                                </div>
-                                                {card.slug && (
-                                                    <div className="text-xs text-blue-600 font-mono mt-0.5 truncate">
-                                                        {window.location.host}/card/{card.slug}
-                                                    </div>
-                                                )}
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    {t('Last updated')}: {new Date(card.updatedAt).toLocaleDateString(i18n.language)}
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteConfirmCard({ id: card.id, name: card.data.name || card.data.fullName || t('Untitled Card') });
-                                                }}
-                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                                title={t('Delete Card')}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
-
                     <button
                         onClick={handleSaveCard}
                         data-tour="save"
@@ -520,16 +428,7 @@ export function CardBuilder() {
                         {isSaving ? t('Saving...') : saveStatus === 'success' ? t('Saved!') : saveStatus === 'error' ? t('Error') : t('Save Card')}
                     </button>
 
-                    {/* Share Card Button - Only show if card has a slug */}
-                    {data.slug && (
-                        <button
-                            onClick={() => setShowShareCard(!showShareCard)}
-                            className="w-full px-4 py-2 rounded-lg font-medium transition-all shadow-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 flex items-center justify-center gap-2"
-                        >
-                            <Copy className="w-4 h-4" />
-                            {t('Share Card')}
-                        </button>
-                    )}
+                    {/* Share Card Content - Removed button, keeping logic if needed but user asked to remove button */}
                 </div>
 
                 {/* Share Card Dropdown - Outside button container */}

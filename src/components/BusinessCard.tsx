@@ -242,30 +242,46 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                         if (!embedUrl) return null;
 
                         // Improved extraction logic for various platforms
-                        if (embed.type === 'youtube') {
-                            if (embedUrl.includes('youtu.be/')) {
-                                embedUrl = `https://www.youtube.com/embed/${embedUrl.split('youtu.be/')[1]?.split('?')[0]}`;
-                            } else if (embedUrl.includes('youtube.com/watch')) {
-                                const v = new URLSearchParams(embedUrl.split('?')[1]).get('v');
-                                if (v) embedUrl = `https://www.youtube.com/embed/${v}`;
+                        try {
+                            if (embed.type === 'youtube') {
+                                // Handles: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID
+                                const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i;
+                                const match = embedUrl.match(ytRegex);
+                                if (match && match[1]) {
+                                    embedUrl = `https://www.youtube.com/embed/${match[1]}`;
+                                }
+                            } else if (embed.type === 'spotify') {
+                                // Handles: open.spotify.com/track/ID, open.spotify.com/playlist/ID, etc.
+                                if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed')) {
+                                    embedUrl = embedUrl.replace('open.spotify.com', 'open.spotify.com/embed');
+                                }
+                                // Remove query params for cleaner embed
+                                embedUrl = embedUrl.split('?')[0];
+                            } else if (embed.type === 'vimeo') {
+                                // Handles: vimeo.com/ID, player.vimeo.com/video/ID
+                                const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/i;
+                                const match = embedUrl.match(vimeoRegex);
+                                if (match && match[1]) {
+                                    embedUrl = `https://player.vimeo.com/video/${match[1]}`;
+                                }
+                            } else if (embed.type === 'tiktok') {
+                                // Handles: tiktok.com/@user/video/ID, tiktok.com/t/ID (mobile sharing)
+                                if (embedUrl.includes('/video/')) {
+                                    const tiktokId = embedUrl.split('/video/')[1]?.split('?')[0];
+                                    if (tiktokId) embedUrl = `https://www.tiktok.com/embed/v2/${tiktokId}`;
+                                }
+                                // Mobile/Short links (e.g. vt.tiktok.com) generally cannot be directly embedded without fetching the actual video ID.
+                                // We keep the original URL if we can't parse it, but we should at least try to warn or handle it.
+                            } else if (embed.type === 'instagram') {
+                                // Handles: instagram.com/p/ID, instagram.com/reels/ID, instagram.com/reel/ID
+                                const igRegex = /(?:instagram\.com\/(?:p|reels|reel)\/)([^/?#&]+)/i;
+                                const match = embedUrl.match(igRegex);
+                                if (match && match[1]) {
+                                    embedUrl = `https://www.instagram.com/reel/${match[1]}/embed/`;
+                                }
                             }
-                        } else if (embed.type === 'spotify') {
-                            if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed')) {
-                                embedUrl = embedUrl.replace('open.spotify.com', 'open.spotify.com/embed');
-                            }
-                        } else if (embed.type === 'vimeo') {
-                            const vimeoId = embedUrl.split('vimeo.com/')[1]?.split('/')[0];
-                            if (vimeoId) embedUrl = `https://player.vimeo.com/video/${vimeoId}`;
-                        } else if (embed.type === 'tiktok') {
-                            // Extract video ID from TikTok URL
-                            const tiktokId = embedUrl.split('/video/')[1]?.split('?')[0];
-                            if (tiktokId) embedUrl = `https://www.tiktok.com/embed/v2/${tiktokId}`;
-                        } else if (embed.type === 'instagram') {
-                            // Convert standard Reels URL to embed URL
-                            if (embedUrl.includes('instagram.com/reel/') || embedUrl.includes('instagram.com/reels/')) {
-                                const reelId = embedUrl.split('/reel/')[1]?.split('/')[0] || embedUrl.split('/reels/')[1]?.split('/')[0];
-                                if (reelId) embedUrl = `https://www.instagram.com/reel/${reelId}/embed/`;
-                            }
+                        } catch (err) {
+                            console.error('Error parsing embed URL:', err);
                         }
 
                         if (!embedUrl) return null;
@@ -281,17 +297,17 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                                 {embed.type === 'youtube' ? (
                                     <iframe
                                         src={embedUrl}
-                                        className="w-full aspect-video"
+                                        className="w-full aspect-video border-0"
                                         title={embed.title || "YouTube video player"}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         allowFullScreen
                                     ></iframe>
                                 ) : embed.type === 'vimeo' ? (
                                     <iframe
                                         src={embedUrl}
-                                        className="w-full aspect-video"
+                                        className="w-full aspect-video border-0"
                                         title={embed.title || "Vimeo video player"}
-                                        allow="autoplay; fullscreen; picture-in-picture"
+                                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
                                         allowFullScreen
                                     ></iframe>
                                 ) : embed.type === 'tiktok' ? (
@@ -299,7 +315,7 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                                         <iframe
                                             src={embedUrl}
                                             className="w-full aspect-[9/16] h-[580px] border-0"
-                                            allow="encrypted-media;"
+                                            allow="encrypted-media; picture-in-picture"
                                             title={embed.title || "TikTok embed"}
                                         ></iframe>
                                     </div>
@@ -308,7 +324,7 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                                         <iframe
                                             src={embedUrl}
                                             className="w-full aspect-[4/5] min-h-[450px] border-0"
-                                            allow="autoplay; encrypted-media"
+                                            allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
                                             allowFullScreen
                                             title={embed.title || "Instagram Reels embed"}
                                         ></iframe>
@@ -316,9 +332,9 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                                 ) : (
                                     <iframe
                                         src={embedUrl}
-                                        className="w-full h-[152px]"
+                                        className="w-full h-[152px] border-0"
                                         title={embed.title || "Spotify player"}
-                                        allow="encrypted-media"
+                                        allow="encrypted-media; picture-in-picture; clipboard-write"
                                         loading="lazy"
                                     ></iframe>
                                 )}
