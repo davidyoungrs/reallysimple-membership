@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
 import { users } from '../src/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, or, sql } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -19,10 +19,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             secretKey: process.env.CLERK_SECRET_KEY,
         });
         const clerkUserId = verifiedToken.sub;
-        const email = verifiedToken.email as string;
+        const email = (verifiedToken.email as string)?.toLowerCase();
 
-        // Fetch user from DB
-        let userRecords = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        if (!email) {
+            return res.status(400).json({ error: 'Email missing from token' });
+        }
+
+        // Fetch user from DB - Prioritize clerkId, fallback to email
+        let userRecords = await db.select().from(users)
+            .where(or(
+                eq(users.clerkId, clerkUserId),
+                eq(sql`LOWER(${users.email})`, email)
+            ))
+            .limit(1);
+
         let user;
 
         if (userRecords.length === 0) {
@@ -36,9 +46,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else {
             user = userRecords[0];
             // Update clerkId if it's missing or different (e.g. email match but first time with clerkId)
-            if (user.clerkId !== clerkUserId) {
+            // Or update email if it changed in Clerk
+            if (user.clerkId !== clerkUserId || user.email.toLowerCase() !== email) {
                 const updatedUser = await db.update(users)
-                    .set({ clerkId: clerkUserId })
+                    .set({
+                        clerkId: clerkUserId,
+                        email: email // Keep email in sync with Clerk's primary
+                    })
                     .where(eq(users.id, user.id))
                     .returning();
                 user = updatedUser[0];
