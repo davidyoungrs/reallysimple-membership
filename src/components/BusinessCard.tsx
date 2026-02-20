@@ -1,6 +1,6 @@
 import type { CardData } from '../types';
 import { SocialLinks } from './SocialLinks';
-import { Download, Wallet, Loader2, Phone, MessageSquare } from 'lucide-react';
+import { Download, Wallet, Loader2, Phone, MessageSquare, ExternalLink, Youtube, Music, Instagram, Video } from 'lucide-react';
 import { LeadForm } from './leads/LeadForm';
 import { QRCodeSVG } from 'qrcode.react';
 import { downloadVCard } from '../utils/vcard';
@@ -238,105 +238,118 @@ export function BusinessCard({ data, onLinkClick }: BusinessCardProps) {
                 <div className={`w-full space-y-4 mb-4 ${data.stickyActionBar ? 'pb-24' : ''}`}>
                     {/* Rich Media Embeds */}
                     {(embeds || []).map((embed, index) => {
-                        let embedUrl = embed.url;
-                        if (!embedUrl) return null;
+                        const getEmbedData = () => {
+                            const url = embed.url;
+                            if (!url) return null;
 
-                        // Improved extraction logic for various platforms
-                        try {
-                            if (embed.type === 'youtube') {
-                                // Handles: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID
-                                const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i;
-                                const match = embedUrl.match(ytRegex);
-                                if (match && match[1]) {
-                                    embedUrl = `https://www.youtube.com/embed/${match[1]}`;
+                            try {
+                                if (embed.type === 'youtube') {
+                                    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i);
+                                    if (match?.[1]) return { embedUrl: `https://www.youtube.com/embed/${match[1]}`, id: match[1] };
+                                } else if (embed.type === 'spotify') {
+                                    const match = url.match(/spotify\.com\/(?:intl-[a-z]{2}\/)?(?:embed\/)?(track|album|playlist|artist|episode|show)\/([a-zA-Z0-9]+)/i);
+                                    if (match?.[1] && match?.[2]) return { embedUrl: `https://open.spotify.com/embed/${match[1]}/${match[2]}`, id: match[2] };
+                                } else if (embed.type === 'vimeo') {
+                                    const match = url.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/i);
+                                    if (match?.[1]) return { embedUrl: `https://player.vimeo.com/video/${match[1]}`, id: match[1] };
+                                } else if (embed.type === 'tiktok') {
+                                    const match = url.match(/(?:tiktok\.com\/.*video\/)(\d+)/i);
+                                    if (match?.[1]) return { embedUrl: `https://www.tiktok.com/embed/v2/${match[1]}`, id: match[1] };
+                                } else if (embed.type === 'instagram') {
+                                    const match = url.match(/(?:instagram\.com\/(?:p|reels|reel)\/|instagr\.am\/(?:p|reels|reel)\/)([^/?#&]+)/i);
+                                    if (match?.[1]) return { embedUrl: `https://www.instagram.com/reel/${match[1]}/embed/`, id: match[1] };
                                 }
-                            } else if (embed.type === 'spotify') {
-                                // Handles: open.spotify.com/track/ID, open.spotify.com/playlist/ID, etc.
-                                if (embedUrl.includes('open.spotify.com') && !embedUrl.includes('/embed')) {
-                                    embedUrl = embedUrl.replace('open.spotify.com', 'open.spotify.com/embed');
-                                }
-                                // Remove query params for cleaner embed
-                                embedUrl = embedUrl.split('?')[0];
-                            } else if (embed.type === 'vimeo') {
-                                // Handles: vimeo.com/ID, player.vimeo.com/video/ID
-                                const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/i;
-                                const match = embedUrl.match(vimeoRegex);
-                                if (match && match[1]) {
-                                    embedUrl = `https://player.vimeo.com/video/${match[1]}`;
-                                }
-                            } else if (embed.type === 'tiktok') {
-                                // Handles: tiktok.com/@user/video/ID, tiktok.com/t/ID (mobile sharing)
-                                if (embedUrl.includes('/video/')) {
-                                    const tiktokId = embedUrl.split('/video/')[1]?.split('?')[0];
-                                    if (tiktokId) embedUrl = `https://www.tiktok.com/embed/v2/${tiktokId}`;
-                                }
-                                // Mobile/Short links (e.g. vt.tiktok.com) generally cannot be directly embedded without fetching the actual video ID.
-                                // We keep the original URL if we can't parse it, but we should at least try to warn or handle it.
-                            } else if (embed.type === 'instagram') {
-                                // Handles: instagram.com/p/ID, instagram.com/reels/ID, instagram.com/reel/ID
-                                const igRegex = /(?:instagram\.com\/(?:p|reels|reel)\/)([^/?#&]+)/i;
-                                const match = embedUrl.match(igRegex);
-                                if (match && match[1]) {
-                                    embedUrl = `https://www.instagram.com/reel/${match[1]}/embed/`;
-                                }
+                            } catch (e) {
+                                console.error('Error parsing embed URL:', e);
                             }
-                        } catch (err) {
-                            console.error('Error parsing embed URL:', err);
-                        }
+                            return null;
+                        };
 
-                        if (!embedUrl) return null;
+                        const embedData = getEmbedData();
 
                         return (
                             <div
                                 key={embed.id || `embed-${index}`}
                                 className="media-embed-container w-full mb-6 overflow-hidden rounded-2xl shadow-lg border border-white/10 bg-black/20"
                                 data-embed-type={embed.type}
-                                data-embed-id={embed.id || `embed-${index}`}
                             >
-                                {embed.title && <div className="px-4 py-2 text-sm font-medium text-white/80 bg-black/40">{embed.title}</div>}
-                                {embed.type === 'youtube' ? (
-                                    <iframe
-                                        src={embedUrl}
-                                        className="w-full aspect-video border-0"
-                                        title={embed.title || "YouTube video player"}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowFullScreen
-                                    ></iframe>
-                                ) : embed.type === 'vimeo' ? (
-                                    <iframe
-                                        src={embedUrl}
-                                        className="w-full aspect-video border-0"
-                                        title={embed.title || "Vimeo video player"}
-                                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                                        allowFullScreen
-                                    ></iframe>
-                                ) : embed.type === 'tiktok' ? (
-                                    <div className="w-full flex justify-center bg-black">
-                                        <iframe
-                                            src={embedUrl}
-                                            className="w-full aspect-[9/16] h-[580px] border-0"
-                                            allow="encrypted-media; picture-in-picture"
-                                            title={embed.title || "TikTok embed"}
-                                        ></iframe>
+                                {embed.title && (
+                                    <div className="px-4 py-2 text-sm font-medium text-white/80 bg-black/40 flex justify-between items-center">
+                                        <span>{embed.title}</span>
+                                        {!embedData && <span className="text-xs text-orange-400 font-normal">{t('Direct Link Only')}</span>}
                                     </div>
-                                ) : embed.type === 'instagram' ? (
-                                    <div className="w-full flex justify-center bg-black overflow-hidden">
-                                        <iframe
-                                            src={embedUrl}
-                                            className="w-full aspect-[4/5] min-h-[450px] border-0"
-                                            allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
-                                            allowFullScreen
-                                            title={embed.title || "Instagram Reels embed"}
-                                        ></iframe>
-                                    </div>
+                                )}
+
+                                {embedData ? (
+                                    <>
+                                        {embed.type === 'youtube' ? (
+                                            <iframe
+                                                src={embedData.embedUrl}
+                                                className="w-full aspect-video border-0"
+                                                title={embed.title || "YouTube video player"}
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                allowFullScreen
+                                            ></iframe>
+                                        ) : embed.type === 'vimeo' ? (
+                                            <iframe
+                                                src={embedData.embedUrl}
+                                                className="w-full aspect-video border-0"
+                                                title={embed.title || "Vimeo video player"}
+                                                allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                                                allowFullScreen
+                                            ></iframe>
+                                        ) : embed.type === 'tiktok' ? (
+                                            <div className="w-full flex justify-center bg-black">
+                                                <iframe
+                                                    src={embedData.embedUrl}
+                                                    className="w-full aspect-[9/16] h-[580px] border-0"
+                                                    allow="encrypted-media; picture-in-picture"
+                                                    title={embed.title || "TikTok embed"}
+                                                ></iframe>
+                                            </div>
+                                        ) : embed.type === 'instagram' ? (
+                                            <div className="w-full flex justify-center bg-black overflow-hidden">
+                                                <iframe
+                                                    src={embedData.embedUrl}
+                                                    className="w-full aspect-[4/5] min-h-[450px] border-0"
+                                                    allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
+                                                    allowFullScreen
+                                                    title={embed.title || "Instagram Reels embed"}
+                                                ></iframe>
+                                            </div>
+                                        ) : (
+                                            <iframe
+                                                src={embedData.embedUrl}
+                                                className="w-full h-[152px] border-0"
+                                                title={embed.title || "Spotify player"}
+                                                allow="encrypted-media; picture-in-picture; clipboard-write"
+                                                loading="lazy"
+                                            ></iframe>
+                                        )}
+                                    </>
                                 ) : (
-                                    <iframe
-                                        src={embedUrl}
-                                        className="w-full h-[152px] border-0"
-                                        title={embed.title || "Spotify player"}
-                                        allow="encrypted-media; picture-in-picture; clipboard-write"
-                                        loading="lazy"
-                                    ></iframe>
+                                    <div className="p-8 flex flex-col items-center justify-center gap-4 bg-white/5">
+                                        <div className="p-4 bg-white/10 rounded-full">
+                                            {embed.type === 'youtube' ? <Youtube className="w-8 h-8 text-red-500" /> :
+                                                embed.type === 'spotify' ? <Music className="w-8 h-8 text-green-500" /> :
+                                                    embed.type === 'instagram' ? <Instagram className="w-8 h-8 text-pink-500" /> :
+                                                        <Video className="w-8 h-8 text-blue-400" />}
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm text-white/70 mb-4 px-4">
+                                                {t('This link cannot be embedded directly. Tap below to view on ')} {embed.type.charAt(0).toUpperCase() + embed.type.slice(1)}
+                                            </p>
+                                            <a
+                                                href={embed.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white font-medium transition-all active:scale-95"
+                                            >
+                                                <span>{t('View Content')}</span>
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         );

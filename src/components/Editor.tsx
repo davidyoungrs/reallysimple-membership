@@ -400,8 +400,9 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     };
 
     const handleEmbedChange = (id: string, field: string, value: string) => {
+        const processedValue = field === 'url' ? value.trim() : value;
         const newEmbeds = (data.embeds || []).map(embed =>
-            embed.id === id ? { ...embed, [field]: value } : embed
+            embed.id === id ? { ...embed, [field]: processedValue } : embed
         );
         handleChange('embeds', newEmbeds);
     };
