@@ -1,8 +1,9 @@
 import { type CardData, type SocialLink, type SocialPlatform, type PhoneNumber } from '../types';
 import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlugCustomizer } from './SlugCustomizer';
+import { ImageCropper } from './ImageCropper';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -213,11 +214,82 @@ interface EditorProps {
     onSlugStatusChange?: (status: 'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid') => void;
 }
 
+function SortableEmbed({ embed, handleEmbedChange, removeEmbed, t }: { embed: any, handleEmbedChange: any, removeEmbed: any, t: any }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: embed.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="flex flex-col gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200 group">
+            <div className="flex items-center gap-2">
+                <div {...attributes} {...listeners} className="touch-none">
+                    <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
+                </div>
+                <div className="p-2 bg-white rounded-lg border border-gray-200 text-gray-500">
+                    {embed.type === 'youtube' ? <Youtube className="w-4 h-4" /> :
+                        embed.type === 'spotify' ? <Music className="w-4 h-4" /> :
+                            embed.type === 'instagram' ? <Instagram className="w-4 h-4" /> :
+                                <Video className="w-4 h-4" />}
+                </div>
+                <select
+                    value={embed.type}
+                    onChange={(e) => handleEmbedChange(embed.id, 'type', e.target.value)}
+                    className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none"
+                >
+                    <option value="youtube">{t('YouTube Video')}</option>
+                    <option value="vimeo">{t('Vimeo Video')}</option>
+                    <option value="tiktok">{t('TikTok Video')}</option>
+                    <option value="instagram">{t('Instagram Post')}</option>
+                    <option value="spotify">{t('Spotify Track')}</option>
+                </select>
+                <div className="flex-1"></div>
+                <button
+                    onClick={() => removeEmbed(embed.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
+            <input
+                type="text"
+                placeholder={
+                    embed.type === 'youtube' ? t('YouTube Video') :
+                        embed.type === 'vimeo' ? t('Vimeo Video') :
+                            embed.type === 'tiktok' ? t('TikTok Video') :
+                                embed.type === 'instagram' ? t('Instagram Post') :
+                                    t('Spotify Track')
+                }
+                value={embed.url}
+                onChange={(e) => handleEmbedChange(embed.id, 'url', e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+            />
+            <input
+                type="text"
+                placeholder="Optional Title"
+                value={embed.title || ''}
+                onChange={(e) => handleEmbedChange(embed.id, 'title', e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+            />
+        </div>
+    );
+}
+
 export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: EditorProps) {
     const { t } = useTranslation();
     const { isFeatureEnabled } = useTier();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const [croppingImage, setCroppingImage] = useState<string | null>(null);
+    const [cropTarget, setCropTarget] = useState<'avatarUrl' | 'logoUrl' | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -253,10 +325,24 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                handleChange(field, reader.result as string);
+                setCroppingImage(reader.result as string);
+                setCropTarget(field);
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleCropComplete = (croppedImage: string) => {
+        if (cropTarget) {
+            handleChange(cropTarget, croppedImage);
+        }
+        setCroppingImage(null);
+        setCropTarget(null);
+    };
+
+    const handleCropCancel = () => {
+        setCroppingImage(null);
+        setCropTarget(null);
     };
 
     const handleChange = (field: keyof CardData, value: any) => {
@@ -305,19 +391,28 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     };
 
     const addEmbed = () => {
-        const newEmbed = { type: 'youtube' as const, url: '' };
+        const newEmbed = { id: Date.now().toString(), type: 'youtube' as const, url: '' };
         handleChange('embeds', [...(data.embeds || []), newEmbed]);
     };
 
-    const removeEmbed = (index: number) => {
-        handleChange('embeds', (data.embeds || []).filter((_, i) => i !== index));
+    const removeEmbed = (id: string) => {
+        handleChange('embeds', (data.embeds || []).filter(e => e.id !== id));
     };
 
-    const handleEmbedChange = (index: number, field: string, value: string) => {
-        const newEmbeds = (data.embeds || []).map((embed, i) =>
-            i === index ? { ...embed, [field]: value } : embed
+    const handleEmbedChange = (id: string, field: string, value: string) => {
+        const newEmbeds = (data.embeds || []).map(embed =>
+            embed.id === id ? { ...embed, [field]: value } : embed
         );
         handleChange('embeds', newEmbeds);
+    };
+
+    const handleEmbedDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = data.embeds.findIndex((e) => e.id === active.id);
+            const newIndex = data.embeds.findIndex((e) => e.id === over.id);
+            handleChange('embeds', arrayMove(data.embeds, oldIndex, newIndex));
+        }
     };
 
     // Section Management
@@ -547,56 +642,27 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                 )}
 
                 <div className="space-y-3">
-                    {(data.embeds || []).map((embed, index) => (
-                        <div key={index} className="flex flex-col gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
-                            <div className="flex items-center gap-2">
-                                <div className="p-2 bg-white rounded-lg border border-gray-200 text-gray-500">
-                                    {embed.type === 'youtube' ? <Youtube className="w-4 h-4" /> :
-                                        embed.type === 'spotify' ? <Music className="w-4 h-4" /> :
-                                            embed.type === 'instagram' ? <Instagram className="w-4 h-4" /> :
-                                                <Video className="w-4 h-4" />}
-                                </div>
-                                <select
-                                    value={embed.type}
-                                    onChange={(e) => handleEmbedChange(index, 'type', e.target.value)}
-                                    className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none"
-                                >
-                                    <option value="youtube">{t('YouTube Video')}</option>
-                                    <option value="vimeo">{t('Vimeo Video')}</option>
-                                    <option value="tiktok">{t('TikTok Video')}</option>
-                                    <option value="instagram">{t('Instagram Post')}</option>
-                                    <option value="spotify">{t('Spotify Track')}</option>
-                                </select>
-                                <div className="flex-1"></div>
-                                <button
-                                    onClick={() => removeEmbed(index)}
-                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder={
-                                    embed.type === 'youtube' ? t('YouTube Video') :
-                                        embed.type === 'vimeo' ? t('Vimeo Video') :
-                                            embed.type === 'tiktok' ? t('TikTok Video') :
-                                                embed.type === 'instagram' ? t('Instagram Post') :
-                                                    t('Spotify Track')
-                                }
-                                value={embed.url}
-                                onChange={(e) => handleEmbedChange(index, 'url', e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Optional Title"
-                                value={embed.title || ''}
-                                onChange={(e) => handleEmbedChange(index, 'title', e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
-                            />
-                        </div>
-                    ))}
+                    <DndContext
+                        id="embed-dnd"
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleEmbedDragEnd}
+                    >
+                        <SortableContext
+                            items={data.embeds || []}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {(data.embeds || []).map((embed) => (
+                                <SortableEmbed
+                                    key={embed.id}
+                                    embed={embed}
+                                    handleEmbedChange={handleEmbedChange}
+                                    removeEmbed={removeEmbed}
+                                    t={t}
+                                />
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                     {(data.embeds || []).length === 0 && (
                         <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-sm">
                             No active embeds. Add YouTube videos or Spotify tracks.
@@ -1096,6 +1162,16 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                 </div>
             </div>
 
+            {/* Image Cropper Modal */}
+            {croppingImage && (
+                <ImageCropper
+                    image={croppingImage}
+                    aspect={cropTarget === 'avatarUrl' ? 1 : 16 / 9}
+                    circular={cropTarget === 'avatarUrl'}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
+            )}
         </div>
     );
 }

@@ -213,22 +213,50 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         const { cardRecord, user } = results[0];
         const card = cardRecord.data as any;
 
-        const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v2`;
-        const objectId = `${GOOGLE_ISSUER_ID}.${slug}-${Date.now()}`;
+        const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v3`;
+        const objectId = `${GOOGLE_ISSUER_ID}.${slug.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`; // Stable ID for auto-syncing
 
         // Force Production URL for Google to reach images
         const baseUrl = 'https://reallysimple-new.vercel.app';
 
         const toAbsoluteUrl = (url: string) => {
             if (!url) return '';
+            if (url.startsWith('data:image')) return ''; // Google Wallet doesn't support data URIs for images in stateless JWT
             if (url.startsWith('http')) return url;
             return new URL(url, baseUrl).toString();
         };
 
-        const logoUrl = toAbsoluteUrl(card.logo_url || card.logoUrl || '/icon.png');
-        const title = (card.company || 'Digital Card').substring(0, 50);
-        const headerValue = (card.fullName || (card.first_name ? card.first_name + ' ' + card.last_name : 'Name')).substring(0, 50);
-        const subheaderValue = (card.jobTitle || card.job_title || 'Digital Business Card').substring(0, 50);
+        const logoUrl = toAbsoluteUrl(card.wallet?.logoUrl || card.logoUrl || '/icon.png');
+        const heroUrl = toAbsoluteUrl(card.wallet?.stripImageUrl || '/wallet-strip.png');
+        const title = (card.wallet?.logoText || card.company || 'Digital Card').substring(0, 50);
+        const headerValue = (card.fullName || 'Digital Card').substring(0, 50);
+        const subheaderValue = (card.jobTitle || card.company || 'Digital Business Card').substring(0, 50);
+
+        const textModules: any[] = [
+            { header: 'Phone', body: card.phoneNumbers?.[0]?.number || '', id: 'phone' },
+            { header: 'Email', body: card.email || '', id: 'email' },
+            { header: 'Website', body: `https://contact-tree.vercel.app/card/${slug}`, id: 'website' }
+        ];
+
+        // Add additional phone numbers
+        if (card.phoneNumbers && card.phoneNumbers.length > 1) {
+            card.phoneNumbers.slice(1).forEach((p: any, i: number) => {
+                textModules.push({ header: p.label || `Phone ${i + 2}`, body: p.number, id: `phone_${p.id}` });
+            });
+        }
+
+        // Add social links
+        if (card.socialLinks && Array.isArray(card.socialLinks)) {
+            card.socialLinks.forEach((link: any) => {
+                if (link.url) {
+                    textModules.push({
+                        header: link.platform.charAt(0).toUpperCase() + link.platform.slice(1),
+                        body: link.url,
+                        id: `social_${link.id}`
+                    });
+                }
+            });
+        }
 
         const newPass = {
             iss: GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -254,19 +282,19 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                         }
                     } : {}),
                     genericType: 'GENERIC_TYPE_UNSPECIFIED',
-                    hexBackgroundColor: card.wallet?.backgroundColor || card.color_primary || '#4f46e5',
+                    hexBackgroundColor: card.wallet?.backgroundColor || card.themeColor || '#4f46e5',
                     logo: {
                         sourceUri: { uri: logoUrl },
                         contentDescription: { defaultValue: { language: 'en-US', value: 'LOGO' } }
                     },
+                    heroImage: {
+                        sourceUri: { uri: heroUrl },
+                        contentDescription: { defaultValue: { language: 'en-US', value: 'HERO' } }
+                    },
                     cardTitle: { defaultValue: { language: 'en-US', value: title } },
                     header: { defaultValue: { language: 'en-US', value: headerValue } },
                     subheader: { defaultValue: { language: 'en-US', value: subheaderValue } },
-                    textModulesData: [
-                        { header: 'Phone', body: card.phone_numbers ? String(card.phone_numbers[0]?.value || '').substring(0, 50) : '', id: 'phone' },
-                        { header: 'Email', body: String(card.email || '').substring(0, 50), id: 'email' },
-                        { header: 'Website', body: `https://contact-tree.vercel.app/card/${slug}`, id: 'website' }
-                    ],
+                    textModulesData: textModules.slice(0, 10), // Limit to 10 modules
                     barcode: { type: 'QR_CODE', value: `https://contact-tree.vercel.app/card/${slug}`, alternateText: 'Scan to View' }
                 }],
                 // Define class inline for statelessness

@@ -35,7 +35,7 @@ export interface CardData {
     slug?: string; // Custom URL slug
     layoutMode: 'classic' | 'modern-left' | 'hero';
     stickyActionBar: boolean;
-    embeds: { type: 'youtube' | 'spotify' | 'vimeo' | 'tiktok' | 'instagram'; url: string; title?: string }[];
+    embeds: { id: string; type: 'youtube' | 'spotify' | 'vimeo' | 'tiktok' | 'instagram'; url: string; title?: string }[];
     sections?: Section[];
     wallet?: WalletData;
     removeBranding?: boolean; // Tiers above starter can remove "Powered by"
