@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { users, walletPushRegistrations, businessCards } from '../../src/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -137,7 +137,7 @@ async function notifyDevices(userId: string) {
             passType: walletPushRegistrations.passTypeIdentifier
         })
             .from(walletPushRegistrations)
-            .innerJoin(businessCards, eq(walletPushRegistrations.serialNumber, businessCards.uid))
+            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber}::uuid = ${businessCards.uid}`)
             .where(eq(businessCards.userId, userId));
 
         if (devices.length === 0) return;

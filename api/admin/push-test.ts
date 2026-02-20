@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { businessCards, walletPushRegistrations, users } from '../../src/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             passType: walletPushRegistrations.passTypeIdentifier
         })
             .from(walletPushRegistrations)
-            .innerJoin(businessCards, eq(walletPushRegistrations.serialNumber, businessCards.uid))
+            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber}::uuid = ${businessCards.uid}`)
             .where(eq(businessCards.userId, userId as string));
 
         console.log(`[AdminPush] Found ${devices.length} devices for user ${userId}`);
@@ -39,7 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log(`[AdminPush] Push simulated for ${devices.length} devices.`);
 
         return res.status(200).json({
-            message: `Push triggered for ${devices.length} devices.`,
+            message: `Identified ${devices.length} registered device(s) for this card.`,
+            found: devices.length,
+            note: "Real-time updates require APNs certificates. Currently, this endpoint verifies the database lookup logic and logs the push intention to the server console.",
             devices: results
         });
     } catch (err: any) {
