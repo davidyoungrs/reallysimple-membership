@@ -98,12 +98,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     await db.update(users)
         .set({
             subscriptionStatus: subscription.status,
-            tier: subscription.status === 'active' ? tier : 'starter',
+            tier: (subscription.status === 'active' || subscription.status === 'trialing') ? tier : tier, // Always set assigned tier, logic in passes.ts handles voiding based on status/periodEnd
             currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
         } as any)
         .where(eq(users.stripeCustomerId, customerId));
 
     const user = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
+    // Always notify devices on any update to sync status
     if (user[0]?.clerkId) {
         await notifyDevices(user[0].clerkId);
     }

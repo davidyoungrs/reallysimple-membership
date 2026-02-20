@@ -62,11 +62,6 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
 
         const data = applyTierLimits(card.data as any, effectiveTier);
 
-        // Block Wallet generation for Starter tier (lapsed or free)
-        if (effectiveTier === 'starter') {
-            return res.status(403).json({ error: 'Wallet passes are a premium feature. Please upgrade your subscription.' });
-        }
-
         const teamId = process.env.APPLE_TEAM_ID;
         const passTypeId = process.env.APPLE_PASS_TYPE_ID;
 
@@ -125,6 +120,12 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
             }
         }
 
+        // --- LAPSED / STARTER TIER VOIDING ---
+        if (effectiveTier === 'starter') {
+            (pass as any).voided = true;
+            (pass as any).description = 'Digital Card - Subscription Lapsed';
+        }
+
         pass.type = 'storeCard';
 
         // Add Logic for Images (Logo, Strip)
@@ -142,47 +143,72 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
         addImage(data.wallet?.logoUrl || data.logoUrl, 'logo.png');
         addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
 
-        // Fields
-        pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || 'Your Name' });
+        // --- FIELD POPULATION ---
+        if (effectiveTier !== 'starter') {
+            // Fields (Main)
+            pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || 'Your Name' });
 
-        if (data.jobTitle && data.wallet?.showRole !== false) {
-            pass.secondaryFields.push({ key: 'role', label: 'Role', value: data.jobTitle });
-        }
-        if (data.company && data.wallet?.showCompany !== false) {
-            pass.secondaryFields.push({ key: 'company', label: 'Company', value: data.company });
+            if (data.jobTitle && data.wallet?.showRole !== false) {
+                pass.secondaryFields.push({ key: 'role', label: 'Role', value: data.jobTitle });
+            }
+            if (data.company && data.wallet?.showCompany !== false) {
+                pass.secondaryFields.push({ key: 'company', label: 'Company', value: data.company });
+            }
+
+            // Back Fields
+            const publicCardUrl = `${protocol}://${host}/card/${slug}`;
+            pass.backFields.push({ key: 'card-url', label: 'My Digital Card', value: 'Open Card', attributedValue: `<a href="${publicCardUrl}">Open Card</a>` } as any);
+
+            if (data.phoneNumbers && Array.isArray(data.phoneNumbers)) {
+                data.phoneNumbers.forEach((phone: any, index: number) => {
+                    pass.backFields.push({ key: `phone-${index}`, label: phone.label || 'Phone', value: phone.number });
+                });
+            }
+
+            if (data.socialLinks && Array.isArray(data.socialLinks)) {
+                data.socialLinks.forEach((link: any, index: number) => {
+                    let label = (link.label || link.platform);
+                    label = label.charAt(0).toUpperCase() + label.slice(1);
+                    let value = link.url;
+                    let attributedValue = undefined;
+
+                    if (link.platform === 'email') value = value.replace('mailto:', '');
+                    else if (link.platform === 'phone') value = value.replace('tel:', '');
+                    else {
+                        let href = value;
+                        if (!href.startsWith('http') && !href.startsWith('mailto') && !href.startsWith('tel')) href = `https://${href}`;
+                        attributedValue = `<a href="${href}">Link</a>`;
+                        value = 'Link';
+                    }
+                    pass.backFields.push({ key: `social-${index}`, label, value, attributedValue } as any);
+                });
+            }
+        } else {
+            // Voided Pass Content
+            pass.primaryFields.push({ key: 'status', label: 'OFFLINE', value: 'Reactivate via App' });
+            pass.backFields.push({
+                key: 'help',
+                label: 'Why is this card inactive?',
+                value: 'Your subscription has lapsed. Scan the QR code or visit our website to reactivate.'
+            });
         }
 
-        // Back Fields
+        // Barcode / QR Logic
         const publicCardUrl = `${protocol}://${host}/card/${slug}`;
+        const qrUrl = effectiveTier === 'starter'
+            ? `${protocol}://${host}/lapsed`
+            : `${publicCardUrl}?src=wallet`;
 
-        pass.backFields.push({ key: 'card-url', label: 'My Digital Card', value: 'Open Card', attributedValue: `<a href="${publicCardUrl}">Open Card</a>` } as any);
+        pass.setBarcodes({
+            format: 'PKBarcodeFormatQR',
+            message: qrUrl,
+            messageEncoding: 'utf-8'
+        });
 
-        if (data.phoneNumbers && Array.isArray(data.phoneNumbers)) {
-            data.phoneNumbers.forEach((phone: any, index: number) => {
-                pass.backFields.push({ key: `phone-${index}`, label: phone.label || 'Phone', value: phone.number });
-            });
+        if (effectiveTier === 'starter') {
+            // Override visibility for voided passes
+            (pass as any).logoText = 'SUBSCRIPTION LAPSED';
         }
-
-        if (data.socialLinks && Array.isArray(data.socialLinks)) {
-            data.socialLinks.forEach((link: any, index: number) => {
-                let label = (link.label || link.platform);
-                label = label.charAt(0).toUpperCase() + label.slice(1);
-                let value = link.url;
-                let attributedValue = undefined;
-
-                if (link.platform === 'email') value = value.replace('mailto:', '');
-                else if (link.platform === 'phone') value = value.replace('tel:', '');
-                else {
-                    let href = value;
-                    if (!href.startsWith('http') && !href.startsWith('mailto') && !href.startsWith('tel')) href = `https://${href}`;
-                    attributedValue = `<a href="${href}">Link</a>`;
-                    value = 'Link';
-                }
-                pass.backFields.push({ key: `social-${index}`, label, value, attributedValue } as any);
-            });
-        }
-
-        pass.setBarcodes({ format: 'PKBarcodeFormatQR', message: `${publicCardUrl}?src=wallet`, messageEncoding: 'utf-8' });
 
         console.log('Generating pass buffer...');
         const buffer = pass.getAsBuffer();
@@ -236,11 +262,6 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         });
 
         const card = applyTierLimits(cardRecord.data as any, effectiveTier);
-
-        // Block Wallet generation for Starter tier (lapsed or free)
-        if (effectiveTier === 'starter') {
-            return res.status(403).json({ error: 'Wallet passes are a premium feature. Please upgrade your subscription.' });
-        }
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-standard-v3`;
         const objectId = `${GOOGLE_ISSUER_ID}.${slug.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`; // Stable ID for auto-syncing
@@ -320,11 +341,16 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                         sourceUri: { uri: heroUrl },
                         contentDescription: { defaultValue: { language: 'en-US', value: 'HERO' } }
                     },
-                    cardTitle: { defaultValue: { language: 'en-US', value: title } },
-                    header: { defaultValue: { language: 'en-US', value: headerValue } },
-                    subheader: { defaultValue: { language: 'en-US', value: subheaderValue } },
-                    textModulesData: textModules.slice(0, 10), // Limit to 10 modules
-                    barcode: { type: 'QR_CODE', value: `https://contact-tree.vercel.app/card/${slug}`, alternateText: 'Scan to View' }
+                    cardTitle: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : title } },
+                    header: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'INACTIVE' : headerValue } },
+                    subheader: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'Reactivate via app' : subheaderValue } },
+                    state: effectiveTier === 'starter' ? 'expired' : 'active',
+                    textModulesData: effectiveTier === 'starter' ? [] : textModules.slice(0, 10), // Limit to 10 modules
+                    barcode: {
+                        type: 'QR_CODE',
+                        value: effectiveTier === 'starter' ? `${baseUrl}/lapsed` : `${baseUrl}/card/${slug}`,
+                        alternateText: effectiveTier === 'starter' ? 'SCAN TO REACTIVATE' : 'Scan to View'
+                    }
                 }],
                 // Define class inline for statelessness
                 genericClasses: [{

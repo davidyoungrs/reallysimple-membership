@@ -21,6 +21,7 @@ const AdminSecurity = lazy(() => import('./components/admin/AdminSecurity').then
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(module => ({ default: module.AdminSettings })));
 const SubscriptionSimulator = lazy(() => import('./components/admin/SubscriptionSimulator').then(module => ({ default: module.SubscriptionSimulator })));
 const Licenses = lazy(() => import('./components/Licenses').then(module => ({ default: module.Licenses })));
+const LapsedSubscription = lazy(() => import('./components/LapsedSubscription'));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -95,6 +96,9 @@ function App() {
 
             {/* Policy Routes */}
             <Route path="/:type" element={<PolicyPage />} />
+
+            {/* Landing/Static Routes */}
+            <Route path="/lapsed" element={<LapsedSubscription />} />
 
             {/* Protected App Route */}
             <Route
