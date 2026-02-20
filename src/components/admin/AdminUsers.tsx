@@ -40,6 +40,7 @@ export function AdminUsers() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [userDetail, setUserDetail] = useState<{ user: any, cards: any[] } | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [syncing, setSyncing] = useState<string | null>(null);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -71,13 +72,28 @@ export function AdminUsers() {
                     }
                     if (action === 'ban') return { ...u, banned: true };
                     if (action === 'unban') return { ...u, banned: false };
+                    if (action === 'update_tier') return { ...u, tier: value.tier };
                 }
                 return u;
             });
             setUsers(updatedUsers);
 
+            // Refresh detail view if open
+            if (userDetail?.user.id === userId) {
+                setUserDetail({
+                    ...userDetail,
+                    user: {
+                        ...userDetail.user,
+                        tier: action === 'update_tier' ? value.tier : userDetail.user.tier,
+                        publicMetadata: action === 'toggle_status' ? { ...userDetail.user.publicMetadata, isActive: value } : userDetail.user.publicMetadata
+                    }
+                });
+            }
+
             if (action === 'reset_password' && data.temporaryPassword) {
                 alert(`SUCCESS: Password reset for user.\n\nTemporary Password: ${data.temporaryPassword}\n\nPlease copy this and send it to the user immediately. They should change it after logging in.`);
+            } else if (action === 'update_tier') {
+                // No alert for tier update, we'll use optimistic UI + badge
             } else {
                 alert('Action successful');
             }
@@ -338,8 +354,15 @@ export function AdminUsers() {
                                             <div className="flex gap-2">
                                                 <select
                                                     defaultValue={(userDetail?.user as any).tier || 'starter'}
-                                                    onChange={(e) => handleAction('update_tier', userDetail.user.id, { tier: e.target.value })}
-                                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={(userDetail?.user as any).tier || 'starter'}
+                                                    disabled={syncing === userDetail.user.id}
+                                                    onChange={async (e) => {
+                                                        const newTier = e.target.value;
+                                                        setSyncing(userDetail.user.id);
+                                                        await handleAction('update_tier', userDetail.user.id, { tier: newTier });
+                                                        setSyncing(null);
+                                                    }}
+                                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                                                 >
                                                     <option value="starter">Starter (Free)</option>
                                                     <option value="pro">Pro ($9/mo)</option>
@@ -347,12 +370,11 @@ export function AdminUsers() {
                                                     <option value="business">Business ($49/mo)</option>
                                                     <option value="grandfathered">Grandfathered</option>
                                                 </select>
-                                                <button
-                                                    onClick={() => openDetailModal(userDetail.user.id)}
-                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                                                >
-                                                    Update
-                                                </button>
+                                                {syncing === userDetail.user.id && (
+                                                    <div className="flex items-center px-2">
+                                                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
