@@ -3,6 +3,7 @@ import { users, walletPushRegistrations, businessCards } from '../../src/db/sche
 import { eq, sql } from 'drizzle-orm';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { sendPassPush } from '../_utils/apns.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: '2025-01-27' as any,
@@ -148,11 +149,12 @@ async function notifyDevices(userId: string) {
         // Note: Real implementation requires APNs certificates and HTTP/2 requests.
         // We'll log the intention here for the user to configure.
         for (const device of devices) {
-            // Placeholder for APNs HTTP/2 request:
-            // POST https://api.push.apple.com/3/device/${device.pushToken}
-            // Headers: apns-topic: ${device.passType}
-            // Body: {}
-            console.log(`[Push] Mock APNs push sent to ${device.pushToken} for topic ${device.passType}`);
+            try {
+                await sendPassPush(device.pushToken, device.passType);
+                console.log(`[Push] Real APNs push sent to ${device.pushToken.substring(0, 8)}...`);
+            } catch (pushErr) {
+                console.error(`[Push] Failed to send push to ${device.pushToken.substring(0, 8)}:`, pushErr);
+            }
         }
     } catch (err) {
         console.error('Failed to notify devices:', err);

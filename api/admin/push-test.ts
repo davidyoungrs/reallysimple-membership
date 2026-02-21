@@ -2,6 +2,7 @@ import { db } from '../../src/db/index.js';
 import { businessCards, walletPushRegistrations, users } from '../../src/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { sendPassPush } from '../_utils/apns.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).end();
@@ -28,12 +29,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log(`[AdminPush] Found ${devices.length} devices for user ${userId}`);
 
-        // 3. Log the "Push" (This represents where the APNs call happens)
-        // Since we are in a test/dev environment, we just log it.
-        const results = devices.map(d => ({
-            token: d.pushToken,
-            topic: d.passType,
-            status: 'sent (mock)'
+        // 3. Send real push for each device
+        const results = await Promise.all(devices.map(async (d) => {
+            try {
+                await sendPassPush(d.pushToken, d.passType);
+                return { token: d.pushToken, topic: d.passType, status: 'sent' };
+            } catch (err: any) {
+                return { token: d.pushToken, topic: d.passType, status: 'failed', error: err.message };
+            }
         }));
 
         console.log(`[AdminPush] Push simulated for ${devices.length} devices.`);
