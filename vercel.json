@@ -32,22 +32,6 @@
     ],
     "rewrites": [
         {
-            "source": "/api/v1/devices/:deviceId/registrations/:passType/:serial",
-            "destination": "/api/passes/web-service?deviceId=:deviceId&passType=:passType&serial=:serial"
-        },
-        {
-            "source": "/api/v1/devices/:deviceId/registrations/:passType",
-            "destination": "/api/passes/web-service?deviceId=:deviceId&passType=:passType"
-        },
-        {
-            "source": "/api/v1/passes/:passType/:serial",
-            "destination": "/api/passes/web-service?passType=:passType&serial=:serial"
-        },
-        {
-            "source": "/api/v1/(.*)",
-            "destination": "/api/passes/web-service"
-        },
-        {
             "source": "/api/get-card-by-slug/(.*)",
             "destination": "/api/get-card-by-slug?slug=$1"
         },
