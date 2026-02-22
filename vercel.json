@@ -32,6 +32,10 @@
     ],
     "rewrites": [
         {
+            "source": "/api/v1/(.*)",
+            "destination": "/api/passes/v1/$1"
+        },
+        {
             "source": "/api/get-card-by-slug/(.*)",
             "destination": "/api/get-card-by-slug?slug=$1"
         },
