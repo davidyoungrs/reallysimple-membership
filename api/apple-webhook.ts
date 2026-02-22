@@ -53,7 +53,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (Buffer.from(token, 'base64').toString() !== serial) return res.status(401).end();
 
         if (req.method === 'POST') {
-            const { pushToken } = req.body || {};
+            let body = req.body;
+            if (typeof body === 'string') {
+                try { body = JSON.parse(body); } catch (e) { console.error('Failed to parse body', e); }
+            }
+            const pushToken = body?.pushToken;
             if (!pushToken) return res.status(400).end();
 
             await db.insert(walletPushRegistrations).values({
