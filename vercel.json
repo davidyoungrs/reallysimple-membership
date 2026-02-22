@@ -1,12 +1,16 @@
 {
     "rewrites": [
         {
-            "source": "/api/v1/(.*)",
-            "destination": "/api/apple/v1/$1"
+            "source": "/api/v1/devices/:device_id/registrations/:pass_type/:serial_number",
+            "destination": "/api/passes/v1/devices/:device_id/registrations/:pass_type/:serial_number"
         },
         {
             "source": "/api/get-card-by-slug/(.*)",
             "destination": "/api/get-card-by-slug?slug=$1"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
         },
         {
             "source": "/(.*)",
