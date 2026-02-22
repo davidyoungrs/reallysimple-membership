@@ -1,5 +1,5 @@
-import { db } from '../../src/db/index.js';
-import { walletPushRegistrations, businessCards } from '../../src/db/schema.js';
+import { db } from '../src/db/index.js';
+import { walletPushRegistrations, businessCards } from '../src/db/schema.js';
 import { eq, and, gte } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
