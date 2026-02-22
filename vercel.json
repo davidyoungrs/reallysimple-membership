@@ -1,8 +1,12 @@
 {
     "rewrites": [
         {
-            "source": "/api/v1/devices/:device_id/registrations/:pass_type/:serial_number",
-            "destination": "/api/passes/v1/devices/:device_id/registrations/:pass_type/:serial_number"
+            "source": "/api/v1/(.*)",
+            "destination": "/api/apple-webhook?path=$1"
+        },
+        {
+            "source": "/api/v1",
+            "destination": "/api/apple-webhook?path="
         },
         {
             "source": "/api/get-card-by-slug/(.*)",
