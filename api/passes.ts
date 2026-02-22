@@ -97,7 +97,7 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
             return res.status(500).json({ error: 'Model.pass not found' });
         }
 
-        const host = req.headers.host || 'contact-tree.vercel.app';
+        const host = req.headers.host || 'reallysimple-new.vercel.app';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
         const pass = await PKPass.from(
