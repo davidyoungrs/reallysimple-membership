@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, jsonb, boolean, uuid, integer } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, jsonb, boolean, uuid, integer, unique } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
@@ -96,4 +96,6 @@ export const walletPushRegistrations = pgTable('wallet_push_registrations', {
     serialNumber: text('serial_number').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+    uniqueRegistration: unique('unique_registration').on(table.deviceLibraryIdentifier, table.serialNumber)
+}));
