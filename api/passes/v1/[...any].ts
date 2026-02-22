@@ -131,5 +131,5 @@ async function handleGetPass(req: VercelRequest, res: VercelResponse, passType: 
 
     // Redirect to the slug-based pass generator
     const slug = cardResults[0].slug;
-    return res.redirect(`/api/passes?slug=${slug}`);
+    return res.redirect(`/api/passes?type=apple&slug=${slug}`);
 }
