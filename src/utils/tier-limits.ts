@@ -18,25 +18,21 @@ export function getEffectiveTier(info: UserSubscriptionInfo): SubscriptionTier {
     // Grandfathered and Business accounts are always active in this logic
     if (tier === 'grandfathered' || tier === 'business') return tier;
 
-    // Active, Trialing, or Null (legacy/manual) accounts are good
-    if (status === 'active' || status === 'trialing' || !status) return tier;
-
     const now = new Date();
-    const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : now;
+    const periodEnd = currentPeriodEnd ? new Date(currentPeriodEnd) : null;
     const gracePeriodMs = 3 * 24 * 60 * 60 * 1000; // 3 days
 
-    // Past Due: Allow 3-day grace period from currentPeriodEnd
-    if (status === 'past_due') {
-        if (now.getTime() < periodEnd.getTime() + gracePeriodMs) {
-            return tier;
-        }
+    // If an expiration date explicitly exists and it has passed (including grace period), they are lapsed.
+    if (periodEnd && now.getTime() > periodEnd.getTime() + gracePeriodMs) {
+        return 'starter';
     }
 
-    // Canceled: Allow access until the actual end of the period
-    if (status === 'canceled') {
-        if (now.getTime() < periodEnd.getTime()) {
-            return tier;
-        }
+    // Active, Trialing, or Null (legacy/manual) accounts are good as long as they aren't expired
+    if (status === 'active' || status === 'trialing' || !status) return tier;
+
+    // Past Due or Canceled: If they haven't explicitly expired by date (checked above), let them keep it
+    if (status === 'past_due' || status === 'canceled') {
+        return tier;
     }
 
     // Default to starter if no other conditions met
