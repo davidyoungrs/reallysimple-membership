@@ -187,6 +187,8 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                 label: 'Why is this card inactive?',
                 value: 'Your subscription has lapsed. Scan the QR code or visit our website to reactivate.'
             });
+            // Override visibility for voided passes
+            (pass as any).logoText = 'SUBSCRIPTION LAPSED';
         }
 
         // Barcode / QR Logic
@@ -201,16 +203,14 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             messageEncoding: 'utf-8'
         });
 
-        if (effectiveTier === 'starter') {
-            // Override visibility for voided passes
-            (pass as any).logoText = 'SUBSCRIPTION LAPSED';
-        }
-
         console.log('Generating pass buffer...');
         const buffer = pass.getAsBuffer();
 
         res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
         res.setHeader('Content-Disposition', `attachment; filename=${slug}.pkpass`);
+
+        // Use the walletPushRegistrations' specific database schema `updatedAt` for the pass if possible?
+        // Wait, here `card.updatedAt` is safe! Apple compares it to exactly what the payload returns.
         res.setHeader('last-modified', card.updatedAt ? new Date(card.updatedAt).toUTCString() : new Date().toUTCString());
         return res.status(200).send(buffer);
 

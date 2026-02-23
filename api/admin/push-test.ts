@@ -32,6 +32,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // 3. Send real push for each device
         const results = await Promise.all(devices.map(async (d) => {
             try {
+                // Manually increment the updatedAt token so Apple's server acknowledges the pass genuinely changed
+                await db.update(walletPushRegistrations)
+                    .set({ updatedAt: new Date() })
+                    .where(eq(walletPushRegistrations.pushToken, d.pushToken));
+
                 await sendPassPush(d.pushToken, d.passType);
                 return { token: d.pushToken, topic: d.passType, status: 'sent' };
             } catch (err: any) {

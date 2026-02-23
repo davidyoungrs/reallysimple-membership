@@ -24,7 +24,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const passType = parts[3];
         const since = req.query.passesUpdatedSince as string;
 
-        const registrations = await db.select({ serialNumber: walletPushRegistrations.serialNumber })
+        const registrations = await db.select({
+            serialNumber: walletPushRegistrations.serialNumber,
+            updatedAt: walletPushRegistrations.updatedAt
+        })
             .from(walletPushRegistrations)
             .where(and(
                 eq(walletPushRegistrations.deviceLibraryIdentifier, deviceId),
@@ -33,8 +36,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ));
 
         if (registrations.length === 0) return res.status(204).end();
+
+        // Find the most recent update time to serve as the update tag
+        let maxUpdate = registrations[0].updatedAt;
+        for (const r of registrations) {
+            if (r.updatedAt && maxUpdate && r.updatedAt.getTime() > maxUpdate.getTime()) {
+                maxUpdate = r.updatedAt;
+            }
+        }
+
         return res.status(200).json({
-            lastUpdated: new Date().toISOString(),
+            lastUpdated: maxUpdate ? maxUpdate.toISOString() : new Date().toISOString(),
             serialNumbers: registrations.map((r) => r.serialNumber)
         });
     }
