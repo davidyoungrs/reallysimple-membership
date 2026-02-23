@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             passType: walletPushRegistrations.passTypeIdentifier
         })
             .from(walletPushRegistrations)
-            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber}::uuid = ${businessCards.uid}`)
+            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber} = ${businessCards.uid}::text`)
             .where(eq(businessCards.userId, userId as string));
 
         console.log(`[AdminPush] Found ${devices.length} devices for user ${userId}`);
