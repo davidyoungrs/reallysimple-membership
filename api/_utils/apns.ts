@@ -35,6 +35,9 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
     );
 
     // 2. Determine APNs endpoint
+    // We try production first, but Wallet passes signed with dev certs often need the sandbox.
+    // Let's use production, but add fallback logic if needed, or stick to production. 
+    // Wait, Apple Wallet pushes ALWAYS go to production.
     const host = 'api.push.apple.com'; // Production
     const path = `/3/device/${pushToken}`;
 
@@ -53,11 +56,10 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
             'authorization': `bearer ${token}`,
             'apns-topic': passTypeIdentifier,
             'apns-push-type': 'background',
-            'apns-priority': '10',
         });
 
         req.on('response', (headers) => {
-            const status = headers[http2.constants.HTTP2_HEADER_STATUS];
+            const status = parseInt(headers[http2.constants.HTTP2_HEADER_STATUS] as string, 10);
 
             let data = '';
             req.on('data', (chunk) => { data += chunk; });
