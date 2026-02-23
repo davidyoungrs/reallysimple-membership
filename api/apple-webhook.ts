@@ -5,8 +5,17 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Apple passes all requests to /api/v1/... which we rewrite to /api/apple-webhook?path=...
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    const fullPath = req.query.path as string || '';
+    let fullPath = req.query.path as string || '';
+    if (fullPath.startsWith('passes/v1/')) {
+        fullPath = fullPath.replace('passes/v1/', '');
+    }
     const parts = fullPath.split('/').filter(Boolean);
+
+    if (req.method === 'POST' && parts[0] === 'log') {
+        const payload = req.body || {};
+        console.log('[Passbook Web Service LOG]:', JSON.stringify(payload));
+        return res.status(200).end();
+    }
 
     // Endpoint 1: GET /devices/{deviceLibraryIdentifier}/registrations/{passTypeIdentifier}
     if (req.method === 'GET' && parts[0] === 'devices' && parts[2] === 'registrations' && parts.length === 4) {
