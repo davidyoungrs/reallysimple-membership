@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken';
-import http2 from 'http2';
+import apn from '@parse/node-apn';
 
 /**
  * Sends a push notification to a device via Apple Push Notification service (APNs).
@@ -17,71 +16,45 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
         throw new Error('Missing APNs configuration (Key, Key ID, or Team ID)');
     }
 
-    // 1. Generate the Auth Token (JWT)
-    // APNs tokens should be refreshed every 45-60 minutes, but for a single push, generating one is fine.
-    const token = jwt.sign(
-        {
-            iss: teamId,
-            iat: Math.floor(Date.now() / 1000),
+    const options = {
+        token: {
+            key: authKey, // Can be a string containing your key
+            keyId: keyId,
+            teamId: teamId
         },
-        authKey,
-        {
-            algorithm: 'ES256',
-            header: {
-                alg: 'ES256',
-                kid: keyId,
-            },
+        production: true // Wallet pushes always go to production
+    };
+
+    const apnProvider = new apn.Provider(options);
+
+    const note = new apn.Notification();
+    // note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now. Wallet doesn't need this immediately but good practice.
+    note.topic = passTypeIdentifier;
+    note.pushType = "background";
+    // note.priority = 5; // Background updates require 5 if specified, or omitted.
+
+    // Apple Wallet Pass update payload is specifically empty!
+    // The mere reception of a ping on the topic triggers the wallet to pull the latest JSON
+
+    try {
+        const result = await apnProvider.send(note, pushToken);
+
+        // Critical: Shutdown the provider after sending so the Vercel function can cleanly exit
+        apnProvider.shutdown();
+
+        if (result.sent.length > 0) {
+            console.log(`[APNs] Push successfully sent to ${pushToken}`);
+            return true;
+        } else if (result.failed.length > 0) {
+            const failure = result.failed[0];
+            const errorMessage = failure.response ? failure.response.reason : failure.error?.message;
+            console.error(`[APNs] Push failed for token ${pushToken}:`, errorMessage);
+            throw new Error(`APNs Error: ${errorMessage}`);
         }
-    );
 
-    // 2. Determine APNs endpoint
-    // We try production first, but Wallet passes signed with dev certs often need the sandbox.
-    // Let's use production, but add fallback logic if needed, or stick to production. 
-    // Wait, Apple Wallet pushes ALWAYS go to production.
-    const host = 'api.push.apple.com'; // Production
-    const path = `/3/device/${pushToken}`;
-
-    // 3. Send the Push Request using HTTP/2
-    return new Promise((resolve, reject) => {
-        const client = http2.connect(`https://${host}`);
-
-        client.on('error', (err) => {
-            console.error('[APNs] HTTP/2 Client Error:', err);
-            reject(err);
-        });
-
-        const req = client.request({
-            [http2.constants.HTTP2_HEADER_METHOD]: http2.constants.HTTP2_METHOD_POST,
-            [http2.constants.HTTP2_HEADER_PATH]: path,
-            'authorization': `bearer ${token}`,
-            'apns-topic': passTypeIdentifier,
-            'apns-push-type': 'background',
-        });
-
-        req.on('response', (headers) => {
-            const status = parseInt(headers[http2.constants.HTTP2_HEADER_STATUS] as string, 10);
-
-            let data = '';
-            req.on('data', (chunk) => { data += chunk; });
-
-            req.on('end', () => {
-                client.close();
-                if (status === 200) {
-                    console.log(`[APNs] Push successfully sent to ${pushToken}`);
-                    resolve(true);
-                } else {
-                    console.error(`[APNs] Push failed for token ${pushToken}:`, status, data);
-                    reject(new Error(`APNs Error: ${status} - ${data}`));
-                }
-            });
-        });
-
-        req.on('error', (err) => {
-            client.close();
-            reject(err);
-        });
-
-        req.write(JSON.stringify({}));
-        req.end();
-    });
+    } catch (err) {
+        apnProvider.shutdown();
+        console.error('[APNs] Provider Error:', err);
+        throw err;
+    }
 }
