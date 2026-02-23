@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import http2 from 'http2';
 
 /**
  * Sends a push notification to a device via Apple Push Notification service (APNs).
@@ -33,32 +34,52 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
         }
     );
 
-    // 2. Determine APNs endpoint (Sandbox vs Production)
-    // For Wallet, it's usually always production, but we can verify.
-    const baseUrl = 'https://api.push.apple.com'; // Production
-    // const baseUrl = 'https://api.sandbox.push.apple.com'; // Sandbox
+    // 2. Determine APNs endpoint
+    const host = 'api.push.apple.com'; // Production
+    const path = `/3/device/${pushToken}`;
 
-    const url = `${baseUrl}/3/device/${pushToken}`;
+    // 3. Send the Push Request using HTTP/2
+    return new Promise((resolve, reject) => {
+        const client = http2.connect(`https://${host}`);
 
-    // 3. Send the Push Request
-    // Apple Wallet pushes have an empty body. The notification is triggered by the topic.
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
+        client.on('error', (err) => {
+            console.error('[APNs] HTTP/2 Client Error:', err);
+            reject(err);
+        });
+
+        const req = client.request({
+            [http2.constants.HTTP2_HEADER_METHOD]: http2.constants.HTTP2_METHOD_POST,
+            [http2.constants.HTTP2_HEADER_PATH]: path,
             'authorization': `bearer ${token}`,
             'apns-topic': passTypeIdentifier,
-            'apns-push-type': 'background', // Required for iOS 13+ background pushes
-            'apns-priority': '10',         // High priority
-        },
-        body: JSON.stringify({}),
+            'apns-push-type': 'background',
+            'apns-priority': '10',
+        });
+
+        req.on('response', (headers) => {
+            const status = headers[http2.constants.HTTP2_HEADER_STATUS];
+
+            let data = '';
+            req.on('data', (chunk) => { data += chunk; });
+
+            req.on('end', () => {
+                client.close();
+                if (status === 200) {
+                    console.log(`[APNs] Push successfully sent to ${pushToken}`);
+                    resolve(true);
+                } else {
+                    console.error(`[APNs] Push failed for token ${pushToken}:`, status, data);
+                    reject(new Error(`APNs Error: ${status} - ${data}`));
+                }
+            });
+        });
+
+        req.on('error', (err) => {
+            client.close();
+            reject(err);
+        });
+
+        req.write(JSON.stringify({}));
+        req.end();
     });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[APNs] Push failed for token ${pushToken}:`, errorText);
-        throw new Error(`APNs Error: ${response.status} - ${errorText}`);
-    }
-
-    console.log(`[APNs] Push successfully sent to ${pushToken}`);
-    return true;
 }
