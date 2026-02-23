@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { businessCards, walletPushRegistrations, users } from '../../src/db/schema.js';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, inArray } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
 
@@ -29,20 +29,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log(`[AdminPush] Found ${devices.length} devices for user ${userId}`);
 
-        // 3. Send real push for each device
-        const results = await Promise.all(devices.map(async (d) => {
-            try {
-                // Manually increment the updatedAt token so Apple's server acknowledges the pass genuinely changed
-                await db.update(walletPushRegistrations)
-                    .set({ updatedAt: new Date() })
-                    .where(eq(walletPushRegistrations.pushToken, d.pushToken));
+        // 3. Manually bulk-increment the updatedAt token so Apple recognizes the pass genuinely changed
+        if (devices.length > 0) {
+            const pushTokens = devices.map(d => d.pushToken);
+            await db.update(walletPushRegistrations)
+                .set({ updatedAt: new Date() })
+                .where(inArray(walletPushRegistrations.pushToken, pushTokens));
+        }
 
+        // 4. Send real push for each device sequentially to avoid HTTP/2 socket exhaustion crashes on Vercel
+        const results = [];
+        for (const d of devices) {
+            try {
                 await sendPassPush(d.pushToken, d.passType);
-                return { token: d.pushToken, topic: d.passType, status: 'sent' };
+                results.push({ token: d.pushToken, topic: d.passType, status: 'sent' });
             } catch (err: any) {
-                return { token: d.pushToken, topic: d.passType, status: 'failed', error: err.message };
+                results.push({ token: d.pushToken, topic: d.passType, status: 'failed', error: err.message });
             }
-        }));
+        }
 
         console.log(`[AdminPush] Push simulated for ${devices.length} devices.`);
 
