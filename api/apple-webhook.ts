@@ -2,6 +2,7 @@ import { db } from '../src/db/index.js';
 import { walletPushRegistrations, businessCards } from '../src/db/schema.js';
 import { eq, and, gte } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { handleApplePass } from './passes.js';
 
 // Apple passes all requests to /api/v1/... which we rewrite to /api/apple-webhook?path=...
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -47,7 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const cardResults = await db.select().from(businessCards).where(eq(businessCards.uid, serial)).limit(1);
         if (cardResults.length === 0) return res.status(404).end();
 
-        return res.redirect(`/api/passes?type=apple&slug=${cardResults[0].slug}`);
+        // Must explicitly generate and stream the bundle back. Apple Wallet refuses to follow HTTP redirects.
+        return await handleApplePass(req, res, cardResults[0].slug as string);
     }
 
     // Endpoint 3: POST or DELETE /devices/{deviceLibraryIdentifier}/registrations/{passTypeIdentifier}/{serialNumber}

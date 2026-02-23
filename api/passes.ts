@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 // --- HANDLERS ---
 
-async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: string) {
+export async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: string) {
     try {
         console.log(`[PassGen] Generating Apple Pass for slug: ${slug}`);
 
@@ -104,7 +104,7 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
             { model: modelPath, certificates: certs as any },
             {
                 serialNumber: card.uid,
-                webServiceURL: `${protocol}://${host}/api/v1/passes`, // Standard path for Passbook Web service
+                webServiceURL: `${protocol}://${host}/api`, // Apple appends /v1/passes or /v1/devices automatically
                 authenticationToken: Buffer.from(card.uid).toString('base64'),
                 description: effectiveTier === 'starter' ? 'Digital Card - Subscription Lapsed' : 'Digital Business Card',
                 logoText: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : (data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card')),
