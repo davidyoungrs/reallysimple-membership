@@ -211,6 +211,7 @@ async function handleApplePass(req: VercelRequest, res: VercelResponse, slug: st
 
         res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
         res.setHeader('Content-Disposition', `attachment; filename=${slug}.pkpass`);
+        res.setHeader('last-modified', card.updatedAt ? new Date(card.updatedAt).toUTCString() : new Date().toUTCString());
         return res.status(200).send(buffer);
 
     } catch (error: any) {
