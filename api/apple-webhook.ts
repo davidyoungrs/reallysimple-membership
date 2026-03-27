@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         return res.status(200).json({
-            lastUpdated: maxUpdate ? maxUpdate.toISOString() : new Date().toISOString(),
+            lastUpdated: maxUpdate ? maxUpdate.toISOString().split('.')[0] + 'Z' : new Date().toISOString().split('.')[0] + 'Z',
             serialNumbers: registrations.map((r) => r.serialNumber)
         });
     }

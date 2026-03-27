@@ -145,14 +145,19 @@
 - [x] **Analytics & Maps Fixes**
     - [x] Fix Map visibility by updating CSP in `vercel.json`
     - [x] Fix Localization issues in Analytics Dashboard <!-- id: 233 -->
-    - [/] API Consolidation (Serverless Limit Fix) <!-- id: 380 -->
-    - [ ] Create `api/cards.ts` (Consolidate CRUD, public fetch, check-slug, track) <!-- id: 381 -->
-    - [ ] Create `api/analytics.ts` (Consolidate user/card analytics) <!-- id: 382 -->
-    - [ ] Create `api/passes.ts` (Consolidate Apple/Google wallet generation) <!-- id: 383 -->
-    - [ ] Create `api/public.ts` (Consolidate system-status) <!-- id: 384 -->
-    - [ ] Frontend: Update all API fetch calls <!-- id: 385 -->
-    - [ ] Delete old API files <!-- id: 386 -->
-    - [ ] Verify all flows <!-- id: 387 -->
+- [x] API Consolidation (Serverless Limit Fix) <!-- id: 380 -->
+- [x] Create `api/cards.ts` (Consolidate CRUD, public fetch, check-slug, track) <!-- id: 381 -->
+- [x] Create `api/analytics.ts` (Consolidate user/card analytics) <!-- id: 382 -->
+- [x] Create `api/passes.ts` (Consolidate Apple/Google wallet generation) <!-- id: 383 -->
+- [x] Create `api/public.ts` (Consolidate system-status) <!-- id: 384 -->
+- [x] Frontend: Update all API fetch calls <!-- id: 385 -->
+- [x] Delete old API files <!-- id: 386 -->
+- [x] Verify all flows <!-- id: 387 -->
+
+- [x] **Phase 14: Wallet Sync & Voiding Fix**
+    - [x] Normalize `lastUpdated` timestamp format in `apple-webhook.ts`
+    - [x] Sync `last-modified` headers in `passes.ts` with registration tags
+    - [x] Verify fix by forcing a voided state and checking push lifecycle
 
 - [ ] **Phase 13: Admin Super Dashboard** <!-- id: 160 -->
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->

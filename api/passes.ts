@@ -211,7 +211,8 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
 
         // Use the walletPushRegistrations' specific database schema `updatedAt` for the pass if possible?
         // Wait, here `card.updatedAt` is safe! Apple compares it to exactly what the payload returns.
-        res.setHeader('last-modified', card.updatedAt ? new Date(card.updatedAt).toUTCString() : new Date().toUTCString());
+        const lastUpdated = card.updatedAt ? new Date(card.updatedAt).toISOString().split('.')[0] + 'Z' : new Date().toISOString().split('.')[0] + 'Z';
+        res.setHeader('last-modified', lastUpdated);
         return res.status(200).send(buffer);
 
     } catch (error: any) {
