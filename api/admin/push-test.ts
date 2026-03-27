@@ -61,3 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: err.message });
     }
 }
+
+        for (const res of results) {
+            if (res.status === 'failed') console.error('[AdminPush] Failed:', res);
+        }
