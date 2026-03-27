@@ -29,10 +29,9 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
 
     const note = new apn.Notification();
     note.topic = passTypeIdentifier;
+    note.pushType = "background"; // Required by APNs since iOS 13 for Wallet pass updates
 
     // Apple Wallet Pass update payload is uniquely required to be a strict empty JSON dictionary '{}'.
-    // If we rely on default initialization, the node-apn library compiles it to literally nothing or omits standard keys,
-    // which causes the Apple 'PayloadEmpty' rejection error.
     note.rawPayload = {};
 
 
