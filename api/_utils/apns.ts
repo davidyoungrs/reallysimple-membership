@@ -28,13 +28,13 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
     const apnProvider = new apn.Provider(options);
 
     const note = new apn.Notification();
-    // note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now. Wallet doesn't need this immediately but good practice.
     note.topic = passTypeIdentifier;
-    note.pushType = "background";
-    // note.priority = 5; // Background updates require 5 if specified, or omitted.
 
-    // Apple Wallet Pass update payload is specifically empty!
-    // The mere reception of a ping on the topic triggers the wallet to pull the latest JSON
+    // Apple Wallet Pass update payload is uniquely required to be a strict empty JSON dictionary '{}'.
+    // If we rely on default initialization, the node-apn library compiles it to literally nothing or omits standard keys,
+    // which causes the Apple 'PayloadEmpty' rejection error.
+    note.rawPayload = {};
+
 
     try {
         const result = await apnProvider.send(note, pushToken);
