@@ -209,9 +209,23 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
         res.setHeader('Content-Disposition', `attachment; filename=${slug}.pkpass`);
 
-        // Use the walletPushRegistrations' specific database schema `updatedAt` for the pass if possible?
-        // Wait, here `card.updatedAt` is safe! Apple compares it to exactly what the payload returns.
-        const lastUpdated = card.updatedAt ? new Date(card.updatedAt).toISOString().split('.')[0] + 'Z' : new Date().toISOString().split('.')[0] + 'Z';
+        // To ensure Apple Wallet accepts this pass, the `last-modified` header MUST be >= the tag 
+        // returned in the registrations endpoint. Since tier changes don't update `card.updatedAt`, 
+        // we pull the exact `updatedAt` from the walletPushRegistrations table which is bumped during pushes.
+        const { walletPushRegistrations } = await import('../src/db/schema.js');
+        const reg = await db.select({ updatedAt: walletPushRegistrations.updatedAt })
+            .from(walletPushRegistrations)
+            .where(eq(walletPushRegistrations.serialNumber, card.uid))
+            .limit(1);
+
+        let lastUpdatedObj = new Date();
+        if (reg.length > 0 && reg[0].updatedAt) {
+            lastUpdatedObj = reg[0].updatedAt;
+        } else if (card.updatedAt) {
+            lastUpdatedObj = new Date(card.updatedAt);
+        }
+
+        const lastUpdated = lastUpdatedObj.toISOString().split('.')[0] + 'Z';
         res.setHeader('last-modified', lastUpdated);
         return res.status(200).send(buffer);
 
