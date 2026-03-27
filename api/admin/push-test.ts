@@ -50,6 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log(`[AdminPush] Push simulated for ${devices.length} devices.`);
 
+        for (const res of results) {
+            if (res.status === 'failed') console.error('[AdminPush] Failed:', res);
+        }
+
         return res.status(200).json({
             message: `Identified ${devices.length} registered device(s) for this card.`,
             found: devices.length,
@@ -61,7 +65,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: err.message });
     }
 }
-
-        for (const res of results) {
-            if (res.status === 'failed') console.error('[AdminPush] Failed:', res);
-        }
