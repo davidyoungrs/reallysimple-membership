@@ -161,33 +161,34 @@ function SortablePhoneNumber({ phone, handlePhoneChange, removePhoneNumber, t }:
             </div>
             <div className="flex-1 flex flex-col sm:flex-row gap-2">
                 <div className="w-full sm:w-1/3">
-                    <select
-                        value={['Office', 'Mobile', 'Home'].includes(phone.label) ? phone.label : 'Other'}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === 'Other') {
-                                handlePhoneChange(phone.id, 'label', '');
-                            } else {
-                                handlePhoneChange(phone.id, 'label', val);
-                            }
-                        }}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
-                    >
-                        <option value="Office">{t('Office')}</option>
-                        <option value="Mobile">{t('Mobile')}</option>
-                        <option value="Home">{t('Home')}</option>
-                        <option value="Other">{t('Other')}</option>
-                    </select>
-                    {!['Office', 'Mobile', 'Home'].includes(phone.label) && (
-                        <input
-                            type="text"
-                            placeholder={t('Custom Label')}
-                            value={phone.label}
-                            onChange={(e) => handlePhoneChange(phone.id, 'label', e.target.value)}
-                            className="w-full mt-2 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                            autoFocus
-                        />
-                    )}
+                        <select
+                            value={['Office', 'Mobile', 'Home', 'WhatsApp'].includes(phone.label) ? phone.label : 'Other'}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'Other') {
+                                    handlePhoneChange(phone.id, 'label', '');
+                                } else {
+                                    handlePhoneChange(phone.id, 'label', val);
+                                }
+                            }}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
+                        >
+                            <option value="Office">{t('Office')}</option>
+                            <option value="Mobile">{t('Mobile')}</option>
+                            <option value="Home">{t('Home')}</option>
+                            <option value="WhatsApp">{t('WhatsApp')}</option>
+                            <option value="Other">{t('Other')}</option>
+                        </select>
+                        {!['Office', 'Mobile', 'Home', 'WhatsApp'].includes(phone.label) && (
+                            <input
+                                type="text"
+                                placeholder={t('Custom Label')}
+                                value={phone.label}
+                                onChange={(e) => handlePhoneChange(phone.id, 'label', e.target.value)}
+                                className="w-full mt-2 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                autoFocus
+                            />
+                        )}
                 </div>
                 <input
                     type="text"

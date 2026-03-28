@@ -1,6 +1,7 @@
 import type { CardData } from '../types';
 import { SocialLinks } from './SocialLinks';
 import { Download, Wallet, Loader2, Phone, MessageSquare, ExternalLink, Youtube, Music, Instagram, Video } from 'lucide-react';
+import { WhatsApp } from './BrandIcons';
 import { LeadForm } from './leads/LeadForm';
 import { QRCodeSVG } from 'qrcode.react';
 import { downloadVCard } from '../utils/vcard';
@@ -215,22 +216,31 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
                 {/* Phone Numbers */}
                 {(phoneNumbers || []).length > 0 && (
                     <div className="w-full flex flex-col gap-3 mb-8">
-                        {phoneNumbers?.map((phone) => (
-                            <a
-                                key={phone.id}
-                                href={`tel:${phone.number}`}
-                                onClick={() => onLinkClick?.('contact', 'phone')}
-                                className="flex items-center gap-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl transition-all hover:scale-[1.02] group"
-                            >
-                                <div className="bg-white/20 p-2.5 rounded-full group-hover:bg-white/30 transition-colors">
-                                    <Phone className="w-5 h-5" style={{ color: data.textColor || '#ffffff' }} />
-                                </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-xs font-medium uppercase tracking-wider opacity-60">{t(phone.label)}</span>
-                                    <span className="font-medium text-lg">{phone.number}</span>
-                                </div>
-                            </a>
-                        ))}
+                        {phoneNumbers?.map((phone) => {
+                            const isWhatsApp = phone.label?.toLowerCase() === 'whatsapp';
+                            const cleanNumber = phone.number.replace(/\D/g, '');
+                            const href = isWhatsApp ? `https://wa.me/${cleanNumber}` : `tel:${phone.number}`;
+                            const Icon = isWhatsApp ? WhatsApp : Phone;
+
+                            return (
+                                <a
+                                    key={phone.id}
+                                    href={href}
+                                    target={isWhatsApp ? "_blank" : undefined}
+                                    rel={isWhatsApp ? "noopener noreferrer" : undefined}
+                                    onClick={() => onLinkClick?.('contact', isWhatsApp ? 'whatsapp' : 'phone')}
+                                    className="flex items-center gap-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl transition-all hover:scale-[1.02] group"
+                                >
+                                    <div className="bg-white/20 p-2.5 rounded-full group-hover:bg-white/30 transition-colors">
+                                        <Icon className="w-5 h-5" style={{ color: data.textColor || '#ffffff' }} />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-xs font-medium uppercase tracking-wider opacity-60">{t(phone.label)}</span>
+                                        <span className="font-medium text-lg">{phone.number}</span>
+                                    </div>
+                                </a>
+                            );
+                        })}
                     </div>
                 )}
 
