@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Load environment variables
 dotenv.config()
@@ -96,5 +100,9 @@ export default defineConfig({
       }
     }
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
-

@@ -9,6 +9,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { useTier } from '../contexts/TierContext';
 import { Link } from 'react-router-dom';
+import { PhoneInput } from './ui/phone-input';
 
 interface SortableSocialLinkProps {
     link: SocialLink;
@@ -190,12 +191,11 @@ function SortablePhoneNumber({ phone, handlePhoneChange, removePhoneNumber, t }:
                             />
                         )}
                 </div>
-                <input
-                    type="text"
-                    placeholder={t('Number Placeholder')}
+                <PhoneInput
                     value={phone.number}
-                    onChange={(e) => handlePhoneChange(phone.id, 'number', e.target.value)}
-                    className="w-full sm:w-2/3 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm self-start"
+                    onChange={(_, formattedValue) => handlePhoneChange(phone.id, 'number', formattedValue)}
+                    className="w-full sm:w-2/3 self-start bg-white border border-gray-300 rounded-lg"
+                    placeholder={t('Number Placeholder')}
                 />
             </div>
             <button

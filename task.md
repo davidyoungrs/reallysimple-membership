@@ -151,13 +151,13 @@
 - [x] Create `api/analytics.ts` (Consolidate user/card analytics) <!-- id: 382 -->
 - [x] Create `api/passes.ts` (Consolidate Apple/Google wallet generation) <!-- id: 383 -->
 - [x] Create `api/public.ts` (Consolidate system-status) <!-- id: 384 -->
-- [/] API Consolidation (Serverless Limit Fix - Phase 2)
-- [ ] Create `api/billing.ts` (Consolidate checkout & portal)
-- [ ] Merge `api/me.ts` into `api/user.ts` (Consolidate profile & features)
-- [ ] Merge `api/admin/push-test.ts` into `api/admin/index.ts`
-- [ ] Frontend: Update all API fetch calls <!-- id: 385 -->
-- [ ] Delete old API files <!-- id: 386 -->
-- [ ] Verify all flows <!-- id: 387 -->
+- [x] API Consolidation (Serverless Limit Fix - Phase 2)
+  - [x] Create `api/billing.ts` (Consolidate checkout & portal)
+  - [x] Merge `api/me.ts` into `api/user.ts` (Consolidate profile & features)
+  - [x] Merge `api/admin/push-test.ts` into `api/admin/index.ts`
+  - [x] Frontend: Update all API fetch calls <!-- id: 385 -->
+  - [x] Delete old API files <!-- id: 386 -->
+  - [x] Verify all flows <!-- id: 387 -->
 
 - [x] **Phase 14: Wallet Sync & Voiding Fix**
     - [x] Normalize `lastUpdated` timestamp format in `apple-webhook.ts`
