@@ -10,6 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import ContactSection from './ui/contact-form';
 
 const TIERS = [
     {
@@ -95,6 +96,7 @@ export function Pricing() {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isAnnual, setIsAnnual] = useState(false);
+    const [showContactForm, setShowContactForm] = useState(false);
     
     // FX State
     const [selectedCurrency, setSelectedCurrency] = useState('GBP');
@@ -102,7 +104,6 @@ export function Pricing() {
     const [fxLoading, setFxLoading] = useState(false);
 
     useEffect(() => {
-        // Normalize all rate keys to uppercase for consistent lookup
         const normalizeRates = (rawRates: Record<string, number>): Record<string, number> => {
             const normalized: Record<string, number> = {};
             for (const [key, value] of Object.entries(rawRates)) {
@@ -114,7 +115,6 @@ export function Pricing() {
         const fetchRates = async () => {
             setFxLoading(true);
             try {
-                // Try internal API (now with server-side fallback)
                 const response = await fetch('/api/billing?action=get-rates');
                 if (response.ok) {
                     const data = await response.json();
@@ -179,8 +179,6 @@ export function Pricing() {
 
     const formatPrice = (gbpAmount: number) => {
         if (gbpAmount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
-        
-        // Rates are normalized to uppercase on fetch
         const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency] || 1);
         const margin = selectedCurrency === 'GBP' ? 1 : 1.04;
         const converted = gbpAmount * rate * margin;
@@ -260,7 +258,7 @@ export function Pricing() {
                     </div>
                 )}
 
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
                     {TIERS.map((tier) => {
                         const priceId = isAnnual ? tier.priceIdAnnual : tier.priceIdMonthly;
                         const gbpPrice = isAnnual ? tier.priceAnnualGbp : tier.priceMonthlyGbp;
@@ -341,6 +339,39 @@ export function Pricing() {
                         );
                     })}
                 </div>
+
+                {/* Business CTA Section */}
+                <div className="max-w-4xl mx-auto mt-24 mb-16 text-center">
+                    <div className="bg-gray-900 rounded-[2.5rem] p-12 relative overflow-hidden shadow-2xl shadow-blue-900/10 border border-white/5">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2" />
+                        <div className="relative z-10">
+                            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 uppercase italic tracking-tight">
+                                Are you a business that requires multiple cards?
+                            </h2>
+                            <p className="text-gray-400 text-lg mb-8 font-medium max-w-2xl mx-auto">
+                                We offer custom solutions, centralized billing, and concierge design services for teams and organizations.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setShowContactForm(true);
+                                    setTimeout(() => {
+                                        document.getElementById('contact-sales')?.scrollIntoView({ behavior: 'smooth' });
+                                    }, 100);
+                                }}
+                                className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-black uppercase italic tracking-widest hover:bg-gray-100 transition-all hover:scale-105 active:scale-95 shadow-xl"
+                            >
+                                Contact Sales
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Contact Form Section */}
+                {showContactForm && (
+                    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <ContactSection />
+                    </div>
+                )}
             </main>
         </div>
     );
