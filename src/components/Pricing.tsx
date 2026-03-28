@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Check, ArrowRight, Loader2, ArrowLeft, Globe } from 'lucide-react';
+import { BorderBeam } from './ui/border-beam';
 import {
     Select,
     SelectContent,
@@ -262,11 +263,14 @@ export function Pricing() {
                                 }`}
                             >
                                 {tier.popular && (
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                        <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm">
-                                            Recommended
-                                        </span>
-                                    </div>
+                                    <>
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                                            <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm">
+                                                Recommended
+                                            </span>
+                                        </div>
+                                        <BorderBeam size={250} duration={12} delay={0} />
+                                    </>
                                 )}
 
                                 <div className="mb-8">
