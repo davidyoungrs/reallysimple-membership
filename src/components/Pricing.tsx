@@ -181,7 +181,8 @@ export function Pricing() {
     const formatPrice = (gbpAmount: number) => {
         if (gbpAmount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
         
-        const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency.toLowerCase()] || 1);
+        // Handle case-insensitive lookup (Stripe = lowercase, Frankfurter = TARGET_CODE)
+        const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency] || rates[selectedCurrency.toLowerCase()] || 1);
         const margin = selectedCurrency === 'GBP' ? 1 : 1.04;
         const converted = gbpAmount * rate * margin;
 
