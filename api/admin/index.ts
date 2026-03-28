@@ -315,6 +315,71 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(200).json({ success: true, cardId: newCard.id, slug: finalSlug });
             }
 
+            if (action === 'create_concierge_user_and_card') {
+                const { email, fullName, cardData } = value;
+                if (!email || !fullName || !cardData) {
+                    return res.status(400).json({ error: 'Missing required fields (email, fullName, cardData)' });
+                }
+
+                // 1. Create Clerk User
+                const tempPassword = `Temp-${Math.random().toString(36).slice(-8)}!${Math.random().toString(36).slice(-4).toUpperCase()}`;
+
+                let clerkUserId: string;
+                try {
+                    const newUser = await clerkClient.users.createUser({
+                        emailAddress: [email],
+                        firstName: fullName.split(' ')[0],
+                        lastName: fullName.split(' ').slice(1).join(' '),
+                        password: tempPassword,
+                        skipPasswordChecks: true,
+                        publicMetadata: {
+                            role: 'user',
+                            onboardingComplete: true,
+                            concierge: true
+                        }
+                    });
+                    clerkUserId = newUser.id;
+                } catch (err: any) {
+                    return res.status(400).json({ error: 'User creation failed: ' + (err.errors?.[0]?.message || err.message) });
+                }
+
+                // 2. Sync to local DB
+                await db.insert(users)
+                    .values({
+                        clerkId: clerkUserId,
+                        email: email,
+                        tier: 'pro'
+                    })
+                    .onConflictDoNothing();
+
+                // 3. Generate Slug & Insert Card
+                const baseSlug = fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'user';
+                let finalSlug = baseSlug;
+                let counter = 1;
+                while (true) {
+                    const existing = await db.select({ id: businessCards.id }).from(businessCards).where(eq(businessCards.slug, finalSlug)).limit(1);
+                    if (existing.length === 0) break;
+                    finalSlug = `${baseSlug}-${counter++}`;
+                }
+
+                const [newCard] = await db.insert(businessCards)
+                    .values({
+                        userId: clerkUserId,
+                        slug: finalSlug,
+                        data: { ...cardData, fullName },
+                        isActive: true
+                    })
+                    .returning();
+
+                return res.status(200).json({
+                    success: true,
+                    userId: clerkUserId,
+                    cardId: newCard.id,
+                    slug: finalSlug,
+                    temporaryPassword: tempPassword
+                });
+            }
+
             return res.status(400).json({ error: 'Invalid action' });
         }
 

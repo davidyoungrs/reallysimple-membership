@@ -96,6 +96,72 @@ export function AdminUsers() {
         }
     };
 
+    const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+    const [onboardingLoading, setOnboardingLoading] = useState(false);
+    const [onboardingSuccess, setOnboardingSuccess] = useState<{ email: string, tempPass: string } | null>(null);
+    const [onboardingForm, setOnboardingForm] = useState({
+        email: '',
+        fullName: '',
+        jobTitle: '',
+        company: '',
+        phone: '',
+        bio: ''
+    });
+
+    const handleConciergeOnboarding = async () => {
+        if (!onboardingForm.email || !onboardingForm.fullName) return;
+        setOnboardingLoading(true);
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=user_actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'create_concierge_user_and_card',
+                    userId: 'new', // Placeholder for new user
+                    value: {
+                        email: onboardingForm.email,
+                        fullName: onboardingForm.fullName,
+                        cardData: {
+                            jobTitle: onboardingForm.jobTitle,
+                            company: onboardingForm.company,
+                            phone: onboardingForm.phone,
+                            bio: onboardingForm.bio
+                        }
+                    }
+                })
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Onboarding failed');
+            }
+
+            const data = await res.json();
+            setOnboardingSuccess({
+                email: onboardingForm.email,
+                tempPass: data.temporaryPassword
+            });
+            
+            // Refresh users list
+            const searchInput = document.getElementById('admin-user-search') as HTMLInputElement;
+            if (searchInput) {
+                const currentSearch = searchInput.value;
+                setSearch(' '); // Trigger re-search
+                setTimeout(() => setSearch(currentSearch), 10);
+            }
+
+        } catch (err: any) {
+            console.error(err);
+            alert('Onboarding failed: ' + err.message);
+        } finally {
+            setOnboardingLoading(false);
+        }
+    };
+
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = () => setActionMenuOpen(null);
@@ -224,15 +290,36 @@ export function AdminUsers() {
                     <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                     <p className="text-gray-500 mt-2">Manage user accounts and access.</p>
                 </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search users..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => {
+                            setOnboardingForm({
+                                email: '',
+                                fullName: '',
+                                jobTitle: '',
+                                company: '',
+                                phone: '',
+                                bio: ''
+                            });
+                            setOnboardingSuccess(null);
+                            setShowOnboardingModal(true);
+                        }}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 group"
+                    >
+                        <Zap className="w-4 h-4 fill-white" />
+                        Concierge Onboarding
+                    </button>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            id="admin-user-search"
+                            type="text"
+                            placeholder="Search users..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -609,6 +696,171 @@ export function AdminUsers() {
                                 )}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* Onboarding Modal */}
+            {showOnboardingModal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[70] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">New Concierge Onboarding</h2>
+                                <p className="text-xs text-gray-500 mt-1">Create a brand-new user and their first business card.</p>
+                            </div>
+                            <button onClick={() => setShowOnboardingModal(false)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                &times;
+                            </button>
+                        </div>
+
+                        {onboardingSuccess ? (
+                            <div className="p-8 text-center space-y-6">
+                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-10 h-10" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Account Created!</h3>
+                                    <p className="text-gray-500 mt-1 text-sm">A new user account and card have been generated.</p>
+                                </div>
+                                <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl space-y-4 max-w-sm mx-auto">
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold text-blue-600 uppercase tracking-widest text-left">Login Email</p>
+                                        <div className="bg-white p-3 rounded-xl border border-blue-200 text-blue-900 font-medium text-left">
+                                            {onboardingSuccess.email}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold text-blue-600 uppercase tracking-widest text-left">Temporary Password</p>
+                                        <div className="bg-white p-3 rounded-xl border border-blue-200 text-blue-900 font-mono text-lg font-bold text-left flex justify-between items-center">
+                                            {onboardingSuccess.tempPass}
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(onboardingSuccess.tempPass);
+                                                    alert('Password copied to clipboard!');
+                                                }}
+                                                className="text-xs bg-blue-600 text-white px-2 py-1 rounded"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-red-500 font-semibold italic">CAUTION: Provide these credentials to the user immediately. This password will not be shown again.</p>
+                                <button
+                                    onClick={() => setShowOnboardingModal(false)}
+                                    className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-colors"
+                                >
+                                    Finish & Close
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                                    <section className="space-y-4">
+                                        <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                            <div className="w-4 h-px bg-blue-200" /> User Account
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase">User Email <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={onboardingForm.email}
+                                                    onChange={(e) => setOnboardingForm({ ...onboardingForm, email: e.target.value })}
+                                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="client@example.com"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase">Full Name <span className="text-red-500">*</span></label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={onboardingForm.fullName}
+                                                    onChange={(e) => setOnboardingForm({ ...onboardingForm, fullName: e.target.value })}
+                                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Jane Doe"
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="space-y-4">
+                                        <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                            <div className="w-4 h-px bg-blue-200" /> Card Details
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase">Job Title</label>
+                                                <input
+                                                    type="text"
+                                                    value={onboardingForm.jobTitle}
+                                                    onChange={(e) => setOnboardingForm({ ...onboardingForm, jobTitle: e.target.value })}
+                                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="CEO"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-gray-500 uppercase">Company</label>
+                                                <input
+                                                    type="text"
+                                                    value={onboardingForm.company}
+                                                    onChange={(e) => setOnboardingForm({ ...onboardingForm, company: e.target.value })}
+                                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Apple Inc."
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">Phone Number</label>
+                                            <input
+                                                type="tel"
+                                                value={onboardingForm.phone}
+                                                onChange={(e) => setOnboardingForm({ ...onboardingForm, phone: e.target.value })}
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="+1 234..."
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">Short Bio</label>
+                                            <textarea
+                                                value={onboardingForm.bio}
+                                                onChange={(e) => setOnboardingForm({ ...onboardingForm, bio: e.target.value })}
+                                                rows={2}
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                                placeholder="A bit about the user..."
+                                            />
+                                        </div>
+                                    </section>
+                                </div>
+                                <div className="p-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-3">
+                                    <button
+                                        onClick={() => setShowOnboardingModal(false)}
+                                        className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleConciergeOnboarding}
+                                        disabled={onboardingLoading || !onboardingForm.email || !onboardingForm.fullName}
+                                        className="bg-blue-600 text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 group"
+                                    >
+                                        {onboardingLoading ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Onboarding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Onboard User & Create Card
+                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
