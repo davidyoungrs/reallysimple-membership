@@ -68,7 +68,7 @@ export function Pricing() {
     const [error, setError] = useState<string | null>(null);
     const [isAnnual, setIsAnnual] = useState(false);
 
-    const handleCheckout = async (priceId: string | null) => {
+    const handleCheckout = async (priceId: string | null, tierId: string) => {
         if (!priceId) {
             // Free tier, just go to app
             window.location.href = '/app';
@@ -81,7 +81,7 @@ export function Pricing() {
             return;
         }
 
-        setIsLoading(priceId);
+        setIsLoading(tierId);
         setError(null);
 
         try {
@@ -206,15 +206,15 @@ export function Pricing() {
                                 </ul>
 
                                 <button
-                                    onClick={() => handleCheckout(priceId)}
-                                    disabled={isLoading === priceId || (!isAuthLoaded && !!priceId)}
+                                    onClick={() => handleCheckout(priceId, tier.id)}
+                                    disabled={isLoading === tier.id || (!isAuthLoaded && !!priceId)}
                                     className={`w-full py-4 px-6 rounded-2xl font-black uppercase italic tracking-wider flex items-center justify-center gap-2 transition-all ${
                                         tier.popular
                                             ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-200'
                                             : 'bg-gray-900 text-white hover:bg-black'
                                     } disabled:opacity-50`}
                                 >
-                                    {isLoading === priceId ? (
+                                    {isLoading === tier.id ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin" />
                                             Wait...
