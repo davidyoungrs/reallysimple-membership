@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: hsl(var(--hu-background));
+  --color-foreground: hsl(var(--hu-foreground));
+  --color-card: hsl(var(--hu-card));
+  --color-card-foreground: hsl(var(--hu-card-foreground));
+  --color-primary: hsl(var(--hu-primary));
+  --color-primary-foreground: hsl(var(--hu-primary-foreground));
+  --color-secondary: hsl(var(--hu-secondary));
+  --color-secondary-foreground: hsl(var(--hu-secondary-foreground));
+  --color-muted: hsl(var(--hu-muted));
+  --color-muted-foreground: hsl(var(--hu-muted-foreground));
+  --color-accent: hsl(var(--hu-accent));
+  --color-accent-foreground: hsl(var(--hu-accent-foreground));
+  --color-destructive: hsl(var(--hu-destructive));
+  --color-destructive-foreground: hsl(var(--hu-destructive-foreground));
+  --color-border: hsl(var(--hu-border));
+  --color-input: hsl(var(--hu-input));
+  --color-ring: hsl(var(--hu-ring));
+  --radius-ele: var(--radius);
+  --shadow-sm-2: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
 :root {
   --hu-font-geist: var(--font-geist);
   --hu-font-jetbrains: var(--font-jetbrains-mono);
