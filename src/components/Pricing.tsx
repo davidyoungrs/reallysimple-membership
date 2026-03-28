@@ -105,13 +105,26 @@ export function Pricing() {
         const fetchRates = async () => {
             setFxLoading(true);
             try {
+                // Try internal Stripe FX first
                 const response = await fetch('/api/billing?action=get-rates');
                 const data = await response.json();
                 if (data.rates) {
                     setRates(data.rates);
+                    return;
                 }
+                throw new Error('Internal FX API failed');
             } catch (err) {
-                console.error('Failed to fetch rates:', err);
+                console.warn('Internal FX API failed, falling back to Frankfurter:', err);
+                try {
+                    // Fallback to public Frankfurter API
+                    const response = await fetch('https://api.frankfurter.dev/v2/latest?base=GBP');
+                    const data = await response.json();
+                    if (data.rates) {
+                        setRates(data.rates);
+                    }
+                } catch (fallbackErr) {
+                    console.error('All FX APIs failed:', fallbackErr);
+                }
             } finally {
                 setFxLoading(false);
             }

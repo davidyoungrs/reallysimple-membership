@@ -5,9 +5,19 @@ import { verifyToken } from '@clerk/backend';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-    apiVersion: '2025-01-27' as any,
-});
+let stripeInstance: Stripe | null = null;
+
+function getStripe() {
+    if (!stripeInstance) {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error('STRIPE_SECRET_KEY is missing in the environment');
+        }
+        stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2025-01-27' as any,
+        });
+    }
+    return stripeInstance;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // --- SPECIAL PUBLIC ACTION: Get Exchange Rates (GET or POST) ---
@@ -15,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     if (action === 'get-rates') {
         try {
-            const exchangeRates = await stripe.exchangeRates.retrieve('gbp');
+            const exchangeRates = await getStripe().exchangeRates.retrieve('gbp');
             return res.status(200).json({ rates: exchangeRates.rates });
         } catch (error: any) {
             console.error('FX Rates error:', error);
@@ -51,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             let stripeCustomerId = userByEmail[0]?.stripeCustomerId;
 
             if (!stripeCustomerId) {
-                const customer = await stripe.customers.create({
+                const customer = await getStripe().customers.create({
                     email: email,
                     metadata: { clerkId: userId },
                 });
@@ -68,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             }
 
-            const session = await stripe.checkout.sessions.create({
+            const session = await getStripe().checkout.sessions.create({
                 customer: stripeCustomerId,
                 line_items: [{ price: priceId, quantity: 1 }],
                 mode: 'subscription',
@@ -90,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(404).json({ error: 'No active subscription found. Please subscribe first.' });
             }
 
-            const portalSession = await stripe.billingPortal.sessions.create({
+            const portalSession = await getStripe().billingPortal.sessions.create({
                 customer: stripeCustomerId,
                 return_url: `${req.headers.origin}/dashboard?portal=success`,
             });
