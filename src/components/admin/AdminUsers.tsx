@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon, Zap, Star, Briefcase, Award } from 'lucide-react';
+import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon, Zap, Star, Briefcase, Award, ArrowRight } from 'lucide-react';
 
 export function AdminUsers() {
     const { getToken } = useAuth();
@@ -41,6 +41,60 @@ export function AdminUsers() {
     const [userDetail, setUserDetail] = useState<{ user: any, cards: any[] } | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [syncing, setSyncing] = useState<string | null>(null);
+    const [showConciergeModal, setShowConciergeModal] = useState(false);
+    const [conciergeLoading, setConciergeLoading] = useState(false);
+    const [conciergeForm, setConciergeForm] = useState({
+        fullName: '',
+        jobTitle: '',
+        company: '',
+        email: '',
+        phone: '',
+        website: '',
+        bio: ''
+    });
+
+    const handleCreateConciergeCard = async () => {
+        if (!userDetail?.user.id) return;
+        setConciergeLoading(true);
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=user_actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'create_concierge_card',
+                    userId: userDetail.user.id,
+                    value: { cardData: conciergeForm }
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to create card');
+            
+            // Refresh user details to show the new card
+            openDetailModal(userDetail.user.id);
+            setShowConciergeModal(false);
+            // Reset form
+            setConciergeForm({
+                fullName: '',
+                jobTitle: '',
+                company: '',
+                email: '',
+                phone: '',
+                website: '',
+                bio: ''
+            });
+
+            alert('Card created successfully!');
+        } catch (err: any) {
+            console.error(err);
+            alert('Failed to create concierge card: ' + err.message);
+        } finally {
+            setConciergeLoading(false);
+        }
+    };
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -379,7 +433,27 @@ export function AdminUsers() {
                                         </div>
 
                                         <div>
-                                            <h4 className="font-semibold mb-2">Business Cards</h4>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-semibold">Business Cards</h4>
+                                                <button 
+                                                    onClick={() => {
+                                                        const user = userDetail?.user;
+                                                        setConciergeForm({
+                                                            fullName: (user?.firstName && user?.lastName) ? `${user.firstName} ${user.lastName}` : (user?.firstName || ''),
+                                                            jobTitle: '',
+                                                            company: '',
+                                                            email: user?.emailAddresses?.[0]?.emailAddress || '',
+                                                            phone: '',
+                                                            website: '',
+                                                            bio: ''
+                                                        });
+                                                        setShowConciergeModal(true);
+                                                    }}
+                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                                >
+                                                    <Zap className="w-3 h-3" /> Create Concierge Card
+                                                </button>
+                                            </div>
                                             <div className="space-y-2">
                                                 {userDetail?.cards.map((card: any) => (
                                                     <div key={card.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
@@ -431,6 +505,113 @@ export function AdminUsers() {
                     </div>
                 )
             }
+            {/* Concierge Card Modal */}
+            {showConciergeModal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[70] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Create Concierge Card</h2>
+                                <p className="text-xs text-gray-500 mt-1">Creating card for {userDetail?.user.firstName} {userDetail?.user.lastName}</p>
+                            </div>
+                            <button onClick={() => setShowConciergeModal(false)} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                &times;
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={conciergeForm.fullName}
+                                        onChange={(e) => setConciergeForm({ ...conciergeForm, fullName: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Title</label>
+                                    <input
+                                        type="text"
+                                        value={conciergeForm.jobTitle}
+                                        onChange={(e) => setConciergeForm({ ...conciergeForm, jobTitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="Marketing Director"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Company</label>
+                                    <input
+                                        type="text"
+                                        value={conciergeForm.company}
+                                        onChange={(e) => setConciergeForm({ ...conciergeForm, company: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="Acme Corp"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact Email</label>
+                                    <input
+                                        type="email"
+                                        value={conciergeForm.email}
+                                        onChange={(e) => setConciergeForm({ ...conciergeForm, email: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                        placeholder="john@example.com"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    value={conciergeForm.phone}
+                                    onChange={(e) => setConciergeForm({ ...conciergeForm, phone: e.target.value })}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                    placeholder="+1 234 567 890"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bio / About</label>
+                                <textarea
+                                    value={conciergeForm.bio}
+                                    onChange={(e) => setConciergeForm({ ...conciergeForm, bio: e.target.value })}
+                                    rows={3}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                                    placeholder="Brief bio about the user..."
+                                />
+                            </div>
+                        </div>
+                        <div className="p-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-3">
+                            <button
+                                onClick={() => setShowConciergeModal(false)}
+                                className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCreateConciergeCard}
+                                disabled={conciergeLoading || !conciergeForm.fullName}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 group"
+                            >
+                                {conciergeLoading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        Generate Card
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

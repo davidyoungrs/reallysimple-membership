@@ -275,6 +275,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(200).json({ success: true });
             }
 
+            if (action === 'create_concierge_card') {
+                const { cardData } = value;
+                if (!cardData) return res.status(400).json({ error: 'Missing card data' });
+
+                // 1. Generate Slug
+                const name = cardData.fullName || 'card';
+                let baseSlug = name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+
+                // Ensure slug isn't empty
+                if (!baseSlug) baseSlug = 'user';
+
+                let finalSlug = baseSlug;
+                let counter = 1;
+
+                // Check for collision
+                while (true) {
+                    const existing = await db.select({ id: businessCards.id })
+                        .from(businessCards)
+                        .where(eq(businessCards.slug, finalSlug))
+                        .limit(1);
+
+                    if (existing.length === 0) break;
+                    finalSlug = `${baseSlug}-${counter++}`;
+                }
+
+                // 2. Insert Card
+                const [newCard] = await db.insert(businessCards)
+                    .values({
+                        userId: userId, // The target user's Clerk ID
+                        slug: finalSlug,
+                        data: cardData,
+                        isActive: true
+                    })
+                    .returning();
+
+                return res.status(200).json({ success: true, cardId: newCard.id, slug: finalSlug });
+            }
+
             return res.status(400).json({ error: 'Invalid action' });
         }
 
