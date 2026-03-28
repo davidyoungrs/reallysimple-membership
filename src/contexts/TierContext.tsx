@@ -58,6 +58,8 @@ export function TierProvider({ children }: { children: React.ReactNode }) {
         switch (feature) {
             case 'custom_slug':
                 return tier !== 'starter';
+            case 'custom_theme':
+                return tier !== 'starter';
             case 'remove_branding':
                 return tier !== 'starter';
             case 'wallet_passes':

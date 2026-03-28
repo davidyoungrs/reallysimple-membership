@@ -993,13 +993,21 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                 </div>
 
                 {/* Background Settings */}
-                <div className="pt-2 border-t border-gray-100">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('Background Style')}</label>
+                <div className="pt-2 border-t border-gray-100 relative">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">{t('Background Style')}</label>
+                        {!isFeatureEnabled('custom_theme') && (
+                            <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" /> {t('PRO FEATURE')}
+                            </Link>
+                        )}
+                    </div>
 
-                    {/* Cool Palettes */}
-                    <div className="mb-4">
-                        <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">{t('Cool Palettes')}</label>
-                        <div className="flex flex-wrap gap-2">
+                    <div className={!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}>
+                        {/* Cool Palettes */}
+                        <div className="mb-4">
+                            <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">{t('Cool Palettes')}</label>
+                            <div className="flex flex-wrap gap-2">
                             {[
                                 { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff' },
                                 { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff' },
@@ -1080,12 +1088,20 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             </div>
                         )}
                     </div>
+                    </div>
                 </div>
 
                 {/* Font Selection */}
-                <div className="pt-2 border-t border-gray-100">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('Typography')}</label>
-                    <div className="space-y-3">
+                <div className="pt-2 border-t border-gray-100 relative">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">{t('Typography')}</label>
+                        {!isFeatureEnabled('custom_theme') && (
+                            <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" /> {t('PRO FEATURE')}
+                            </Link>
+                        )}
+                    </div>
+                    <div className={`space-y-3 ${!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}`}>
                         <select
                             value={data.font || 'Inter'}
                             onChange={(e) => handleChange('font', e.target.value)}

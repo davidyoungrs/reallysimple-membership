@@ -70,13 +70,13 @@
     - [x] Clerk Auth Integration
     - [x] Landing Page
     - [x] Secure User Dashboard routes
-- [ ] **Subscription System**
-    - [ ] Update users schema (tier, stripe_customer_id, status)
-    - [ ] Initialize Stripe billing portal logic
-    - [ ] Stripe/PayPal Integration
-    - [ ] Tiered Access (Free vs Pro)
+- [x] **Subscription System**
+    - [x] Update users schema (tier, stripe_customer_id, status)
+    - [x] Initialize Stripe billing portal logic
+    - [x] Stripe/PayPal Integration
+    - [x] Tiered Access (Free vs Pro)
     - [ ] Feature Gating (Restrict advanced backgrounds/limits)
-    - [ ] Subscription Management Dashboard
+    - [x] Subscription Management Dashboard
 
 ## Phase 6: Wallet Integration & Dashboard Polish (Completed)
 - [x] **Apple Wallet (.pkpass)**
@@ -158,6 +158,7 @@
     - [x] Normalize `lastUpdated` timestamp format in `apple-webhook.ts`
     - [x] Sync `last-modified` headers in `passes.ts` with registration tags
     - [x] Verify fix by forcing a voided state and checking push lifecycle
+    - [ ] **Configure Stripe Dashboard**: Set "Manage failed payments" to cancel the subscription exactly 3 days after failure (triggers `customer.subscription.deleted` webhook for Wallet voiding).
 
 - [ ] **Phase 13: Admin Super Dashboard** <!-- id: 160 -->
     - [x] Set up RBAC & Protected `/admin` layout <!-- id: 161 -->

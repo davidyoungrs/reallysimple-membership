@@ -22,6 +22,7 @@ const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then
 const SubscriptionSimulator = lazy(() => import('./components/admin/SubscriptionSimulator').then(module => ({ default: module.SubscriptionSimulator })));
 const Licenses = lazy(() => import('./components/Licenses').then(module => ({ default: module.Licenses })));
 const LapsedSubscription = lazy(() => import('./components/LapsedSubscription'));
+const Pricing = lazy(() => import('./components/Pricing').then(module => ({ default: module.Pricing })));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -71,6 +72,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/wordpress-home" element={<WordPressHome />} />
+            <Route path="/pricing" element={<Pricing />} />
 
             {/* Auth Routes */}
             <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
@@ -94,11 +96,12 @@ function App() {
             {/* Public Card Route */}
             <Route path="/card/:slug" element={<PublicCard />} />
 
-            {/* Policy Routes */}
-            <Route path="/:type" element={<PolicyPage />} />
-
             {/* Landing/Static Routes */}
             <Route path="/lapsed" element={<LapsedSubscription />} />
+            <Route path="/licenses" element={<Licenses />} />
+
+            {/* Policy Routes - must come after all static routes */}
+            <Route path="/:type" element={<PolicyPage />} />
 
             {/* Protected App Route */}
             <Route
@@ -145,7 +148,6 @@ function App() {
             </Route>
 
             {/* Redirect unknown routes to home */}
-            <Route path="/licenses" element={<Licenses />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

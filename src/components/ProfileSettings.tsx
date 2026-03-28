@@ -1,6 +1,7 @@
 import { useUser } from '@clerk/clerk-react';
 import { useTranslation } from 'react-i18next';
 import { User, Shield, Smartphone } from 'lucide-react';
+import { SubscriptionManager } from './SubscriptionManager';
 
 export function ProfileSettings() {
     const { user } = useUser();
@@ -56,6 +57,8 @@ export function ProfileSettings() {
                     </div>
 
                     <div className="space-y-6">
+                        <SubscriptionManager />
+
                         <section>
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <Smartphone className="w-4 h-4" />
