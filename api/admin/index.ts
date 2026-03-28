@@ -380,6 +380,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
             }
 
+            if (action === 'duplicate_card') {
+                const { sourceCardId, targetUserId } = value;
+                if (!sourceCardId) return res.status(400).json({ error: 'Missing sourceCardId' });
+
+                // 1. Fetch Source Card
+                const [sourceCard] = await db.select().from(businessCards).where(eq(businessCards.id, sourceCardId)).limit(1);
+                if (!sourceCard) return res.status(404).json({ error: 'Source card not found' });
+
+                // 2. Prepare New Data
+                const newUserId = targetUserId || sourceCard.userId;
+                const originalData = sourceCard.data as any;
+                
+                // 3. Generate New Slug
+                const baseSlug = (sourceCard.slug || 'card') + '-copy';
+                let finalSlug = baseSlug;
+                let counter = 1;
+                while (true) {
+                    const existing = await db.select({ id: businessCards.id }).from(businessCards).where(eq(businessCards.slug, finalSlug)).limit(1);
+                    if (existing.length === 0) break;
+                    finalSlug = `${baseSlug}-${counter++}`;
+                }
+
+                // 4. Insert Duplicate
+                const [newCard] = await db.insert(businessCards)
+                    .values({
+                        userId: newUserId,
+                        slug: finalSlug,
+                        data: { ...originalData, slug: finalSlug },
+                        isActive: true
+                    })
+                    .returning();
+
+                return res.status(200).json({ 
+                    success: true, 
+                    cardId: newCard.id, 
+                    slug: finalSlug,
+                    targetUserId: newUserId
+                });
+            }
+
             return res.status(400).json({ error: 'Invalid action' });
         }
 

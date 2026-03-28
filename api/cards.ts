@@ -63,20 +63,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const authenticatedUserId = verifiedToken.sub;
 
+        // Admin check for concierge/management
+        let isAdmin = false;
+        try {
+            const { createClerkClient } = await import('@clerk/backend');
+            const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+            const requester = await clerk.users.getUser(authenticatedUserId);
+            isAdmin = requester.publicMetadata?.role === 'admin';
+        } catch (err) {
+            console.error('Admin check failed:', err);
+        }
 
         // D. LIST CARDS (GET /api/cards)
         if (method === 'GET') {
-            return await handleListCards(req, res, authenticatedUserId);
+            const targetUserId = (isAdmin && query.userId) ? (query.userId as string) : authenticatedUserId;
+            return await handleListCards(req, res, targetUserId);
         }
 
         // E. SAVE CARD (POST /api/cards)
         if (method === 'POST') {
-            return await handleSaveCard(req, res, authenticatedUserId);
+            return await handleSaveCard(req, res, authenticatedUserId, isAdmin);
         }
 
         // F. DELETE CARD (DELETE /api/cards)
         if (method === 'DELETE') {
-            return await handleDeleteCard(req, res, authenticatedUserId);
+            return await handleDeleteCard(req, res, authenticatedUserId, isAdmin);
         }
 
         return res.status(405).json({ error: 'Method not allowed' });
@@ -241,14 +252,14 @@ async function handleListCards(req: VercelRequest, res: VercelResponse, userId: 
     return res.status(200).json({ success: true, cards });
 }
 
-async function handleSaveCard(req: VercelRequest, res: VercelResponse, authenticatedUserId: string) {
+async function handleSaveCard(req: VercelRequest, res: VercelResponse, authenticatedUserId: string, isAdmin: boolean = false) {
     const { cardData, cardId, userId: bodyUserId } = req.body;
 
-    // Security check: ensure the userId in body (if present) matches the token
-    if (bodyUserId && bodyUserId !== authenticatedUserId) {
+    // Security check: ensure the userId in body (if present) matches the token, UNLESS admin
+    if (!isAdmin && bodyUserId && bodyUserId !== authenticatedUserId) {
         return res.status(403).json({ error: 'Unauthorized user mismatch' });
     }
-    const effectiveUserId = authenticatedUserId;
+    const effectiveUserId = (isAdmin && bodyUserId) ? bodyUserId : authenticatedUserId;
 
     if (!cardData) return res.status(400).json({ error: 'Missing card data' });
 
@@ -260,11 +271,6 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
 
     let slug = cardData.slug;
 
-    // TODO: We technically should re-check slug uniqueness here to be safe race-condition wise, 
-    // but the frontend check + unique constraint (if it existed) would handle it. 
-    // For now, relying on the checkSlug logic existing in the frontend or DB constraint. 
-    // Original save-card.ts DID check it.
-
     if (slug) {
         const existingCard = await db.select().from(businessCards).where(eq(businessCards.slug, slug)).limit(1);
         // If updating (cardId exists), ensure we aren't colliding with ANOTHER card
@@ -275,12 +281,11 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
 
     let result;
     if (cardId) {
-        // Verify ownership/existence before update? 
-        // Original didn't explicitly, but `where` clause with ID makes it safe-ish. 
-        // Better to add userID check in the Where clause for security.
+        // Admin bypass or ownership check
+        const whereClause = isAdmin ? eq(businessCards.id, cardId) : and(eq(businessCards.id, cardId), eq(businessCards.userId, authenticatedUserId));
         result = await db.update(businessCards)
             .set({ data: cardData, slug: slug || null, updatedAt: new Date() })
-            .where(and(eq(businessCards.id, cardId), eq(businessCards.userId, effectiveUserId))) // Added ownership check
+            .where(whereClause)
             .returning();
     } else {
         result = await db.insert(businessCards)
@@ -290,15 +295,15 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
     return res.status(200).json({ success: true, card: result[0] });
 }
 
-async function handleDeleteCard(req: VercelRequest, res: VercelResponse, authenticatedUserId: string) {
+async function handleDeleteCard(req: VercelRequest, res: VercelResponse, authenticatedUserId: string, isAdmin: boolean = false) {
     const { cardId, userId: bodyUserId } = req.body;
-    if (bodyUserId && bodyUserId !== authenticatedUserId) return res.status(403).json({ error: 'Unauthorized user mismatch' });
+    if (!isAdmin && bodyUserId && bodyUserId !== authenticatedUserId) return res.status(403).json({ error: 'Unauthorized user mismatch' });
     if (!cardId) return res.status(400).json({ error: 'Missing cardId' });
 
-    const effectiveUserId = authenticatedUserId;
+    const whereClause = isAdmin ? eq(businessCards.id, cardId) : and(eq(businessCards.id, cardId), eq(businessCards.userId, authenticatedUserId));
 
     const existingCards = await db.select().from(businessCards)
-        .where(and(eq(businessCards.id, cardId), eq(businessCards.userId, effectiveUserId))).limit(1);
+        .where(whereClause).limit(1);
 
     if (existingCards.length === 0) return res.status(404).json({ error: 'Card not found or unauthorized' });
 
@@ -307,7 +312,7 @@ async function handleDeleteCard(req: VercelRequest, res: VercelResponse, authent
         db.delete(cardClicks).where(eq(cardClicks.cardId, cardId))
     ]);
 
-    await db.delete(businessCards).where(and(eq(businessCards.id, cardId), eq(businessCards.userId, effectiveUserId)));
+    await db.delete(businessCards).where(whereClause);
 
     return res.status(200).json({ success: true, message: 'Card deleted successfully' });
 }

@@ -127,6 +127,43 @@ export function CardBuilder() {
     }, [data]);
 
     // Load saved cards from database
+    const [isConcierge, setIsConcierge] = useState(false);
+    const [targetUserId, setTargetUserId] = useState<string | null>(null);
+
+    // Initial load and URL handling
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const conciergeParam = params.get('concierge') === 'true';
+        const cardIdParam = params.get('cardId');
+        const userIdParam = params.get('userId');
+
+        if (conciergeParam && cardIdParam) {
+            setIsConcierge(true);
+            setTargetUserId(userIdParam);
+            
+            // Fetch exact card for concierge mode
+            const fetchConciergeCard = async () => {
+                try {
+                    const token = await window.Clerk?.session?.getToken();
+                    const url = userIdParam ? `/api/cards?userId=${userIdParam}` : '/api/cards';
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const { cards } = await response.json();
+                        const card = cards.find((c: any) => c.id === parseInt(cardIdParam));
+                        if (card) {
+                            handleLoadCard(card);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to load concierge card:', err);
+                }
+            };
+            fetchConciergeCard();
+        }
+    }, [location.search]);
+
     const loadSavedCards = async () => {
         try {
             const token = await window.Clerk?.session?.getToken();
@@ -263,7 +300,7 @@ export function CardBuilder() {
         setSaveStatus('idle');
 
         try {
-            const userId = user?.id;
+            const userId = isConcierge ? targetUserId : user?.id;
             if (!userId) {
                 throw new Error('Not authenticated');
             }
@@ -299,7 +336,11 @@ export function CardBuilder() {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`,
                             },
-                            body: JSON.stringify({ cardData: updatedData, cardId: currentCardId }),
+                            body: JSON.stringify({ 
+                                cardData: updatedData, 
+                                cardId: currentCardId,
+                                userId: userId
+                            }),
                         });
 
                         if (!retryResponse.ok) {
@@ -332,7 +373,11 @@ export function CardBuilder() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${await window.Clerk?.session?.getToken()}`,
                 },
-                body: JSON.stringify({ cardData: data, cardId: currentCardId }),
+                body: JSON.stringify({ 
+                    cardData: data, 
+                    cardId: currentCardId,
+                    userId: userId
+                }),
             });
 
             if (!response.ok) {
@@ -496,7 +541,7 @@ export function CardBuilder() {
                     >
                         {t('Main Card')}
                     </button>
-                    {hasFeature('wallet_access') && (
+                    {(hasFeature('wallet_access') || isConcierge) && (
                         <button
                             onClick={() => setBuilderMode('wallet')}
                             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}

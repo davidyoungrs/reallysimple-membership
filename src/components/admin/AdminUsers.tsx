@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon, Zap, Star, Briefcase, Award, ArrowRight } from 'lucide-react';
+import { Loader2, Search, Mail, User, Shield, Calendar, MoreVertical, CheckCircle, AlertOctagon, Zap, Star, Briefcase, Award, ArrowRight, Palette, Copy } from 'lucide-react';
 
 export function AdminUsers() {
     const { getToken } = useAuth();
@@ -159,6 +159,34 @@ export function AdminUsers() {
             alert('Onboarding failed: ' + err.message);
         } finally {
             setOnboardingLoading(false);
+        }
+    };
+
+    const handleDuplicateCard = async (cardId: number) => {
+        if (!userDetail?.user.id) return;
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/admin?resource=user_actions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'duplicate_card',
+                    userId: userDetail.user.id,
+                    value: { sourceCardId: cardId }
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to duplicate card');
+            
+            // Refresh user details to show the new card
+            openDetailModal(userDetail.user.id);
+            alert('Card duplicated successfully!');
+        } catch (err: any) {
+            console.error(err);
+            alert('Failed to duplicate card: ' + err.message);
         }
     };
 
@@ -548,11 +576,31 @@ export function AdminUsers() {
                                                             <div className="font-medium">{card.data.fullName || 'Untitled Card'}</div>
                                                             <div className="text-xs text-gray-500">/{card.slug}</div>
                                                         </div>
-                                                        {card.isActive ? (
-                                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active</span>
-                                                        ) : (
-                                                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Inactive</span>
-                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const targetUserId = userDetail.user.id;
+                                                                    const targetCardId = card.id;
+                                                                    window.open(`/editor?concierge=true&cardId=${targetCardId}&userId=${targetUserId}`, '_blank');
+                                                                }}
+                                                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                title="Design Card (Concierge Mode)"
+                                                            >
+                                                                <Palette className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDuplicateCard(card.id)}
+                                                                className="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                                                                title="Duplicate Card"
+                                                            >
+                                                                <Copy className="w-4 h-4" />
+                                                            </button>
+                                                            {card.isActive ? (
+                                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active</span>
+                                                            ) : (
+                                                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Inactive</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 {userDetail?.cards.length === 0 && <p className="text-gray-500 italic">No cards found.</p>}
