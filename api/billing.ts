@@ -10,6 +10,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    // --- SPECIAL PUBLIC ACTION: Get Exchange Rates (GET or POST) ---
+    const action = req.query.action || req.body?.action;
+    
+    if (action === 'get-rates') {
+        try {
+            const exchangeRates = await stripe.exchangeRates.retrieve('gbp');
+            return res.status(200).json({ rates: exchangeRates.rates });
+        } catch (error: any) {
+            console.error('FX Rates error:', error);
+            return res.status(500).json({ error: 'Failed to fetch rates', details: error.message });
+        }
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -26,11 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const userId = verifiedToken.sub;
         const email = verifiedToken.email ? (verifiedToken.email as string) : '';
 
-        const action = (req.query.action as string) || req.body?.action;
-
         // --- ACTION: Create Checkout Session ---
         if (action === 'checkout') {
-            const { priceId, successUrl, cancelUrl } = req.body;
+            const { priceId, successUrl, cancelUrl, currency } = req.body;
 
             if (!priceId) {
                 return res.status(400).json({ error: 'Missing priceId' });
@@ -61,6 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 customer: stripeCustomerId,
                 line_items: [{ price: priceId, quantity: 1 }],
                 mode: 'subscription',
+                currency: currency || 'gbp',
                 success_url: successUrl || `${req.headers.origin}/dashboard?checkout=success`,
                 cancel_url: cancelUrl || `${req.headers.origin}/pricing?checkout=cancel`,
                 metadata: { userId },
@@ -86,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ url: portalSession.url });
         }
 
-        return res.status(400).json({ error: 'Invalid action. Use ?action=checkout or ?action=portal' });
+        return res.status(400).json({ error: 'Invalid action.' });
 
     } catch (error: any) {
         console.error('Billing API error:', error);

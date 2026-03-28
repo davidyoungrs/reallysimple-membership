@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Check, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import { Check, ArrowRight, Loader2, ArrowLeft, Globe } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const TIERS = [
     {
         id: 'starter',
         name: 'Starter',
-        priceMonthly: '$0',
-        priceAnnual: '$0',
-        period: '/month',
+        priceMonthlyGbp: 0,
+        priceAnnualGbp: 0,
         description: 'Perfect for individuals getting started with digital cards.',
         features: [
             '1 Online Digital Business Card',
@@ -24,9 +30,8 @@ const TIERS = [
     {
         id: 'pro',
         name: 'Pro',
-        priceMonthly: '$12',
-        priceAnnual: '$120',
-        period: '/month',
+        priceMonthlyGbp: 12,
+        priceAnnualGbp: 120,
         description: 'For professionals who want to stand out and track engagement.',
         features: [
             'Up to 3 Digital Business Cards Online and Phone Wallet',
@@ -44,9 +49,8 @@ const TIERS = [
     {
         id: 'pro_plus',
         name: 'Pro Plus',
-        priceMonthly: '$13',
-        priceAnnual: '$130',
-        period: '/month',
+        priceMonthlyGbp: 13,
+        priceAnnualGbp: 130,
         description: 'For power users, designers, influencers who needing multiple profiles and advanced features.',
         features: [
             'All Pro features included',
@@ -61,22 +65,66 @@ const TIERS = [
     }
 ];
 
+const CURRENCIES = [
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+    { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' },
+    { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+    { code: 'SEK', symbol: 'kr', name: 'Swedish Krona' },
+    { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar' },
+    { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
+    { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+    { code: 'HKD', symbol: 'HK$', name: 'Hong Kong Dollar' },
+    { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
+    { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
+    { code: 'TRY', symbol: '₺', name: 'Turkish Lira' },
+    { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+    { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+    { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+    { code: 'AED', symbol: 'DH', name: 'UAE Dirham' },
+];
+
 export function Pricing() {
     const { getToken, isLoaded: isAuthLoaded } = useAuth();
     const { user } = useUser();
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isAnnual, setIsAnnual] = useState(false);
+    
+    // FX State
+    const [selectedCurrency, setSelectedCurrency] = useState('GBP');
+    const [rates, setRates] = useState<Record<string, number>>({});
+    const [fxLoading, setFxLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchRates = async () => {
+            setFxLoading(true);
+            try {
+                const response = await fetch('/api/billing?action=get-rates');
+                const data = await response.json();
+                if (data.rates) {
+                    setRates(data.rates);
+                }
+            } catch (err) {
+                console.error('Failed to fetch rates:', err);
+            } finally {
+                setFxLoading(false);
+            }
+        };
+        fetchRates();
+    }, []);
 
     const handleCheckout = async (priceId: string | null, tierId: string) => {
         if (!priceId) {
-            // Free tier, just go to app
             window.location.href = '/app';
             return;
         }
 
         if (!user) {
-            // Need to sign in first
             window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.pathname)}`;
             return;
         }
@@ -94,6 +142,7 @@ export function Pricing() {
                 },
                 body: JSON.stringify({
                     priceId,
+                    currency: selectedCurrency.toLowerCase(),
                     successUrl: `${window.location.origin}/dashboard?checkout=success`,
                     cancelUrl: `${window.location.origin}/pricing?checkout=cancel`
                 })
@@ -115,19 +164,56 @@ export function Pricing() {
         }
     };
 
+    const formatPrice = (gbpAmount: number) => {
+        if (gbpAmount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
+        
+        const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency.toLowerCase()] || 1);
+        const margin = selectedCurrency === 'GBP' ? 1 : 1.04;
+        const converted = gbpAmount * rate * margin;
+
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: selectedCurrency,
+            maximumFractionDigits: 0,
+        }).format(converted);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            <header className="bg-white border-b border-gray-200 px-6 py-4">
+            <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Back to Home</span>
                     </Link>
-                    {!user && (
-                        <Link to="/sign-in" className="text-blue-600 hover:text-blue-700 font-bold">
-                            Sign In
-                        </Link>
-                    )}
+                    
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-gray-400" />
+                            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                                <SelectTrigger className="w-[120px] h-8 text-sm font-bold border-none bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    <SelectValue placeholder="Currency" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    {CURRENCIES.map((c) => (
+                                        <SelectItem key={c.code} value={c.code} className="text-sm font-medium">
+                                            {c.code} - {c.symbol}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {!user && (
+                            <Link to="/sign-in" className="text-blue-600 hover:text-blue-700 font-bold text-sm">
+                                Sign In
+                            </Link>
+                        )}
+                        {user && (
+                            <Link to="/app" className="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-black transition-colors">
+                                Dashboard
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -140,7 +226,6 @@ export function Pricing() {
                         Choose the plan that fits your professional networking needs.
                     </p>
 
-                    {/* Simple Billing Toggle */}
                     <div className="flex items-center justify-center gap-4 mb-8">
                         <span className={`text-sm font-bold ${!isAnnual ? 'text-gray-900' : 'text-gray-500'}`}>Monthly</span>
                         <button 
@@ -164,7 +249,7 @@ export function Pricing() {
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                     {TIERS.map((tier) => {
                         const priceId = isAnnual ? tier.priceIdAnnual : tier.priceIdMonthly;
-                        const displayPrice = isAnnual ? tier.priceAnnual : tier.priceMonthly;
+                        const gbpPrice = isAnnual ? tier.priceAnnualGbp : tier.priceMonthlyGbp;
                         const displayPeriod = isAnnual ? '/year' : '/month';
 
                         return (
@@ -189,9 +274,18 @@ export function Pricing() {
                                     <p className="text-gray-500 text-sm font-medium leading-relaxed">{tier.description}</p>
                                 </div>
 
-                                <div className="mb-8 flex items-baseline gap-1">
-                                    <span className="text-5xl font-black text-gray-900 tracking-tighter">{displayPrice}</span>
-                                    <span className="text-gray-400 font-bold uppercase text-xs">{displayPeriod}</span>
+                                <div className="mb-8 overflow-hidden">
+                                    <div className="flex items-baseline gap-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        <span className="text-5xl font-black text-gray-900 tracking-tighter">
+                                            {formatPrice(gbpPrice)}
+                                        </span>
+                                        <span className="text-gray-400 font-bold uppercase text-xs">{displayPeriod}</span>
+                                    </div>
+                                    {selectedCurrency !== 'GBP' && gbpPrice > 0 && !fxLoading && (
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-tight">
+                                            Approx. conversion from GBP (inc. 4% processing)
+                                        </p>
+                                    )}
                                 </div>
 
                                 <ul className="space-y-4 mb-8 flex-1">
