@@ -102,25 +102,38 @@ export function Pricing() {
     const [fxLoading, setFxLoading] = useState(false);
 
     useEffect(() => {
+        // Normalize all rate keys to uppercase for consistent lookup
+        const normalizeRates = (rawRates: Record<string, number>): Record<string, number> => {
+            const normalized: Record<string, number> = {};
+            for (const [key, value] of Object.entries(rawRates)) {
+                normalized[key.toUpperCase()] = value;
+            }
+            return normalized;
+        };
+
         const fetchRates = async () => {
             setFxLoading(true);
             try {
                 // Try internal Stripe FX first
                 const response = await fetch('/api/billing?action=get-rates');
-                const data = await response.json();
-                if (data.rates) {
-                    setRates(data.rates);
-                    return;
-                }
-                throw new Error('Internal FX API failed');
-            } catch (err) {
-                console.warn('Internal FX API failed, falling back to Frankfurter:', err);
-                try {
-                    // Fallback to public Frankfurter API
-                    const response = await fetch('https://api.frankfurter.dev/v2/latest?base=GBP');
+                if (response.ok) {
                     const data = await response.json();
-                    if (data.rates) {
-                        setRates(data.rates);
+                    if (data.rates && Object.keys(data.rates).length > 0) {
+                        setRates(normalizeRates(data.rates));
+                        return;
+                    }
+                }
+                throw new Error('Internal FX API unavailable');
+            } catch (err) {
+                console.warn('Stripe FX failed, falling back to Frankfurter:', err);
+                try {
+                    // Fallback to public Frankfurter API (correct URL)
+                    const response = await fetch('https://api.frankfurter.app/latest?base=GBP');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.rates) {
+                            setRates(normalizeRates(data.rates));
+                        }
                     }
                 } catch (fallbackErr) {
                     console.error('All FX APIs failed:', fallbackErr);
@@ -181,8 +194,8 @@ export function Pricing() {
     const formatPrice = (gbpAmount: number) => {
         if (gbpAmount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
         
-        // Handle case-insensitive lookup (Stripe = lowercase, Frankfurter = TARGET_CODE)
-        const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency] || rates[selectedCurrency.toLowerCase()] || 1);
+        // Rates are normalized to uppercase on fetch
+        const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency] || 1);
         const margin = selectedCurrency === 'GBP' ? 1 : 1.04;
         const converted = gbpAmount * rate * margin;
 
