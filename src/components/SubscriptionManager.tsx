@@ -16,7 +16,7 @@ export function SubscriptionManager() {
         setError(null);
         try {
             const token = await getToken();
-            const response = await fetch('/api/create-portal-session', {
+            const response = await fetch('/api/billing?action=portal', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

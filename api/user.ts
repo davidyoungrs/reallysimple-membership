@@ -22,6 +22,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         const clerkUserId = verifiedToken.sub;
 
+        const resource = (req.query.resource as string) || 'profile';
+
+        // --- RESOURCE: Feature Flags (from Clerk publicMetadata) ---
+        if (resource === 'features') {
+            const user = await clerkClient.users.getUser(clerkUserId);
+            const features = (user.publicMetadata as any)?.features || {};
+            return res.status(200).json({
+                features: {
+                    wallet_access: !!features.wallet_access,
+                }
+            });
+        }
+
+        // --- RESOURCE: Profile ---
         // Fetch user from Clerk to get the definitive email
         const fullClerkUser = await clerkClient.users.getUser(clerkUserId);
         const email = fullClerkUser.emailAddresses?.[0]?.emailAddress?.toLowerCase();

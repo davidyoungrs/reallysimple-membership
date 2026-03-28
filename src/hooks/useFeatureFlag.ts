@@ -15,7 +15,7 @@ export function useFeatureFlag() {
         async function fetchFeatures() {
             try {
                 const token = await getToken();
-                const res = await fetch('/api/me?resource=features', {
+                const res = await fetch('/api/user?resource=features', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

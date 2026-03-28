@@ -78,7 +78,7 @@ export function Pricing() {
 
         try {
             const token = await getToken();
-            const response = await fetch('/api/checkout', {
+            const response = await fetch('/api/billing?action=checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

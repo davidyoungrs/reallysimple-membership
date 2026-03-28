@@ -46,7 +46,7 @@ export function SubscriptionSimulator() {
     const triggerPushUpdate = async () => {
         if (!slug) return;
         try {
-            const res = await fetch('/api/admin/push-test', {
+            const res = await fetch('/api/admin?resource=push_test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ slug })
