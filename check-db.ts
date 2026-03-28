@@ -1,29 +1,17 @@
-
 import 'dotenv/config';
-import { db } from './src/db';
-import { sql } from 'drizzle-orm';
+import { db } from './src/db/index.js';
+import { walletPushRegistrations } from './src/db/schema.js';
 
-async function checkSchema() {
+async function checkRegistrations() {
     try {
-        console.log('Checking leads table schema...');
-        const leadsResult = await db.execute(sql`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'leads';
-        `);
-        console.log('Leads:', leadsResult.rows);
-
-        console.log('Checking system_settings table schema...');
-        const settingsResult = await db.execute(sql`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'system_settings';
-        `);
-        console.log('System Settings:', settingsResult.rows);
-    } catch (e) {
-        console.error('Error checking schema:', e);
+        console.log('Querying wallet_push_registrations...');
+        const registrations = await db.select().from(walletPushRegistrations);
+        console.log(`Found ${registrations.length} registrations:`);
+        console.log(JSON.stringify(registrations, null, 2));
+    } catch (error) {
+        console.error('Error querying database:', error);
     }
     process.exit(0);
 }
 
-checkSchema();
+checkRegistrations();

@@ -97,11 +97,18 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
 
                 <div className="space-y-6">
                     {/* Cool Palettes */}
-                    <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700">
-                            {t('Cool Palettes')}
-                        </label>
-                        <div className="flex flex-wrap gap-3">
+                    <div className="space-y-3 relative">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                {t('Cool Palettes')}
+                            </label>
+                            {!isFeatureEnabled('custom_theme') && (
+                                <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" /> {t('PRO FEATURE')}
+                                </Link>
+                            )}
+                        </div>
+                        <div className={`flex flex-wrap gap-3 ${!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}`}>
                             {coolPalettes.map((p) => (
                                 <button
                                     key={p.name}
@@ -123,7 +130,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                         </div>
                     </div>
 
-                    <div className="space-y-4 max-w-md">
+                    <div className={`space-y-4 max-w-md ${!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}`}>
                         {/* Background Color */}
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700 capitalize">
@@ -233,11 +240,16 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                 />
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-3 relative">
                                 <div className="flex items-center justify-between">
                                     <label className="block text-[10px] uppercase tracking-wider font-bold text-gray-400">
                                         {t('Custom Wallet Logo')}
                                     </label>
+                                    {!isFeatureEnabled('custom_theme') && (
+                                        <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" /> {t('PRO FEATURE')}
+                                        </Link>
+                                    )}
                                     {wallet.logoUrl && (
                                         <button
                                             onClick={() => updateWallet({ logoUrl: undefined })}
@@ -253,11 +265,16 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     onDragOver={onDragOver}
                                     onDragLeave={onDragLeave}
                                     onDrop={onDrop}
-                                    onClick={() => logoInputRef.current?.click()}
+                                    onClick={() => {
+                                        if (isFeatureEnabled('custom_theme')) {
+                                            logoInputRef.current?.click();
+                                        }
+                                    }}
                                     className={`
                                         relative group cursor-pointer overflow-hidden border-2 border-dashed rounded-xl transition-all duration-200
                                         ${isDragging ? 'border-blue-500 bg-blue-50/50 scale-[0.99]' : 'border-gray-200 hover:border-blue-400 hover:bg-white'}
                                         ${wallet.logoUrl ? 'border-solid border-gray-100 bg-white' : 'aspect-[4/1] py-4'}
+                                        ${!isFeatureEnabled('custom_theme') ? 'opacity-50 cursor-not-allowed' : ''}
                                     `}
                                 >
                                     <input
@@ -297,7 +314,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                         </div>
                                     )}
 
-                                    {isDragging && (
+                                    {isDragging && isFeatureEnabled('custom_theme') && (
                                         <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-[1px] animate-in fade-in duration-200">
                                             <div className="flex flex-col items-center gap-2">
                                                 <Upload className="w-6 h-6 text-blue-500 animate-bounce" />

@@ -75,7 +75,8 @@
     - [x] Initialize Stripe billing portal logic
     - [x] Stripe/PayPal Integration
     - [x] Tiered Access (Free vs Pro)
-    - [ ] Feature Gating (Restrict advanced backgrounds/limits)
+    - [x] Feature Gating (Restrict advanced backgrounds/limits - Editor.tsx)
+    - [ ] Feature Gating (Restrict custom branding in WalletBuilder.tsx)
     - [x] Subscription Management Dashboard
 
 ## Phase 6: Wallet Integration & Dashboard Polish (Completed)
@@ -176,6 +177,7 @@
     - [x] Fix Card Gallery Visibility Issue <!-- id: 262 -->
         - [x] Debug: Add logging to `AdminCards.tsx` to verify data fetching <!-- id: 263 -->
         - [x] Debug: Investigate "privacy policy" redirect issue on user links <!-- id: 264 -->
+    - [x] Fix: /pricing route being intercepted by catch-all PolicyPage route
     - [x] Enhance Content Moderation (Card Management) <!-- id: 274 -->
         - [x] Frontend: Display Owner ID in `AdminCards.tsx` for ownership verification <!-- id: 275 -->
         - [x] Frontend: Verify "Newest first" sorting and Grid View hover effects <!-- id: 276 -->
