@@ -100,6 +100,23 @@ function App() {
             <Route path="/lapsed" element={<LapsedSubscription />} />
             <Route path="/licenses" element={<Licenses />} />
 
+            {/* Admin Editor Route (Concierge Mode) */}
+            <Route
+              path="/editor"
+              element={
+                <>
+                  <SignedIn>
+                    <RequireVerifiedEmail>
+                      <CardBuilder />
+                    </RequireVerifiedEmail>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
+
             {/* Policy Routes - must come after all static routes */}
             <Route path="/:type" element={<PolicyPage />} />
 
