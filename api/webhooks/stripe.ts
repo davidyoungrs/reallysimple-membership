@@ -14,11 +14,11 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 // Mapping of Price IDs to Tiers
 // These should ideally be in env vars, but we'll define a map for logic
 const PRICE_ID_TO_TIER: Record<string, string> = {
-    [process.env.STRIPE_PRICE_PRO_MONTHLY as string]: 'pro',
-    [process.env.STRIPE_PRICE_PRO_YEARLY as string]: 'pro',
-    [process.env.STRIPE_PRICE_PLUS_MONTHLY as string]: 'pro_plus',
-    [process.env.STRIPE_PRICE_PLUS_YEARLY as string]: 'pro_plus',
-    [process.env.STRIPE_PRICE_BUSINESS_MONTHLY as string]: 'business',
+    [process.env.VITE_STRIPE_PRICE_PRO_MONTHLY as string]: 'pro',
+    [process.env.VITE_STRIPE_PRICE_PRO_YEARLY as string]: 'pro',
+    [process.env.VITE_STRIPE_PRICE_PLUS_MONTHLY as string]: 'pro_plus',
+    [process.env.VITE_STRIPE_PRICE_PLUS_YEARLY as string]: 'pro_plus',
+    [process.env.VITE_STRIPE_PRICE_BUSINESS_MONTHLY as string]: 'business',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
