@@ -207,7 +207,7 @@ export function PricingCards({ showButtons = true, compact = false }: PricingCar
                             <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${isAnnual ? 'translate-x-7' : 'translate-x-0'}`} />
                         </button>
                         <span className={`text-sm font-bold ${isAnnual ? 'text-blue-600' : 'text-gray-500'}`}>
-                            {t('Yearly')} <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] ml-1 uppercase tracking-wider font-black">{t('Save 20%')}</span>
+                            {t('Yearly')} <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] ml-1 uppercase tracking-wider font-black">{t('2 Months Free')}</span>
                         </span>
                     </div>
 

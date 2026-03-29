@@ -258,7 +258,8 @@ const resources = {
             "Strip Image": "Strip Image",
             "Open Designer": "Open Designer",
             "Enter Strip Image URL": "Enter Strip Image URL",
-            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image."
+            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.",
+            "2 Months Free": "2 Months Free"
         }
     },
     es: {
@@ -503,7 +504,8 @@ const resources = {
             "Click OK to use the suggestion, or Cancel to change it manually.": "Haz clic en OK para usar la sugerencia, o Cancelar para cambiarlo manualmente.",
             "Are you sure you want to delete this card? This action cannot be undone.": "¿Estás seguro de que quieres eliminar esta tarjeta? Esta acción no se puede deshacer.",
             "Name is required": "El nombre es obligatorio",
-            "Invalid email address": "Dirección de correo inválida"
+            "Invalid email address": "Dirección de correo inválida",
+            "2 Months Free": "2 meses gratis"
         }
     },
     fr: {
@@ -725,9 +727,8 @@ const resources = {
             "Strip Image": "Image de Bandeau",
             "Open Designer": "Ouvrir le Designer",
             "Enter Strip Image URL": "Entrer l'URL de l'image de bandeau",
-            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "L'image de bandeau est affichée bien en vue derrière les champs principaux. Pour de meilleurs résultats, utilisez une image abstraite ou minimaliste."
-            ,
-
+            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "L'image de bandeau est affichée bien en vue derrière les champs principaux. Pour de meilleurs résultats, utilisez une image abstraite ou minimaliste.",
+            "2 Months Free": "2 mois offerts"
         }
     },
     de: {
@@ -954,7 +955,8 @@ const resources = {
             "Strip Image": "Streifenbild",
             "Open Designer": "Designer Öffnen",
             "Enter Strip Image URL": "Streifenbild URL eingeben",
-            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "Das Streifenbild wird prominent hinter den Primärfeldern angezeigt. Für beste Ergebnisse verwenden Sie ein abstraktes oder minimalistisches Bild."
+            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "Das Streifenbild wird prominent hinter den Primärfeldern angezeigt. Für beste Ergebnisse verwenden Sie ein abstraktes oder minimalistisches Bild.",
+            "2 Months Free": "2 Monate kostenlos"
         }
     },
     ar: {
@@ -1202,7 +1204,8 @@ const resources = {
             "Confirm Delete": "تأكيد الحذف",
             "Are you sure you want to delete this card? This action cannot be undone.": "هل أنت متأكد أنك تريد حذف هذه البطاقة؟ لا يمكن التراجع عن هذا الإجراء.",
             "Name is required": "الاسم مطلوب",
-            "Invalid email address": "عنوان بريد إلكتروني غير صحيح"
+            "Invalid email address": "عنوان بريد إلكتروني غير صحيح",
+            "2 Months Free": "شهران مجانًا"
         }
     },
     ru: {
@@ -1450,7 +1453,8 @@ const resources = {
             "Confirm Delete": "Подтвердить удаление",
             "Are you sure you want to delete this card? This action cannot be undone.": "Вы уверены, что хотите удалить эту карту? Это действие нельзя отменить.",
             "Name is required": "Имя обязательно",
-            "Invalid email address": "Неверный адрес электронной почты"
+            "Invalid email address": "Неверный адрес электронной почты",
+            "2 Months Free": "2 месяца бесплатно"
         }
     }
 };
