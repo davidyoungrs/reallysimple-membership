@@ -3,6 +3,10 @@ import { db } from '../src/db/index.js';
 import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
 
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -44,11 +48,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             isRead: false
         });
 
-        // Trigger Notification (Placeholder)
-        // You can add SLACK_WEBHOOK_URL or RESEND_API_KEY to your environment variables
+        // Trigger Email Notification
         await sendNotification({
             name: cleanName,
             email: cleanEmail,
+            country: cleanCountry,
+            website: cleanWebsite,
             numCards: cleanNumCards,
             message: cleanMessage
         });
@@ -61,22 +66,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function sendNotification(data: any) {
-    const slackWebhook = process.env.SLACK_WEBHOOK_URL;
+    const apiKey = process.env.RESEND_API_KEY;
+    const toEmail = process.env.NOTIFY_EMAIL || 'david@reallysimple.io'; // Fallback to your likely email
     
-    if (slackWebhook) {
+    if (apiKey) {
         try {
-            await fetch(slackWebhook, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text: `🚀 *New Sales Inquiry Received!*\n\n*Name:* ${data.name}\n*Email:* ${data.email}\n*Cards Required:* ${data.numCards || 'N/A'}\n*Message:* ${data.message || 'No message'}`
-                })
+            await resend.emails.send({
+                from: 'Leads <leads@reallysimple.io>',
+                to: [toEmail],
+                subject: `🚀 New Lead: ${data.name} (${data.numCards || '?'} cards)`,
+                replyTo: data.email,
+                html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; padding: 24px;">
+                        <h2 style="color: #000; font-style: italic; text-transform: uppercase;">New Sales Inquiry</h2>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                        
+                        <p><strong>Name:</strong> ${data.name}</p>
+                        <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+                        <p><strong>Country:</strong> ${data.country || 'N/A'}</p>
+                        <p><strong>Website:</strong> ${data.website || 'N/A'}</p>
+                        <p><strong>Cards Required:</strong> ${data.numCards || 'N/A'}</p>
+                        
+                        <div style="background: #f9f9f9; padding: 16px; border-radius: 8px; margin-top: 20px;">
+                            <p style="margin-top: 0; font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase;">Requirements:</p>
+                            <p style="margin-bottom: 0;">${data.message || 'No specific requirements mentioned.'}</p>
+                        </div>
+                        
+                        <p style="margin-top: 32px; font-size: 12px; color: #999;">
+                            This inquiry was submitted via the pricing page contact form. 
+                            You can reply directly to this email to contact the lead.
+                        </p>
+                    </div>
+                `
             });
-            console.log('Slack notification sent');
+            console.log('Resend email notification sent');
         } catch (err) {
-            console.error('Failed to send Slack notification:', err);
+            console.error('Failed to send Resend email:', err);
         }
     } else {
-        console.log('No notification service configured. Inquiry saved to database.');
+        console.log('No RESEND_API_KEY configured. Inquiry saved to database only.');
     }
 }
