@@ -71,6 +71,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (action === 'checkout') {
             const { priceId, successUrl, cancelUrl, currency } = req.body;
 
+            console.log(`[Billing] Action: checkout, PriceID: ${priceId}`);
+            console.log(`[Billing] Stripe Key starts with: ${process.env.STRIPE_SECRET_KEY?.substring(0, 7)}`);
+
             if (!priceId) {
                 return res.status(400).json({ error: 'Missing priceId' });
             }
