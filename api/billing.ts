@@ -13,8 +13,8 @@ function getStripe() {
             throw new Error('STRIPE_SECRET_KEY is missing in the environment');
         }
         stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-01-27' as any,
-        });
+            // Use account default API version
+        } as any);
     }
     return stripeInstance;
 }

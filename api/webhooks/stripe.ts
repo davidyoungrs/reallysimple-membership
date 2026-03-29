@@ -5,9 +5,7 @@ import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-    apiVersion: '2025-01-27' as any,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
