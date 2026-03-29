@@ -303,10 +303,10 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
         const { active, over } = event;
 
         if (over && active.id !== over.id) {
-            const oldIndex = data.socialLinks.findIndex((link) => link.id === active.id);
-            const newIndex = data.socialLinks.findIndex((link) => link.id === over.id);
+            const oldIndex = (data.socialLinks || []).findIndex((link) => link.id === active.id);
+            const newIndex = (data.socialLinks || []).findIndex((link) => link.id === over.id);
 
-            handleChange('socialLinks', arrayMove(data.socialLinks, oldIndex, newIndex));
+            handleChange('socialLinks', arrayMove(data.socialLinks || [], oldIndex, newIndex));
         }
     };
 
@@ -351,7 +351,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     };
 
     const handleSocialChange = (id: string, field: keyof SocialLink, value: string) => {
-        const newLinks = data.socialLinks.map(link =>
+        const newLinks = (data.socialLinks || []).map(link =>
             link.id === id ? { ...link, [field]: value } : link
         );
         handleChange('socialLinks', newLinks);
@@ -364,11 +364,11 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
             url: '',
             label: ''
         };
-        handleChange('socialLinks', [...data.socialLinks, newLink]);
+        handleChange('socialLinks', [...(data.socialLinks || []), newLink]);
     };
 
     const removeSocialLink = (id: string) => {
-        handleChange('socialLinks', data.socialLinks.filter(link => link.id !== id));
+        handleChange('socialLinks', (data.socialLinks || []).filter(link => link.id !== id));
     };
 
     const addPhoneNumber = () => {
@@ -411,9 +411,9 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     const handleEmbedDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            const oldIndex = data.embeds.findIndex((e) => e.id === active.id);
-            const newIndex = data.embeds.findIndex((e) => e.id === over.id);
-            handleChange('embeds', arrayMove(data.embeds, oldIndex, newIndex));
+            const oldIndex = (data.embeds || []).findIndex((e) => e.id === active.id);
+            const newIndex = (data.embeds || []).findIndex((e) => e.id === over.id);
+            handleChange('embeds', arrayMove(data.embeds || [], oldIndex, newIndex));
         }
     };
 
@@ -602,10 +602,10 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             onDragEnd={handleDragEnd}
                         >
                             <SortableContext
-                                items={data.socialLinks}
+                                items={data.socialLinks || []}
                                 strategy={verticalListSortingStrategy}
                             >
-                                {data.socialLinks.map((link) => (
+                                {(data.socialLinks || []).map((link) => (
                                     <SortableSocialLink
                                         key={link.id}
                                         link={link}

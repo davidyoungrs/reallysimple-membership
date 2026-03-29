@@ -189,8 +189,13 @@ export function CardBuilder() {
 
     // Load a specific card
     const handleLoadCard = (card: any) => {
-        // Merge the slug from the database into the card data
-        setData({ ...card.data, slug: card.slug });
+        // Merge with initialCardData fallback to ensure all arrays (socialLinks, phoneNumbers, embeds) exist
+        // This prevents "undefined is not an object" crashes on older card data
+        setData({ 
+            ...initialCardData,
+            ...card.data, 
+            slug: card.slug 
+        });
         setCurrentCardId(card.id);
         setShowCardsDropdown(false);
     };
