@@ -183,9 +183,12 @@
         - [x] Debug: Investigate "privacy policy" redirect issue on user links <!-- id: 264 -->
     - [x] Fix: /pricing and /editor routes being intercepted by catch-all PolicyPage route
     - [x] Add /editor route to App.tsx for Concierge Card Editor <!-- id: 388 -->
-    - [/] Fix: Blank screen crash in Card Editor (undefined socialLinks.map) <!-- id: 389 -->
-        - [/] CardBuilder: Robust data loading with initialCardData fallback <!-- id: 390 -->
-        - [ ] Editor: Defensive rendering with array null-safety <!-- id: 391 -->
+    - [x] Fix: Blank screen crash in Card Editor (undefined socialLinks.map) <!-- id: 389 -->
+        - [x] CardBuilder: Robust data loading with initialCardData fallback <!-- id: 390 -->
+        - [x] Editor: Defensive rendering with array null-safety <!-- id: 391 -->
+    - [/] Add Pricing Section to Home Page <!-- id: 392 -->
+        - [/] Refactor Pricing logic into reusable PricingCards component <!-- id: 393 -->
+        - [ ] Integrate PricingCards into LandingPage without buttons <!-- id: 394 -->
     - [x] Enhance Content Moderation (Card Management) <!-- id: 274 -->
         - [x] Frontend: Display Owner ID in `AdminCards.tsx` for ownership verification <!-- id: 275 -->
         - [x] Frontend: Verify "Newest first" sorting and Grid View hover effects <!-- id: 276 -->

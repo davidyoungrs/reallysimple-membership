@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Share2, ShieldCheck, Zap } from 'lucide-react';
+import { Share2, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './LanguageSelector';
 import { CookieConsent } from './CookieConsent';
+import { PricingCards } from './PricingCards';
 
 export const LandingPage = () => {
     const { t } = useTranslation();
@@ -113,6 +114,30 @@ export const LandingPage = () => {
                             title={t('Smart Integration')}
                             description={t('Integration Desc')}
                         />
+                    </div>
+                </div>
+            </div>
+
+            {/* Pricing Section (Preview) */}
+            <div className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('Simple, Transparent Pricing')}</h2>
+                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                            {t('Choose the plan that fits your professional networking needs.')}
+                        </p>
+                    </div>
+                    
+                    <PricingCards showButtons={false} compact={true} />
+                    
+                    <div className="text-center mt-12">
+                        <Link 
+                            to="/pricing" 
+                            className="inline-flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors"
+                        >
+                            {t('View Detailed Pricing')}
+                            <ArrowRight className="w-4 h-4" />
+                        </Link>
                     </div>
                 </div>
             </div>
