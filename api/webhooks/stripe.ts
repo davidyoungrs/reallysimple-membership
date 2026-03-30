@@ -4,6 +4,7 @@ import { eq, sql } from 'drizzle-orm';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
+import { sendRenewalNotice, sendPaymentFailedNotice } from '../_utils/billing_emails.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
 
@@ -57,6 +58,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object as Stripe.Subscription;
                 await handleSubscriptionDeleted(subscription);
+                break;
+            }
+            case 'invoice.upcoming': {
+                const invoice = event.data.object as Stripe.Invoice;
+                if (invoice.customer) {
+                    await sendRenewalNotice(
+                        invoice.customer as string,
+                        invoice.amount_due,
+                        invoice.currency,
+                        invoice.next_payment_attempt || Math.floor(Date.now() / 1000) + (3 * 24 * 60 * 60)
+                    );
+                }
+                break;
+            }
+            case 'invoice.payment_failed': {
+                const invoice = event.data.object as Stripe.Invoice;
+                if (invoice.customer) {
+                    await sendPaymentFailedNotice(
+                        invoice.customer as string,
+                        invoice.amount_due,
+                        invoice.currency
+                    );
+                }
                 break;
             }
             default:
