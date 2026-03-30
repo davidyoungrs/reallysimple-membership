@@ -1,11 +1,13 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from '../src/db';
-import { leads, businessCards, users } from '../src/db/schema';
+import { db } from '../src/db/index.js';
+import { leads, businessCards, users } from '../src/db/schema.js';
 import { eq, desc, and } from 'drizzle-orm';
-import { z } from 'zod'; // You mentioned zod in plan, ensure it's installed. If not, use manual validation.
-// Assuming zod is available.
-import { verifyToken } from '@clerk/backend'; // Verify headers if needed
+import { z } from 'zod';
+import { verifyToken } from '@clerk/backend';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Validation Schema
 const leadSchema = z.object({
@@ -44,15 +46,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     }
                     return eq(table.slug, body.cardId);
                 },
-                columns: { id: true, userId: true }
+                columns: { id: true, userId: true, data: true }
             });
 
             if (!card) {
                 return res.status(404).json({ error: 'Card not found' });
             }
 
-            // 2. Insert Lead
-            await db.insert(leads).values({
+            const result = await db.insert(leads).values({
                 cardId: card.id,
                 name: body.name,
                 email: body.email,
@@ -61,9 +62,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 company: body.company,
                 note: body.note,
                 isRead: false
-            });
+            }).returning();
 
-            return res.status(200).json({ success: true });
+            if (card.userId) {
+                const owner = await db.query.users.findFirst({
+                    where: eq(users.clerkId, card.userId)
+                });
+
+                if (owner?.email) {
+                    await sendNotification(owner.email, {
+                        ...body,
+                        cardName: (card.data as any)?.name || 'Digital Card'
+                    });
+                }
+            }
+
+            return res.status(200).json({ success: true, leadId: result[0]?.id });
 
         } catch (error: any) {
             console.error('Lead submission error:', error);
@@ -147,4 +161,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     return res.status(405).json({ error: 'Method Not Allowed' });
+}
+
+async function sendNotification(toEmail: string, data: any) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return;
+
+    try {
+        await resend.emails.send({
+            from: 'Really Simple Leads <leads@reallysimple.io>',
+            to: [toEmail],
+            subject: `🚀 New Lead Captured: ${data.name}`,
+            replyTo: data.email,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; padding: 24px;">
+                    <h2 style="color: #000; font-style: italic; text-transform: uppercase;">You've got a new lead!</h2>
+                    <p style="color: #666;">Someone just connected with you via your <strong>${data.cardName}</strong>.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    
+                    <p><strong>Name:</strong> ${data.name}</p>
+                    <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+                    ${data.phone ? `<p><strong>Phone:</strong> ${data.phone}</p>` : ''}
+                    ${data.company ? `<p><strong>Company:</strong> ${data.company}</p>` : ''}
+                    ${data.jobTitle ? `<p><strong>Job Title:</strong> ${data.jobTitle}</p>` : ''}
+                    
+                    ${data.note ? `
+                    <div style="background: #f9f9f9; padding: 16px; border-radius: 8px; margin-top: 20px;">
+                        <p style="margin-top: 0; font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase;">Message:</p>
+                        <p style="margin-bottom: 0;">${data.note}</p>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 32px; text-align: center;">
+                        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://reallysimple.io'}/app/leads" 
+                           style="background: #000; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                            View all leads in Dashboard
+                        </a>
+                    </div>
+                </div>
+            `
+        });
+    } catch (err) {
+        console.error('Failed to send lead notification email:', err);
+    }
 }
