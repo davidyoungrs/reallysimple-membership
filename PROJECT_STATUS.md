@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-03-30 (Session 2) | Head Commit: `856dc26` → new push pending
+> Last Updated: 2026-03-30 (Session 3) | Head Commit: `46a99e9`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -14,6 +14,7 @@ The focus of the last several sessions has been:
 1. **Stabilising the Vercel deployment** (function count, build errors)
 2. **Redesigning the Onboarding Wizard** (`/create` route) for high conversion (PLG — "Try Before You Buy")
 3. **Final polish** of the onboarding UX (scrolling, typography, colour changes, layout split, palettes)
+4. **Copy & UX tweaks** — heading text, layout ratio corrections
 
 ---
 
@@ -25,10 +26,11 @@ The focus of the last several sessions has been:
 - [x] **Fixed sidebar scrolling** — footer is now in the flex flow (not `absolute bottom-0`)
 - [x] **Fixed colour change lag** — removed `animate-gradient-slow` from `BusinessCard.tsx` background div; all colours now change instantly
 - [x] **Expanded typography** from 4 → 20 options (full parity with the card editor)
-- [x] **Step 2 layout** is now 30% form / 70% preview (pricing panel fills 70% of screen)
+- [x] **Step 2 layout** is now **70% pricing panel / 30% card preview** (widens on step transition)
 - [x] **Step 1 layout** is 50% form / 50% preview
 - [x] Step 2 uses the shared `PricingCards` component (100% consistent with `/pricing` page)
 - [x] **6 new COOL PALETTES** added: Copper, Neo Mint, Aurora, Blush, Slate, Gold
+- [x] **Step 1 heading** updated to **"Design Your Online Card"**
 
 ### Landing Page (`/src/components/LandingPage.tsx`)
 - [x] Removed **"View Demo"** button from hero — only "Start for Free" CTA remains
@@ -61,7 +63,7 @@ The focus of the last several sessions has been:
 ## 🔵 IN PROGRESS — Currently Active
 
 Nothing is actively mid-implementation. The last session ended with a clean push.
-**Last commit:** `856dc26` — all changes verified and deployed.
+**Last commit:** `46a99e9` — Step 1 heading updated to "Design Your Online Card".
 
 ---
 
