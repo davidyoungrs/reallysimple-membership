@@ -72,7 +72,7 @@ async function sendNotification(data: any) {
     if (apiKey) {
         try {
             await resend.emails.send({
-                from: 'Leads <leads@reallysimple.io>',
+                from: 'Leads <leads@reallysimpleapps.com>',
                 to: [toEmail],
                 subject: `🚀 New Lead: ${data.name} (${data.numCards || '?'} cards)`,
                 replyTo: data.email,

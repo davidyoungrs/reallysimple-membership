@@ -186,7 +186,7 @@ async function sendNotification(toEmail: string, data: any) {
 
     try {
         const { data: resData, error: resError } = await resend.emails.send({
-            from: 'Really Simple Leads <leads@reallysimple.io>',
+            from: 'Really Simple Leads <leads@reallysimpleapps.com>',
             to: [toEmail],
             subject: `🚀 New Lead Captured: ${data.name}`,
             replyTo: data.email,
