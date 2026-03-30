@@ -64,9 +64,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 isRead: false
             }).returning();
 
+            console.log('Lead saved successfully. Checking for owner to notify...', { cardId: card.id, userId: card.userId });
+
             if (card.userId) {
                 const owner = await db.query.users.findFirst({
                     where: eq(users.clerkId, card.userId)
+                });
+
+                console.log('Owner lookup result:', { 
+                    found: !!owner, 
+                    email: owner?.email,
+                    clerkId: card.userId 
                 });
 
                 if (owner?.email) {
@@ -74,7 +82,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         ...body,
                         cardName: (card.data as any)?.name || 'Digital Card'
                     });
+                } else {
+                    console.warn('No email found for card owner. Skipping notification.');
                 }
+            } else {
+                console.warn('Card has no userId associated. Skipping notification.');
             }
 
             return res.status(200).json({ success: true, leadId: result[0]?.id });
@@ -165,11 +177,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 async function sendNotification(toEmail: string, data: any) {
     const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) return;
+    if (!apiKey) {
+        console.error('RESEND_API_KEY is not configured in environment variables.');
+        return;
+    }
+
+    console.log('Attempting to send email to:', toEmail);
 
     try {
-        await resend.emails.send({
+        const response = await resend.emails.send({
             from: 'Really Simple Leads <leads@reallysimple.io>',
+// ... (rest of the code)
             to: [toEmail],
             subject: `🚀 New Lead Captured: ${data.name}`,
             replyTo: data.email,
