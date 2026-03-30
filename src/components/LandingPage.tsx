@@ -32,7 +32,7 @@ export const LandingPage = () => {
                             <SignedOut>
                                 <Link to="/sign-in" className="text-sm font-medium text-gray-600 hover:text-gray-900">{t('Log in')}</Link>
                                 <Link
-                                    to="/sign-up"
+                                    to="/create"
                                     className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
                                 >
                                     {t('Create Card')}
@@ -58,7 +58,7 @@ export const LandingPage = () => {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <Link
-                                to="/sign-up"
+                                to="/create"
                                 className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-full font-semibold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
                             >
                                 {t('Start for Free')}
