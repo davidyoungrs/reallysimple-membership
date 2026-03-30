@@ -92,9 +92,10 @@ export const CURRENCIES = [
 interface PricingCardsProps {
     showButtons?: boolean;
     compact?: boolean;
+    onSelect?: (tierId: string, priceId: string | null) => void;
 }
 
-export function PricingCards({ showButtons = true, compact = false }: PricingCardsProps) {
+export function PricingCards({ showButtons = true, compact = false, onSelect }: PricingCardsProps) {
     const { getToken, isLoaded: isAuthLoaded } = useAuth();
     const { user } = useUser();
     const { t } = useTranslation();
@@ -136,6 +137,11 @@ export function PricingCards({ showButtons = true, compact = false }: PricingCar
     }, []);
 
     const handleCheckout = async (priceId: string | null, tierId: string) => {
+        if (onSelect) {
+            onSelect(tierId, priceId);
+            return;
+        }
+
         if (!priceId) {
             window.location.href = '/app';
             return;
