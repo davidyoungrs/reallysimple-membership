@@ -143,9 +143,7 @@ export function OnboardingWizard() {
         return link?.url || '';
     };
 
-    const getPrimaryPhone = () => {
-        return getPhoneByLabel('Mobile') || getPhoneByLabel('Office');
-    };
+
 
     const handlePlanSelection = (tierId: string, _priceId: string | null) => {
         // Save wizard data and intended tier to localStorage
