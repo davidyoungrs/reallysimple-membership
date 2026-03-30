@@ -158,7 +158,7 @@ export function OnboardingWizard() {
         <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-sans">
             
             {/* Left Side: Form / Progression */}
-            <div className={`w-full bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl z-20 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[30%]' : 'md:w-1/2'}`}>
+            <div className={`w-full bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl z-20 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[70%]' : 'md:w-1/2'}`}>
                 
                 {/* Progress Bar Header */}
                 <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between">
@@ -499,7 +499,7 @@ export function OnboardingWizard() {
             </div>
 
             {/* Right Side: Live Preview */}
-            <div className={`hidden md:flex flex-col items-center justify-center p-8 bg-gray-100 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[70%]' : 'flex-1'}`}>
+            <div className={`hidden md:flex flex-col items-center justify-center p-8 bg-gray-100 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[30%]' : 'flex-1'}`}>
                 {/* Decorative background pattern */}
                 <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-70 pointer-events-none"></div>
 
