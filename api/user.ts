@@ -3,6 +3,7 @@ import { users } from '../src/db/schema.js';
 import { eq, or, sql } from 'drizzle-orm';
 import { verifyToken, createClerkClient } from '@clerk/backend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { sendWelcomeEmail } from './_utils/onboarding.js';
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
@@ -62,6 +63,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 tier: 'starter',
             } as any).returning();
             user = newUser[0];
+
+            // 🚀 Trigger Welcome Email for New User (Non-blocking)
+            sendWelcomeEmail(clerkUserId, email).catch(err => {
+                console.error('Failed to trigger welcome email in background:', err);
+            });
         } else {
             user = userRecords[0];
             // Fix: If we found user by email but clerkId was missing/wrong, update it

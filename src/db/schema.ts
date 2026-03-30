@@ -9,6 +9,7 @@ export const users = pgTable('users', {
     subscriptionStatus: text('subscription_status'), // 'active', 'trialing', 'past_due', 'canceled'
     currentPeriodEnd: timestamp('current_period_end'),
     createdAt: timestamp('created_at').defaultNow(),
+    welcomeEmailSent: boolean('welcome_email_sent').default(false),
 });
 
 export const businessCards = pgTable('business_cards', {
