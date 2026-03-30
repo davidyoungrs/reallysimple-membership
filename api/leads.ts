@@ -185,9 +185,8 @@ async function sendNotification(toEmail: string, data: any) {
     console.log('Attempting to send email to:', toEmail);
 
     try {
-        const response = await resend.emails.send({
+        const { data: resData, error: resError } = await resend.emails.send({
             from: 'Really Simple Leads <leads@reallysimple.io>',
-// ... (rest of the code)
             to: [toEmail],
             subject: `🚀 New Lead Captured: ${data.name}`,
             replyTo: data.email,
@@ -219,7 +218,13 @@ async function sendNotification(toEmail: string, data: any) {
                 </div>
             `
         });
+
+        if (resError) {
+            console.error('Resend API Error details:', resError);
+        } else {
+            console.log('Resend email sent successfully! ID:', resData?.id);
+        }
     } catch (err) {
-        console.error('Failed to send lead notification email:', err);
+        console.error('Generic error in sendNotification function:', err);
     }
 }
