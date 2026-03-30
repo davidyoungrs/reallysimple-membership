@@ -167,7 +167,7 @@ export function OnboardingWizard() {
                             {step === 1 ? 'Step 1 of 2' : 'Final Step'}
                         </div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            {step === 1 ? 'Design Your Card' : 'Select Your Plan'}
+                            {step === 1 ? 'Design Your Online Card' : 'Select Your Plan'}
                         </h1>
                     </div>
                 </div>
