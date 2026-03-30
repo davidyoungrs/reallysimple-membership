@@ -127,7 +127,7 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
 
     return (
         <div
-            className="relative w-full max-w-md mx-auto min-h-[600px] overflow-hidden rounded-3xl shadow-2xl transition-all duration-500 hover:shadow-3xl"
+            className="relative w-full max-w-md mx-auto min-h-[600px] overflow-hidden rounded-3xl shadow-2xl transition-shadow duration-300 hover:shadow-3xl"
             style={{ fontFamily: data.font || 'Inter' }}
         >
             {/* Background with dynamic gradient based on theme color */}

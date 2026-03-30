@@ -56,18 +56,12 @@ export const LandingPage = () => {
                         <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
                             {t('Hero Desc')}
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <div className="flex justify-center items-center">
                             <Link
                                 to="/create"
-                                className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-full font-semibold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                                className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-full font-semibold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl active:scale-95 text-center"
                             >
                                 {t('Start for Free')}
-                            </Link>
-                            <Link
-                                to="/demo"
-                                className="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-semibold text-lg hover:bg-gray-50 transition-all active:scale-95"
-                            >
-                                {t('View Demo')}
                             </Link>
                         </div>
 

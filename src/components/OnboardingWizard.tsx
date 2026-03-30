@@ -173,7 +173,7 @@ export function OnboardingWizard() {
                 </div>
 
                 {/* Form Content */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-32">
+                <div className="flex-1 overflow-y-auto p-6 md:p-8">
                     
                     {step === 1 && (
                         <div className="space-y-10 animate-in slide-in-from-right-4 duration-300">
@@ -417,20 +417,36 @@ export function OnboardingWizard() {
                                         </div>
                                         <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Typography')}</h3>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {[
                                             { name: 'Inter', font: 'Inter' },
                                             { name: 'Outfit', font: 'Outfit' },
+                                            { name: 'Roboto', font: 'Roboto' },
+                                            { name: 'Montserrat', font: 'Montserrat' },
+                                            { name: 'Poppins', font: 'Poppins' },
+                                            { name: 'Raleway', font: 'Raleway' },
+                                            { name: 'Lato', font: 'Lato' },
+                                            { name: 'Open Sans', font: 'Open Sans' },
+                                            { name: 'Nunito', font: 'Nunito' },
+                                            { name: 'Rubik', font: 'Rubik' },
+                                            { name: 'Oswald', font: 'Oswald' },
+                                            { name: 'Bebas Neue', font: 'Bebas Neue' },
                                             { name: 'Playfair', font: 'Playfair Display' },
-                                            { name: 'Roboto', font: 'Roboto' }
+                                            { name: 'Lora', font: 'Lora' },
+                                            { name: 'Merriweather', font: 'Merriweather' },
+                                            { name: 'PT Serif', font: 'PT Serif' },
+                                            { name: 'Dancing Script', font: 'Dancing Script' },
+                                            { name: 'Pacifico', font: 'Pacifico' },
+                                            { name: 'Lobster', font: 'Lobster' },
+                                            { name: 'Roboto Mono', font: 'Roboto Mono' }
                                         ].map((f) => (
                                             <button
                                                 key={f.name}
                                                 onClick={() => handleChange('font', f.font)}
-                                                className={`p-3 rounded-xl border-2 transition-all text-center ${data.font === f.font ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                                className={`p-3 rounded-xl border-2 transition-all text-center group ${data.font === f.font ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                                                 style={{ fontFamily: f.font }}
                                             >
-                                                <span className="text-sm font-semibold">{f.name}</span>
+                                                <span className={`text-sm ${data.font === f.font ? 'text-blue-700 font-bold' : 'text-gray-700 font-medium'}`}>{f.name}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -448,7 +464,7 @@ export function OnboardingWizard() {
 
                 {/* Bottom Navigation */}
                 {step === 1 && (
-                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 bg-white border-t border-gray-100 flex items-center justify-between">
+                    <div className="p-6 md:p-8 bg-white border-t border-gray-100 flex items-center justify-between shrink-0">
                         <Link to="/" className="text-gray-500 hover:text-gray-900 text-sm font-medium">
                             Cancel
                         </Link>
@@ -465,7 +481,7 @@ export function OnboardingWizard() {
                 )}
                 
                 {step === 2 && (
-                    <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white/80 backdrop-blur-sm z-30">
+                    <div className="p-4 border-t border-gray-100 bg-white/80 backdrop-blur-sm z-30 shrink-0">
                         <button 
                             onClick={() => setStep(1)}
                             className="text-gray-500 hover:text-gray-800 flex items-center gap-2 text-sm font-bold mx-auto"
