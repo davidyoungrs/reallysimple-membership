@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { generateSlug, validateSlugFormat } from '../utils/slugUtils';
-import { Link } from 'react-router-dom';
 
 interface SlugCustomizerProps {
     value: string | undefined;
