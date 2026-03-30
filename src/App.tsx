@@ -23,6 +23,8 @@ const SubscriptionSimulator = lazy(() => import('./components/admin/Subscription
 const Licenses = lazy(() => import('./components/Licenses').then(module => ({ default: module.Licenses })));
 const LapsedSubscription = lazy(() => import('./components/LapsedSubscription'));
 const Pricing = lazy(() => import('./components/Pricing').then(module => ({ default: module.Pricing })));
+const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
+const OnboardingCallback = lazy(() => import('./components/OnboardingCallback').then(module => ({ default: module.OnboardingCallback })));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -71,6 +73,8 @@ function App() {
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/create" element={<OnboardingWizard />} />
+            <Route path="/onboarding-callback" element={<OnboardingCallback />} />
             <Route path="/wordpress-home" element={<WordPressHome />} />
             <Route path="/pricing" element={<Pricing />} />
 

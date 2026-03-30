@@ -11,11 +11,12 @@ interface SlugCustomizerProps {
     currentCardId?: number | null;
     onStatusChange?: (status: SlugStatus, suggestion?: string) => void;
     disabled?: boolean;
+    onUpgradeClick?: () => void;
 }
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid';
 
-export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled }: SlugCustomizerProps) {
+export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled, onUpgradeClick }: SlugCustomizerProps) {
     const { t } = useTranslation();
     const [slug, setSlug] = useState(value || '');
     const [status, setStatus] = useState<SlugStatus>('idle');
@@ -182,12 +183,15 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
             </div>
 
             {disabled && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-lg">
+                <div 
+                    onClick={onUpgradeClick}
+                    className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                >
                     <AlertCircle className="w-4 h-4 text-blue-500" />
                     <span className="text-xs text-blue-700 font-medium">
                         {t('Custom URLs are available on Professional plans and above.')}
                     </span>
-                    <Link to="/pricing" className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</Link>
+                    <button className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</button>
                 </div>
             )}
 

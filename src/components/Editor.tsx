@@ -1,5 +1,5 @@
 import { type CardData, type SocialLink, type SocialPlatform, type PhoneNumber } from '../types';
-import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle, Lock } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlugCustomizer } from './SlugCustomizer';
@@ -9,6 +9,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { useTier } from '../contexts/TierContext';
 import { Link } from 'react-router-dom';
+import { ProBadge } from './ui/pro-badge';
+import { UpgradeModal } from './UpgradeModal';
 import { PhoneInput } from './ui/phone-input';
 
 interface SortableSocialLinkProps {
@@ -287,6 +289,9 @@ function SortableEmbed({ embed, handleEmbedChange, removeEmbed, t }: { embed: an
 export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: EditorProps) {
     const { t } = useTranslation();
     const { isFeatureEnabled } = useTier();
+
+    // Feature gates
+    const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
     const [croppingImage, setCroppingImage] = useState<string | null>(null);
@@ -533,7 +538,9 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         />
                     </div>
 
-                    {/* Slug Customization */}
+                    <div className="flex items-center gap-2 mb-2">
+                        {/* We use ProBadge manually if needed, or pass it into SlugCustomizer if it wraps the label. Here SlugCustomizer renders its own label, but let's just let it handle it or add ProBadge above. Actually SlugCustomizer has its own label. Let's pass an onUpgradeClick prop to it. */}
+                    </div>
                     <SlugCustomizer
                         value={data.slug}
                         onChange={(slug) => handleChange('slug', slug)}
@@ -541,6 +548,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         currentCardId={currentCardId}
                         onStatusChange={onSlugStatusChange}
                         disabled={!isFeatureEnabled('custom_slug')}
+                        onUpgradeClick={() => setUpgradeModalFeature('Custom URLs')}
                     />
                 </div>
             </div>
@@ -623,25 +631,26 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
             {/* Rich Visual Media Embeds */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Rich Visual Media')}</h3>
-                    <button
-                        onClick={addEmbed}
-                        disabled={!isFeatureEnabled('rich_media')}
-                        className={`text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors ${!isFeatureEnabled('rich_media') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                        <Plus className="w-4 h-4" /> {t('Add Embed')}
-                    </button>
+                    <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                        {t('Rich Visual Media')}
+                        {!isFeatureEnabled('rich_media') && <ProBadge />}
+                    </h3>
+                    {isFeatureEnabled('rich_media') ? (
+                        <button
+                            onClick={addEmbed}
+                            className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                            <Plus className="w-4 h-4" /> {t('Add Embed')}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setUpgradeModalFeature('Rich Media Embeds')}
+                            className="text-sm flex items-center gap-1 text-indigo-600 font-bold py-2 px-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                        >
+                            <Lock className="w-4 h-4" /> {t('Unlock')}
+                        </button>
+                    )}
                 </div>
-
-                {!isFeatureEnabled('rich_media') && (
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                        <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                        <span className="text-xs text-blue-800">
-                            {t('Rich media embeds (YouTube, Spotify, etc.) are available on Professional Plus plans.')}
-                        </span>
-                        <Link to="/pricing" className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</Link>
-                    </div>
-                )}
 
                 <div className="space-y-3">
                     <DndContext
@@ -1190,6 +1199,13 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     onCancel={handleCropCancel}
                 />
             )}
+
+            {/* Upsell Modal */}
+            <UpgradeModal
+                isOpen={!!upgradeModalFeature}
+                onClose={() => setUpgradeModalFeature(null)}
+                featureName={upgradeModalFeature || ''}
+            />
         </div>
     );
 }
