@@ -73,20 +73,27 @@ export function OnboardingWizard() {
         ]
     });
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     // Form inputs state mapped directly to card data
     const handleChange = (field: keyof CardData, value: any) => {
         setData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handlePhoneChange = (value: string) => {
-        if (!data.phoneNumbers || data.phoneNumbers.length === 0) {
-            handleChange('phoneNumbers', [{ id: '1', label: 'Mobile', number: value }]);
-            return;
+    const handlePhoneChange = (label: string, value: string) => {
+        let newPhones = [...(data.phoneNumbers || [])];
+        const existingIndex = newPhones.findIndex(p => p.label === label);
+        
+        if (existingIndex >= 0) {
+            newPhones[existingIndex] = { ...newPhones[existingIndex], number: value };
+        } else {
+            newPhones.push({ id: Date.now().toString(), label, number: value });
         }
-        const newPhones = [...data.phoneNumbers];
-        newPhones[0] = { ...newPhones[0], number: value };
         handleChange('phoneNumbers', newPhones);
+    };
+
+    const getPhoneByLabel = (label: string) => {
+        return data.phoneNumbers?.find(p => p.label === label)?.number || '';
     };
 
     const handleWebsiteChange = (value: string) => {
@@ -137,7 +144,7 @@ export function OnboardingWizard() {
     };
 
     const getPrimaryPhone = () => {
-        return data.phoneNumbers?.[0]?.number || '';
+        return getPhoneByLabel('Mobile') || getPhoneByLabel('Office');
     };
 
     const handlePlanSelection = (tierId: string, _priceId: string | null) => {
@@ -153,7 +160,7 @@ export function OnboardingWizard() {
         <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-sans">
             
             {/* Left Side: Form / Progression */}
-            <div className="w-full md:w-1/2 lg:w-5/12 bg-white flex flex-col h-full min-h-screen border-r border-gray-200 shadow-xl z-20 relative">
+            <div className="w-full md:w-1/2 lg:w-5/12 bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl z-20 relative overflow-hidden">
                 
                 {/* Progress Bar Header */}
                 <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between">
@@ -181,6 +188,55 @@ export function OnboardingWizard() {
                                     <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Personal Details')}</h3>
                                 </div>
                                 <div className="space-y-4">
+                                    {/* Profile Photo */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Profile Photo</label>
+                                        <div className="flex items-center gap-4">
+                                            {data.avatarUrl ? (
+                                                <div className="relative w-20 h-20 rounded-full border border-gray-200 p-1 group">
+                                                    <img src={data.avatarUrl} alt="Avatar preview" className="w-full h-full rounded-full object-cover" />
+                                                    <button 
+                                                        onClick={() => {
+                                                            handleChange('avatarUrl', '');
+                                                            handleChange('showPhoto', false);
+                                                        }}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => avatarInputRef.current?.click()}
+                                                    className="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all"
+                                                >
+                                                    <User className="w-6 h-6" />
+                                                    <span className="text-[10px] font-bold mt-1">PHOTO</span>
+                                                </button>
+                                            )}
+                                            <p className="text-xs text-gray-500 flex-1">
+                                                Add a photo to build trust and make your card personal.
+                                            </p>
+                                        </div>
+                                        <input 
+                                            ref={avatarInputRef} 
+                                            type="file" 
+                                            accept="image/*" 
+                                            className="hidden" 
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        handleChange('avatarUrl', reader.result as string);
+                                                        handleChange('showPhoto', true);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }} 
+                                        />
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
                                         <input
@@ -203,24 +259,34 @@ export function OnboardingWizard() {
                                         />
                                     </div>
 
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            value={getEmail()}
+                                            onChange={(e) => handleEmailChange(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-                                            <input
-                                                type="email"
-                                                value={getEmail()}
-                                                onChange={(e) => handleEmailChange(e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
-                                                placeholder="john@example.com"
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Mobile Number</label>
+                                            <PhoneInput
+                                                value={getPhoneByLabel('Mobile')}
+                                                onChange={(_, formattedValue) => handlePhoneChange('Mobile', formattedValue)}
+                                                className="w-full bg-white border border-gray-300 rounded-xl shadow-sm"
+                                                placeholder="Mobile"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Office Number</label>
                                             <PhoneInput
-                                                value={getPrimaryPhone()}
-                                                onChange={(_, formattedValue) => handlePhoneChange(formattedValue)}
+                                                value={getPhoneByLabel('Office')}
+                                                onChange={(_, formattedValue) => handlePhoneChange('Office', formattedValue)}
                                                 className="w-full bg-white border border-gray-300 rounded-xl shadow-sm"
-                                                placeholder="+1 (555) 000-0000"
+                                                placeholder="Office"
                                             />
                                         </div>
                                     </div>
