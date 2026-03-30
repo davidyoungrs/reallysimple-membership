@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-03-30 | Head Commit: `856dc26`
+> Last Updated: 2026-03-30 (Session 2) | Head Commit: `856dc26` → new push pending
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -13,7 +13,7 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 The focus of the last several sessions has been:
 1. **Stabilising the Vercel deployment** (function count, build errors)
 2. **Redesigning the Onboarding Wizard** (`/create` route) for high conversion (PLG — "Try Before You Buy")
-3. **Final polish** of the onboarding UX (scrolling, typography, colour changes)
+3. **Final polish** of the onboarding UX (scrolling, typography, colour changes, layout split, palettes)
 
 ---
 
@@ -21,11 +21,14 @@ The focus of the last several sessions has been:
 
 ### Onboarding Wizard (`/src/components/OnboardingWizard.tsx`)
 - [x] Converted from 3-step to **2-step PLG flow**: Step 1 = Design, Step 2 = Pricing
-- [x] Step 1 now includes: Profile Photo, Full Name, Job Title, Email, Mobile, Office, Website, Company Name, Bio, Logo Upload, Cool Palettes (8 themes), Typography (20 fonts)
+- [x] Step 1 includes: Profile Photo, Name, Title, Email, Mobile, Office, Website, Company, Bio, Logo, **14 Cool Palettes**, 20 fonts
 - [x] **Fixed sidebar scrolling** — footer is now in the flex flow (not `absolute bottom-0`)
-- [x] **Fixed text colour change lag** — removed `transition-all duration-500` from `BusinessCard.tsx` main container
-- [x] **Expanded typography** from 4 options → 20 options (full parity with the card editor)
+- [x] **Fixed colour change lag** — removed `animate-gradient-slow` from `BusinessCard.tsx` background div; all colours now change instantly
+- [x] **Expanded typography** from 4 → 20 options (full parity with the card editor)
+- [x] **Step 2 layout** is now 30% form / 70% preview (pricing panel fills 70% of screen)
+- [x] **Step 1 layout** is 50% form / 50% preview
 - [x] Step 2 uses the shared `PricingCards` component (100% consistent with `/pricing` page)
+- [x] **6 new COOL PALETTES** added: Copper, Neo Mint, Aurora, Blush, Slate, Gold
 
 ### Landing Page (`/src/components/LandingPage.tsx`)
 - [x] Removed **"View Demo"** button from hero — only "Start for Free" CTA remains
@@ -151,10 +154,11 @@ These are features that were discussed or partially started but deliberately set
 
 | File | Last Changed | Summary |
 |---|---|---|
-| `src/components/OnboardingWizard.tsx` | 2026-03-30 | Full wizard redesign |
-| `src/components/BusinessCard.tsx` | 2026-03-30 | Fixed colour change latency |
+| `src/components/OnboardingWizard.tsx` | 2026-03-30 | Full wizard redesign, layout split, 14 palettes, 20 fonts |
+| `src/components/BusinessCard.tsx` | 2026-03-30 | Instant colour changes (removed animate-gradient-slow) |
 | `src/components/LandingPage.tsx` | 2026-03-30 | Removed "View Demo" button |
 | `src/components/PricingCards.tsx` | 2026-03-30 | Added `onSelect` prop |
+| `PROJECT_STATUS.md` | 2026-03-30 | Session tracking file (this file) |
 
 ---
 

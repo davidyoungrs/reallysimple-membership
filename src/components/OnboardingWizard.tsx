@@ -158,7 +158,7 @@ export function OnboardingWizard() {
         <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-sans">
             
             {/* Left Side: Form / Progression */}
-            <div className="w-full md:w-1/2 lg:w-5/12 bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl z-20 relative overflow-hidden">
+            <div className={`w-full bg-white flex flex-col h-screen border-r border-gray-200 shadow-xl z-20 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[30%]' : 'md:w-1/2'}`}>
                 
                 {/* Progress Bar Header */}
                 <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between">
@@ -388,7 +388,13 @@ export function OnboardingWizard() {
                                         { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff' },
                                         { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff' },
                                         { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b' },
-                                        { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff' }
+                                        { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff' },
+                                        { name: 'Copper', theme: '#92400e', gradient: '#b45309', text: '#fef3c7' },
+                                        { name: 'Neo Mint', theme: '#10b981', gradient: '#0d9488', text: '#ecfdf5' },
+                                        { name: 'Aurora', theme: '#8b5cf6', gradient: '#06b6d4', text: '#ffffff' },
+                                        { name: 'Blush', theme: '#ec4899', gradient: '#f43f5e', text: '#ffffff' },
+                                        { name: 'Slate', theme: '#334155', gradient: '#0f172a', text: '#e2e8f0' },
+                                        { name: 'Gold', theme: '#ca8a04', gradient: '#92400e', text: '#fefce8' }
                                     ].map((p) => (
                                         <button
                                             key={p.name}
@@ -399,7 +405,7 @@ export function OnboardingWizard() {
                                                 textColor: p.text,
                                                 backgroundType: 'gradient'
                                             }))}
-                                            className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${data.themeColor === p.theme ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                            className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-colors ${data.themeColor === p.theme ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
                                         >
                                             <div className="flex -space-x-1">
                                                 <div className="w-5 h-5 rounded-full border shadow-sm" style={{ backgroundColor: p.theme }} />
@@ -493,24 +499,18 @@ export function OnboardingWizard() {
             </div>
 
             {/* Right Side: Live Preview */}
-            <div className="hidden md:flex flex-1 flex-col items-center justify-center p-8 bg-gray-100 relative overflow-hidden">
+            <div className={`hidden md:flex flex-col items-center justify-center p-8 bg-gray-100 relative overflow-hidden transition-[width] duration-500 ${step === 2 ? 'md:w-[70%]' : 'flex-1'}`}>
                 {/* Decorative background pattern */}
                 <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-70 pointer-events-none"></div>
-                
-                {/* Blur effect overlay for pricing step */}
-                {step === 2 && (
-                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px] z-10 flex items-center justify-center flex-col pointer-events-none transition-all duration-500">
-                    </div>
-                )}
 
-                <div className={`w-full max-w-sm h-[750px] relative z-0 transition-transform duration-700 ${step === 2 ? 'scale-90 opacity-60' : 'scale-100'}`}>
+                <div className={`w-full max-w-sm h-[750px] relative z-0 transition-transform duration-500 ${step === 2 ? 'scale-75 opacity-50' : 'scale-100'}`}>
                     <ScaleToFit>
                         <BusinessCard data={data} />
                     </ScaleToFit>
                 </div>
                 
                 <div className="mt-8 text-center text-gray-400 text-sm font-medium tracking-wide uppercase shrink-0 relative z-0">
-                    Live Preview
+                    {step === 2 ? 'Your Card Preview' : 'Live Preview'}
                 </div>
             </div>
         </div>

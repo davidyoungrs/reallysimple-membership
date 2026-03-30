@@ -132,7 +132,7 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
         >
             {/* Background with dynamic gradient based on theme color */}
             <div
-                className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black animate-gradient-slow"
+                className="absolute inset-0"
                 style={{
                     background: backgroundType === 'solid'
                         ? themeColor
