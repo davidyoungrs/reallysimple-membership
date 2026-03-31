@@ -7,6 +7,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { downloadVCard } from '../utils/vcard';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from './LanguageSelector';
+import { translateText } from '../utils/translation';
 
 interface BusinessCardProps {
     data: CardData;
@@ -15,7 +17,7 @@ interface BusinessCardProps {
 }
 
 export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const {
         fullName,
         jobTitle,
@@ -35,6 +37,56 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
     const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const trackedEmbedsRef = useRef<Set<string>>(new Set());
+
+    // Translation state for custom text fields
+    const [displayBio, setDisplayBio] = useState(bio);
+    const [displayJobTitle, setDisplayJobTitle] = useState(jobTitle);
+    const [displayCompany, setDisplayCompany] = useState(company);
+    const [isTranslating, setIsTranslating] = useState(false);
+
+    // Sync state with props when data changes (e.g. in editor)
+    useEffect(() => {
+        setDisplayBio(bio);
+        setDisplayJobTitle(jobTitle);
+        setDisplayCompany(company);
+    }, [bio, jobTitle, company]);
+
+    // Handle dynamic translation when language changes
+    useEffect(() => {
+        const translateContent = async () => {
+            const targetLang = i18n.language;
+            
+            // Skip if language is English (assuming source is usually English or user wants original)
+            // or if we're already the target. 
+            // In a real app, you might want to store the card's native language.
+            if (targetLang === 'en') {
+                setDisplayBio(bio);
+                setDisplayJobTitle(jobTitle);
+                setDisplayCompany(company);
+                return;
+            }
+
+            setIsTranslating(true);
+            try {
+                const [newBio, newJob, newComp] = await Promise.all([
+                    translateText(bio, targetLang),
+                    translateText(jobTitle, targetLang),
+                    translateText(company, targetLang)
+                ]);
+                
+                setDisplayBio(newBio);
+                setDisplayJobTitle(newJob);
+                setDisplayCompany(newComp);
+            } catch (error) {
+                console.error('Translation failed:', error);
+            } finally {
+                setIsTranslating(false);
+            }
+        };
+
+        translateContent();
+    }, [i18n.language, bio, jobTitle, company]);
+
 
     // Initialize IntersectionObserver for media tracking
     useEffect(() => {
@@ -148,6 +200,10 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
                 className={`relative z-10 h-full flex flex-col ${data.layoutMode === 'modern-left' ? 'items-start text-left' : 'items-center text-center'} justify-between p-8`}
                 style={{ color: data.textColor || '#ffffff' }}
             >
+                {/* Language Selector Overlay */}
+                <div className="absolute top-4 right-4 z-50">
+                    <LanguageSelector variant="card" textColor={data.textColor} />
+                </div>
 
                 {/* Header / Avatar */}
                 <div className={`flex flex-col ${data.layoutMode === 'modern-left' ? 'items-start' : 'items-center'} space-y-4 mt-8 w-full`}>
@@ -188,16 +244,22 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
 
                     <div className={`${data.layoutMode === 'modern-left' ? 'text-left' : 'text-center'} space-y-1 w-full`}>
                         <h1 className="text-3xl font-bold tracking-tight">{fullName}</h1>
-                        <p className="text-lg font-medium opacity-80">{jobTitle}</p>
+                        <p className={`text-lg font-medium opacity-80 ${isTranslating ? 'animate-pulse' : ''}`}>
+                            {displayJobTitle}
+                        </p>
                         {!logoUrl && (
-                            <p className="text-sm font-light uppercase tracking-widest opacity-60">{company}</p>
+                            <p className={`text-sm font-light uppercase tracking-widest opacity-60 ${isTranslating ? 'animate-pulse' : ''}`}>
+                                {displayCompany}
+                            </p>
                         )}
                     </div>
                 </div>
 
                 {/* Bio */}
                 <div className={`${data.layoutMode === 'modern-left' ? 'text-left' : 'text-center'} max-w-xs`}>
-                    <p className="leading-relaxed font-light opacity-90">{bio}</p>
+                    <p className={`leading-relaxed font-light opacity-90 ${isTranslating ? 'animate-pulse' : ''}`}>
+                        {displayBio}
+                    </p>
                 </div>
 
                 {/* Social Links */}

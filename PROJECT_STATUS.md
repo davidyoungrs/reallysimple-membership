@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-03-30 (Session 3) | Head Commit: `46a99e9`
+> Last Updated: 2026-03-31 (Session 4) | Head Commit: `pending`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -11,16 +11,18 @@
 The project is a **digital business card SaaS** built in **React + Vite + TypeScript**, deployed on **Vercel (Hobby plan)**, using **Clerk** for auth, **Neon DB** for the database, and **Stripe** for billing.
 
 The focus of the last several sessions has been:
+
 1. **Stabilising the Vercel deployment** (function count, build errors)
 2. **Redesigning the Onboarding Wizard** (`/create` route) for high conversion (PLG — "Try Before You Buy")
-3. **Final polish** of the onboarding UX (scrolling, typography, colour changes, layout split, palettes)
-4. **Copy & UX tweaks** — heading text, layout ratio corrections
+3. **Mobile UX Audit & Optimization**: Keyboard modes, horizontal overflow, centering logic.
+4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title).
 
 ---
 
 ## ✅ COMPLETED WORK
 
 ### Onboarding Wizard (`/src/components/OnboardingWizard.tsx`)
+
 - [x] Converted from 3-step to **2-step PLG flow**: Step 1 = Design, Step 2 = Pricing
 - [x] Step 1 includes: Profile Photo, Name, Title, Email, Mobile, Office, Website, Company, Bio, Logo, **14 Cool Palettes**, 20 fonts
 - [x] **Fixed sidebar scrolling** — footer is now in the flex flow (not `absolute bottom-0`)
@@ -57,13 +59,21 @@ The focus of the last several sessions has been:
 - [x] Vercel Hobby plan function limit fixed (consolidated to ≤12 serverless functions)
 - [x] All known TypeScript build errors resolved
 - [x] Build consistently exits with code 0
+- [x] **CSP Updated**: Allowed connection to `api.mymemory.translated.net` for translations.
+
+### Mobile & Responsive UX (`ui-ux-pro-max-skill` Audit)
+- [x] **Horizontal Scroll Lockdown**: Added `overflow-x-hidden w-full` to `body` in `index.html`.
+- [x] **Mobile Keyboards**: Added `inputMode` (email, tel, numeric) to all critical fields app-wide.
+- [x] **Navbar Centering**: Fixed "Log in" and "Create Card" wrapping/alignment on small screens.
+- [x] **Dynamic Card Translation**: Added floating globe icon + MyMemory API integration for Bio & Title translation.
+- [x] **Pro Plan Features**: Expanded list with unlimited phone numbers, social links, and style control.
 
 ---
 
 ## 🔵 IN PROGRESS — Currently Active
 
-Nothing is actively mid-implementation. The last session ended with a clean push.
-**Last commit:** `46a99e9` — Step 1 heading updated to "Design Your Online Card".
+Nothing is actively mid-implementation. The last session focused on Mobile UX and Translation.
+**Last session commit:** `pending` — Mobile UX fixes and Dynamic Translation.
 
 ---
 
@@ -156,11 +166,11 @@ These are features that were discussed or partially started but deliberately set
 
 | File | Last Changed | Summary |
 |---|---|---|
-| `src/components/OnboardingWizard.tsx` | 2026-03-30 | Full wizard redesign, layout split, 14 palettes, 20 fonts |
-| `src/components/BusinessCard.tsx` | 2026-03-30 | Instant colour changes (removed animate-gradient-slow) |
-| `src/components/LandingPage.tsx` | 2026-03-30 | Removed "View Demo" button |
-| `src/components/PricingCards.tsx` | 2026-03-30 | Added `onSelect` prop |
-| `PROJECT_STATUS.md` | 2026-03-30 | Session tracking file (this file) |
+| `src/components/BusinessCard.tsx` | 2026-03-31 | Dynamic translation + language selector icon |
+| `src/utils/translation.ts` | 2026-03-31 | New MyMemory API utility |
+| `index.html` | 2026-03-31 | CSP update + overflow lockdown |
+| `src/components/OnboardingWizard.tsx` | 2026-03-31 | Mobile keyboard (inputMode) optimization |
+| `PROJECT_STATUS.md` | 2026-03-31 | Session 4 tracking (this file) |
 
 ---
 
