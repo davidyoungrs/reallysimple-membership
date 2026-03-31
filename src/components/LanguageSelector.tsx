@@ -18,7 +18,15 @@ export function LanguageSelector({ variant = 'navbar', textColor }: LanguageSele
         { code: 'fr', label: 'Français' },
         { code: 'de', label: 'Deutsch' },
         { code: 'ar', label: 'العربية' },
-        { code: 'ru', label: 'Русский' }
+        { code: 'ru', label: 'Русский' },
+        { code: 'zh', label: '中文 (Mandarin)' },
+        { code: 'hi', label: 'हिन्दी (Hindi)' },
+        { code: 'pt', label: 'Português' },
+        { code: 'ja', label: '日本語 (Japanese)' },
+        { code: 'pnb', label: 'پنجابی (Punjabi)' },
+        { code: 'tr', label: 'Türkçe' },
+        { code: 'ko', label: '한국어 (Korean)' },
+        { code: 'it', label: 'Italiano' }
     ];
 
     const currentLanguage = languages.find(l => l.code === i18n.language) || languages[0];

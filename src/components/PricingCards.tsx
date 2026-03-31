@@ -22,7 +22,8 @@ export const TIERS = [
             '1 Online Digital Business Card',
             'Standard Templates',
             'QR Code Generator',
-            'Email Signature Generator'
+            'Email Signature Generator',
+            'Multi-language support'
         ],
         buttonText: 'Get Started',
         priceIdMonthly: null,
