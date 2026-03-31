@@ -140,8 +140,9 @@ export const LandingPage = () => {
             <footer className="bg-gray-900 text-gray-400 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="flex items-center gap-2">
-                            {/* <img src="/logo.png" alt="Really Simple Cards" className="h-12 w-auto brightness-0 invert" /> */}
+                        <div className="flex flex-col items-center md:items-start gap-1">
+                            <p className="text-sm font-medium text-gray-300">© {new Date().getFullYear()} Really Simple Apps. All rights reserved.</p>
+                            <p className="text-xs text-gray-500">Built for professionals who value simplicity.</p>
                         </div>
 
                         <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
@@ -151,11 +152,6 @@ export const LandingPage = () => {
                             <Link to="/licenses" className="hover:text-white transition-colors">{t('Licenses')}</Link>
                             <a href="mailto:support@reallysimple.apps" className="hover:text-white transition-colors">{t('Support')}</a>
                         </div>
-                    </div>
-
-                    <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-                        <p>© {new Date().getFullYear()} Really Simple Apps. All rights reserved.</p>
-                        <p>Built for professionals who value simplicity.</p>
                     </div>
                 </div>
             </footer>

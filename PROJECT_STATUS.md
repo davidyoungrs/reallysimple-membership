@@ -8,7 +8,7 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The project is a **digital business card SaaS** built in **React + Vite + TypeScript**, deployed on **Vercel (Hobby plan)**, using **Clerk** for auth, **Supabase** for the database, and **Stripe** for billing.
+The project is a **digital business card SaaS** built in **React + Vite + TypeScript**, deployed on **Vercel (Hobby plan)**, using **Clerk** for auth, **Neon DB** for the database, and **Stripe** for billing.
 
 The focus of the last several sessions has been:
 1. **Stabilising the Vercel deployment** (function count, build errors)
@@ -50,7 +50,7 @@ The focus of the last several sessions has been:
 
 ### Auth & Routing
 - [x] Clerk auth integrated — `/create` is **public**, `/dashboard` is protected
-- [x] `/onboarding-callback` route processes Clerk sign-up and saves pre-auth data from `localStorage` to Supabase
+- [x] `/onboarding-callback` route processes Clerk sign-up and saves pre-auth data from `localStorage` to Neon DB
 - [x] `/editor` route added and working
 
 ### Deployment & Stability
@@ -74,7 +74,7 @@ These are features that were discussed or partially started but deliberately set
 ### 1. End-to-End Onboarding Data Flow Verification
 - **What:** Verify that all new Step 1 fields (Mobile, Office, Profile Photo, Bio, Logo) are correctly:
   1. Persisted to `localStorage` after the wizard
-  2. Successfully read and saved to Supabase in `/onboarding-callback`
+  2. Successfully read and saved to Neon DB in `/onboarding-callback`
 - **Why parked:** Core UI was the focus; E2E was not fully tested
 - **File to check:** `src/pages/OnboardingCallback.tsx`
 
@@ -95,8 +95,8 @@ These are features that were discussed or partially started but deliberately set
 - **File:** Used in `/dashboard` — the `analytics_system` KI has details
 
 ### 6. Admin Panel — Logo URL
-- **What:** Custom logo URL was removed from the Admin Panel UI; logos are now managed directly in Supabase DB. This is intentional.
-- **Note:** If you need to add a logo for a user, do it directly in the `cards` table in Supabase.
+- **What:** Custom logo URL was removed from the Admin Panel UI; logos are now managed directly in Neon DB DB. This is intentional.
+- **Note:** If you need to add a logo for a user, do it directly in the `cards` table in Neon DB.
 
 ### 7. Website Sitemap / SEO
 - **What:** A website map was generated (see previous session). SEO meta tags and structured data have not yet been implemented per that map.
@@ -140,7 +140,7 @@ These are features that were discussed or partially started but deliberately set
 
 ### State Management
 - **Pre-auth data:** `localStorage` key `wizard_data`
-- **Post-auth data:** Supabase `cards` table
+- **Post-auth data:** Neon DB `cards` table
 - **Feature gating:** `useTier()` context hook
 
 ### Pricing Tiers
@@ -174,7 +174,7 @@ These are features that were discussed or partially started but deliberately set
 6. **Vercel logs:** Check the dashboard at https://vercel.com for deployment status
 
 ### Suggested Next Session Starting Point
-> Pick up from **"PARKED #1"** — verify the E2E data flow from the wizard through to Supabase on sign-up. This ensures all the new fields (mobile, office, photo) are actually being saved and shown in the editor after registration.
+> Pick up from **"PARKED #1"** — verify the E2E data flow from the wizard through to Neon DB on sign-up. This ensures all the new fields (mobile, office, photo) are actually being saved and shown in the editor after registration.
 
 ---
 

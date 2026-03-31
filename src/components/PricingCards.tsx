@@ -187,17 +187,24 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
         }
     };
 
-    const formatPrice = (gbpAmount: number) => {
-        if (gbpAmount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
+    const calculateConvertedPrice = (monthlyGbp: number, isAnnualPlan: boolean) => {
+        if (monthlyGbp === 0) return 0;
         const rate = selectedCurrency === 'GBP' ? 1 : (rates[selectedCurrency] || 1);
         const margin = selectedCurrency === 'GBP' ? 1 : 1.04;
-        const converted = gbpAmount * rate * margin;
+        
+        const monthlyConverted = monthlyGbp * rate * margin;
+        const roundedMonthly = Math.round(monthlyConverted);
+        
+        return isAnnualPlan ? roundedMonthly * 10 : roundedMonthly;
+    };
 
+    const formatPrice = (amount: number) => {
+        if (amount === 0) return selectedCurrency === 'GBP' ? '£0' : `${CURRENCIES.find(c => c.code === selectedCurrency)?.symbol || ''}0`;
         return new Intl.NumberFormat(undefined, {
             style: 'currency',
             currency: selectedCurrency,
             maximumFractionDigits: 0,
-        }).format(converted);
+        }).format(amount);
     };
 
     return (
@@ -244,7 +251,7 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
             <div className={`max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 ${compact ? 'mb-8' : 'mb-24'}`}>
                 {TIERS.map((tier) => {
                     const priceId = isAnnual ? tier.priceIdAnnual : tier.priceIdMonthly;
-                    const gbpPrice = isAnnual ? tier.priceAnnualGbp : tier.priceMonthlyGbp;
+                    const displayPrice = calculateConvertedPrice(tier.priceMonthlyGbp, isAnnual);
                     const displayPeriod = isAnnual ? t('/year') : t('/month');
 
                     return (
@@ -275,11 +282,11 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
                             <div className="mb-8 overflow-hidden">
                                 <div className="flex items-baseline gap-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <span className="text-5xl font-black text-gray-900 tracking-tighter">
-                                        {formatPrice(gbpPrice)}
+                                        {formatPrice(displayPrice)}
                                     </span>
                                     <span className="text-gray-400 font-bold uppercase text-xs">{displayPeriod}</span>
                                 </div>
-                                {selectedCurrency !== 'GBP' && gbpPrice > 0 && !fxLoading && (
+                                {selectedCurrency !== 'GBP' && tier.priceMonthlyGbp > 0 && !fxLoading && (
                                     <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-tight">
                                         {t('Approx. conversion from GBP (inc. 4% processing)')}
                                     </p>
