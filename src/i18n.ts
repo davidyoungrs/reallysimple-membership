@@ -1485,7 +1485,8 @@ const resources = {
             "Strip Designer 2.0: Full access to the canvas tool to design custom Wallet strips and images": "Дизайнер полос 2.0: Полный доступ к инструменту холста для создания своих полос и изображений для Wallet",
             "Rich Media: Embed YouTube, TikTok, Vimeo, and Spotify players directly on the card.": "Богатый медиаконтент: встраивание плееров YouTube, TikTok, Vimeo и Spotify прямо в карту.",
             "Advanced Analytics: Detailed click tracking and location heatmaps.": "Продвинутая аналитика: детальное отслеживание кликов и тепловые карты местоположений."
-        },
+        }
+    },
     zh: {
         translation: {
             "Editor": "编辑器",
@@ -1987,41 +1988,7 @@ const resources = {
             "Strip Image": "स्ट्रिप इमेज",
             "Open Designer": "डिजाइनर खोलें",
             "Enter Strip Image URL": "स्ट्रिप इमेज URL दर्ज करें",
-            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "स्ट्रिप इमेज प्राथमिक क्षेत्रों के पीछे प्रमुखता से प्रदर्शित होती है। सर्वोत्तम परिणामों के लिए, एक अमूर्त या न्यूनतर इमेज का उपयोग करें।",
-            "2 Months Free": "2 महीने मुफ्त",
-            "Monthly": "मासिक",
-            "Yearly": "वार्षिक",
-            "Recommended": "अनुशंसित",
-            "Wait...": "प्रतीक्षा करें...",
-            "Get Started": "शुरू करें",
-            "Subscribe to Pro": "प्रो की सदस्यता लें",
-            "Subscribe to Pro Plus": "प्रो प्लस की सदस्यता लें",
-            "/month": "/माह",
-            "/year": "/वर्ष",
-            "Approx. conversion from GBP (inc. 4% processing)": "GBP से अनुमानित रूपांतरण (4% प्रसंस्करण सहित)",
-            "Perfect for individuals getting started with digital cards.": "डिजिटल कार्ड के साथ शुरुआत करने वाले व्यक्तियों के लिए बिल्कुल सही।",
-            "For professionals who want to stand out and track engagement.": "उन पेशेवरों के लिए जो अलग दिखना चाहते हैं और जुड़ाव को ट्रैक करना चाहते हैं।",
-            "For power users, designers, influencers who needing multiple profiles and advanced features.": "पावर उपयोगकर्ताओं, डिजाइनरों, प्रभावितों के लिए जिन्हें कई प्रोफाइल और उन्नत सुविधाओं की आवश्यकता है।",
-            "1 Online Digital Business Card": "1 ऑनलाइन डिजिटल बिजनेस कार्ड",
-            "Standard Templates": "मानक टेम्पलेट",
-            "QR Code Generator": "QR कोड जनरेटर",
-            "Email Signature Generator": "ईमेल हस्ताक्षर जनरेटर",
-            "Multi-language support": "बहु-भाषा समर्थन",
-            "Up to 3 Digital Business Cards Online and Phone Wallet": "3 डिजिटल बिजनेस कार्ड ऑनलाइन और फोन वॉलेट तक",
-            "Analytics & Geography Data": "एनालिटिक्स और भूगोल डेटा",
-            "Custom Themes & Branding": "कस्टम थीम और ब्रांडिंग",
-            "Save to Apple & Google Wallet": "एप्पल और गूगल वॉलेट में सहेजें",
-            "Lead Capture Forms": "लीड कैप्चр फॉर्म",
-            "Custom Slug: Personalized URL link (e.g., card/sarah_jenkins)": "कस्टम स्लग: व्यक्तिगत URL लिंक (जैसे, card/sarah_jenkins)",
-            "Add unlimited phone numbers including online / internet calling numbers": "ऑनलाइन / इंटरनेट कॉलिंग नंबरों सहित असीमित फोन नंबर जोड़ें",
-            "Add social media and other links": "सोशल मीडिया और अन्य लिंक जोड़ें",
-            "Greater control over colours, fonts and style": "रंगों, फोंट और शैली पर अधिक नियंत्रण",
-            "Unlimited changes": "असीमित परिवर्तन",
-            "All Pro features included": "सभी प्रो विशेषताएं शामिल हैं",
-            "Priority Support": "प्राथमिकता सहायता",
-            "Strip Designer 2.0: Full access to the canvas tool to design custom Wallet strips and images": "स्ट्रिप डिज़ाइनर 2.0: कस्टम वॉलेट स्ट्रिप्स और इमेज डिज़ाइन करने के लिए कैनवास टूल तक पूर्ण पहुंच",
-            "Rich Media: Embed YouTube, TikTok, Vimeo, and Spotify players directly on the card.": "रिच मीडिया: सीधे कार्ड पर YouTube, TikTok, Vimeo और Spotify प्लेयर एम्बेड करें।",
-            "Advanced Analytics: Detailed click tracking and location heatmaps.": "उन्नत एनालिटिक्स: विस्तृत क्लिक ट्रैकिंग और स्थान हीटमैप।"
+            "The strip image is displayed prominently behind the primary fields. For best results, use an abstract or minimalist image.": "स्ट्रिप इमेज प्राथमिक क्षेत्रों के पीछे प्रमुखता से प्रदर्शित होती है। सर्वोत्तम परिणामों के लिए, एक अमूर्त या न्यूनतर इमेज का उपयोग करें।"
         }
     },
     pt: {
@@ -2493,7 +2460,8 @@ const resources = {
             "Strip Designer 2.0: Full access to the canvas tool to design custom Wallet strips and images": "ストリップデザイナー2.0：カスタムウォレットストリップや画像をデザインするためのキャンバスツールへのフルアクセス",
             "Rich Media: Embed YouTube, TikTok, Vimeo, and Spotify players directly on the card.": "リッチメディア：YouTube、TikTok、Vimeo、Spotifyプレーヤーを名片に直接埋め込む。",
             "Advanced Analytics: Detailed click tracking and location heatmaps.": "高度な分析：詳細なクリック追跡とロケーションヒートマップ。"
-        },
+        }
+    },
     pnb: {
         translation: {
             "Editor": "ایڈیٹر",
@@ -2744,7 +2712,8 @@ const resources = {
             "Strip Designer 2.0: Full access to the canvas tool to design custom Wallet strips and images": "سٹرپ ڈیزائنر 2.0: کسٹم والٹ سٹرپس تے تصویراں ڈیزائن کرن لئی کینوس ٹول تک مکمل رسائی",
             "Rich Media: Embed YouTube, TikTok, Vimeo, and Spotify players directly on the card.": "رچ میڈیا: یوٹیوب، ٹک ٹاک، ویمیو، تے سپوٹیفائی پلیئرز نوں سدھا کارڈ تے ایمبیڈ کرو۔",
             "Advanced Analytics: Detailed click tracking and location heatmaps.": "ایڈوانس اینالیٹکس: تفصیلی کلک ٹریکنگ تے لوکیشن ہیٹ میپس۔"
-        },
+        }
+    },
     tr: {
         translation: {
             "Editor": "Düzenleyici",
