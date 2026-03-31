@@ -5,7 +5,17 @@ import { BusinessCard } from './BusinessCard';
 import { Editor } from './Editor';
 import { loadFromUrl, saveToUrl } from '../utils/urlState';
 import { useTranslation } from 'react-i18next';
-import { ChevronUp, ChevronDown, ArrowLeft, Copy, Check, Trash2, LayoutDashboard } from 'lucide-react';
+import { 
+    Trash2, 
+    Languages, 
+    Check, 
+    X,
+    ChevronUp, 
+    ChevronDown, 
+    ArrowLeft, 
+    Copy, 
+    LayoutDashboard 
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
 import { OnboardingTour } from './OnboardingTour';
@@ -84,7 +94,7 @@ const ScaleToFit = ({ children }: { children: React.ReactNode }) => {
 };
 
 export function CardBuilder() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useUser();
     const location = useLocation();
     const [isEditorOpen, setIsEditorOpen] = useState(true);
@@ -99,6 +109,7 @@ export function CardBuilder() {
     const shareCardRef = useRef<HTMLDivElement>(null);
     const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: number, name: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [pendingTranslation, setPendingTranslation] = useState<Partial<CardData> | null>(null);
     const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
     const [showTour, setShowTour] = useState(false);
     const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
@@ -288,6 +299,30 @@ export function CardBuilder() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showCardsDropdown, showShareCard]);
+
+    const handleTranslate = (translatedData: Partial<CardData>) => {
+        // Only show pending translation if it actually differs from current data
+        // and we're not in English mode (where we just reset)
+        if (i18n.language === 'en') return;
+
+        const hasChanges = Object.keys(translatedData).some(
+            key => translatedData[key as keyof CardData] !== data[key as keyof CardData]
+        );
+
+        if (hasChanges) {
+            setPendingTranslation(translatedData);
+        }
+    };
+
+    const applyTranslation = () => {
+        if (pendingTranslation) {
+            setData(prev => ({
+                ...prev,
+                ...pendingTranslation
+            }));
+            setPendingTranslation(null);
+        }
+    };
 
     // Save card to database
     const handleSaveCard = async () => {
@@ -571,11 +606,41 @@ export function CardBuilder() {
 
                 <ScaleToFit>
                     {builderMode === 'card' ? (
-                        <BusinessCard data={data} />
+                        <BusinessCard data={data} onTranslate={handleTranslate} />
                     ) : (
                         <WalletPreview data={data} />
                     )}
                 </ScaleToFit>
+
+                {/* Translation Apply Banner */}
+                {pendingTranslation && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+                        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-2 pl-4 pr-3 flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Languages className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    Apply translations to card?
+                                </span>
+                            </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setPendingTranslation(null)}
+                                    className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors"
+                                    title="Dismiss"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={applyTranslation}
+                                    className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-1.5"
+                                >
+                                    <Check className="w-4 h-4" />
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="mt-8 text-center text-gray-400 text-sm hidden md:block shrink-0 pb-8">
                     {t('Preview')}

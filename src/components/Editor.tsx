@@ -1,7 +1,8 @@
 import { type CardData, type SocialLink, type SocialPlatform, type PhoneNumber } from '../types';
-import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle, Lock } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle, Lock, Languages, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { translateText } from '../utils/translation';
 import { SlugCustomizer } from './SlugCustomizer';
 import { ImageCropper } from './ImageCropper';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -288,7 +289,7 @@ function SortableEmbed({ embed, handleEmbedChange, removeEmbed, t }: { embed: an
 }
 
 export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: EditorProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isFeatureEnabled } = useTier();
 
     // Feature gates
@@ -297,6 +298,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     const logoInputRef = useRef<HTMLInputElement>(null);
     const [croppingImage, setCroppingImage] = useState<string | null>(null);
     const [cropTarget, setCropTarget] = useState<'avatarUrl' | 'logoUrl' | null>(null);
+    const [isTranslating, setIsTranslating] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -475,6 +477,33 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
         handleChange('sections', newSections);
     };
     */
+ 
+    const handleAutoTranslate = async () => {
+        const targetLang = i18n.language;
+        if (targetLang === 'en') return;
+
+        setIsTranslating(true);
+        try {
+            const [newName, newJob, newComp, newBio] = await Promise.all([
+                translateText(data.fullName, targetLang),
+                translateText(data.jobTitle, targetLang),
+                translateText(data.company, targetLang),
+                translateText(data.bio, targetLang)
+            ]);
+
+            onChange({
+                ...data,
+                fullName: newName,
+                jobTitle: newJob,
+                company: newComp,
+                bio: newBio
+            });
+        } catch (error) {
+            console.error('Manual translation failed:', error);
+        } finally {
+            setIsTranslating(false);
+        }
+    };
 
     return (
         <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 md:pt-20 space-y-8 h-full overflow-y-auto">
@@ -486,7 +515,23 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
 
             {/* Personal Info */}
             <div className="space-y-4" data-tour="profile">
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Personal Info')}</h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Personal Info')}</h3>
+                    {i18n.language !== 'en' && (
+                        <button
+                            onClick={handleAutoTranslate}
+                            disabled={isTranslating}
+                            className="text-xs flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-bold py-1.5 px-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all disabled:opacity-50 group"
+                        >
+                            {isTranslating ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                                <Languages className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                            )}
+                            {isTranslating ? t('Translating...') : `${t('Translate to')} ${i18n.language.toUpperCase()}`}
+                        </button>
+                    )}
+                </div>
 
                 <div className="grid grid-cols-1 gap-4">
                     <div>

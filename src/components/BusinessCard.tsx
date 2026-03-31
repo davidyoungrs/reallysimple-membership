@@ -13,10 +13,11 @@ import { translateText } from '../utils/translation';
 interface BusinessCardProps {
     data: CardData;
     onLinkClick?: (type: string, targetInfo: string) => void;
+    onTranslate?: (translatedData: Partial<CardData>) => void;
     ownerTier?: 'starter' | 'pro' | 'pro_plus' | 'business' | 'grandfathered';
 }
 
-export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps) {
+export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: BusinessCardProps) {
     const { t, i18n } = useTranslation();
     const {
         fullName,
@@ -39,6 +40,7 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
     const trackedEmbedsRef = useRef<Set<string>>(new Set());
 
     // Translation state for custom text fields
+    const [displayFullName, setDisplayFullName] = useState(fullName);
     const [displayBio, setDisplayBio] = useState(bio);
     const [displayJobTitle, setDisplayJobTitle] = useState(jobTitle);
     const [displayCompany, setDisplayCompany] = useState(company);
@@ -46,10 +48,11 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
 
     // Sync state with props when data changes (e.g. in editor)
     useEffect(() => {
+        setDisplayFullName(fullName);
         setDisplayBio(bio);
         setDisplayJobTitle(jobTitle);
         setDisplayCompany(company);
-    }, [bio, jobTitle, company]);
+    }, [fullName, bio, jobTitle, company]);
 
     // Handle dynamic translation when language changes
     useEffect(() => {
@@ -60,6 +63,7 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
             // or if we're already the target. 
             // In a real app, you might want to store the card's native language.
             if (targetLang === 'en') {
+                setDisplayFullName(fullName);
                 setDisplayBio(bio);
                 setDisplayJobTitle(jobTitle);
                 setDisplayCompany(company);
@@ -68,15 +72,27 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
 
             setIsTranslating(true);
             try {
-                const [newBio, newJob, newComp] = await Promise.all([
+                const [newName, newBio, newJob, newComp] = await Promise.all([
+                    translateText(fullName, targetLang),
                     translateText(bio, targetLang),
                     translateText(jobTitle, targetLang),
                     translateText(company, targetLang)
                 ]);
                 
+                setDisplayFullName(newName);
                 setDisplayBio(newBio);
                 setDisplayJobTitle(newJob);
                 setDisplayCompany(newComp);
+
+                // Push back translated info if callback is provided
+                if (onTranslate) {
+                    onTranslate({
+                        fullName: newName,
+                        jobTitle: newJob,
+                        company: newComp,
+                        bio: newBio
+                    });
+                }
             } catch (error) {
                 console.error('Translation failed:', error);
             } finally {
@@ -85,7 +101,7 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
         };
 
         translateContent();
-    }, [i18n.language, bio, jobTitle, company]);
+    }, [i18n.language, fullName, bio, jobTitle, company, onTranslate]);
 
 
     // Initialize IntersectionObserver for media tracking
@@ -243,7 +259,9 @@ export function BusinessCard({ data, onLinkClick, ownerTier }: BusinessCardProps
                     )}
 
                     <div className={`${data.layoutMode === 'modern-left' ? 'text-left' : 'text-center'} space-y-1 w-full`}>
-                        <h1 className="text-3xl font-bold tracking-tight">{fullName}</h1>
+                        <h1 className={`text-3xl font-bold tracking-tight ${isTranslating ? 'animate-pulse' : ''}`}>
+                            {displayFullName}
+                        </h1>
                         <p className={`text-lg font-medium opacity-80 ${isTranslating ? 'animate-pulse' : ''}`}>
                             {displayJobTitle}
                         </p>
