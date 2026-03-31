@@ -40,7 +40,11 @@ export const TIERS = [
             'Custom Themes & Branding',
             'Save to Apple & Google Wallet',
             'Lead Capture Forms',
-            'Custom Slug: Personalized URL link (e.g., card/sarah_jenkins)'
+            'Custom Slug: Personalized URL link (e.g., card/sarah_jenkins)',
+            'Add unlimited phone numbers including online / internet calling numbers',
+            'Add social media and other links',
+            'Greater control over colours, fonts and style',
+            'Unlimited changes'
         ],
         buttonText: 'Subscribe to Pro',
         priceIdMonthly: import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY,
