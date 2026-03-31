@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-03-31 (Session 4) | Head Commit: `pending`
+> Last Updated: 2026-03-31 (Session 5) | Head Commit: `a6485d2`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -15,7 +15,8 @@ The focus of the last several sessions has been:
 1. **Stabilising the Vercel deployment** (function count, build errors)
 2. **Redesigning the Onboarding Wizard** (`/create` route) for high conversion (PLG — "Try Before You Buy")
 3. **Mobile UX Audit & Optimization**: Keyboard modes, horizontal overflow, centering logic.
-4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title).
+4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title/Name).
+5. **i18n Stability**: Fixed critical syntax and duplicate key issues in `src/i18n.ts` that were blocking production builds.
 
 ---
 
@@ -68,12 +69,17 @@ The focus of the last several sessions has been:
 - [x] **Dynamic Card Translation**: Added floating globe icon + MyMemory API integration for Bio & Title translation.
 - [x] **Pro Plan Features**: Expanded list with unlimited phone numbers, social links, and style control.
 
+### Internationalization (i18n) Stability
+- [x] **Build Error Resolution**: Fixed structural syntax errors (missing closing braces) in `src/i18n.ts` for `ru`, `ja`, and `pnb` language blocks.
+- [x] **Hindi Translation Cleanup**: Removed ~35 duplicate keys in the `hi` block that caused TypeScript "duplicate property" errors.
+- [x] **Production Verification**: Confirmed that `npm run build` now completes successfully for all 14 supported languages.
+
 ---
 
-## 🔵 IN PROGRESS — Currently Active
-
-Nothing is actively mid-implementation. The last session focused on Mobile UX and Translation.
-**Last session commit:** `pending` — Mobile UX fixes and Dynamic Translation.
+### 1. Enhanced Profile Translation
+- **Goal:** Include `fullName` in the card's dynamic translation and add a "push back" mechanism to allow users to apply translated content to their card data permanently.
+- **Status:** Planning phase; implementation plan created and awaiting approval.
+- **Files:** `BusinessCard.tsx`, `CardBuilder.tsx`, `Editor.tsx`.
 
 ---
 
