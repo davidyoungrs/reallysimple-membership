@@ -30,10 +30,10 @@ export const LandingPage = () => {
                                 <UserButton afterSignOutUrl="/" />
                             </SignedIn>
                             <SignedOut>
-                                <Link to="/sign-in" className="text-sm font-medium text-gray-600 hover:text-gray-900">{t('Log in')}</Link>
+                                <Link to="/sign-in" className="text-sm font-medium text-gray-600 hover:text-gray-900 text-center inline-block">{t('Log in')}</Link>
                                 <Link
                                     to="/create"
-                                    className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+                                    className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors text-center inline-flex items-center justify-center"
                                 >
                                     {t('Create Card')}
                                 </Link>
