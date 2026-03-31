@@ -89,6 +89,7 @@ export default function ContactSection() {
                             <Label htmlFor="email" className="text-xs font-black uppercase tracking-wider text-gray-500">Work Email</Label>
                             <Input
                                 type="email"
+                                inputMode="email"
                                 id="email"
                                 name="email"
                                 required
@@ -119,6 +120,7 @@ export default function ContactSection() {
                                 <Label htmlFor="numCards" className="text-xs font-black uppercase tracking-wider text-gray-500">Cards Required</Label>
                                 <Input
                                     type="number"
+                                    inputMode="numeric"
                                     id="numCards"
                                     name="numCards"
                                     min="1"

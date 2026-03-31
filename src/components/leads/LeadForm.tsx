@@ -131,6 +131,7 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
                                     </div>
                                     <input
                                         type="email"
+                                        inputMode="email"
                                         placeholder={t('Email Address')}
                                         className={`w-full pl-10 pr-4 py-3 rounded-xl border ${errors.email ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-blue-200'} focus:border-blue-500 focus:ring-4 transition-all outline-none`}
                                         {...register('email')}
@@ -147,6 +148,7 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
                                     </div>
                                     <input
                                         type="tel"
+                                        inputMode="tel"
                                         placeholder={t('Phone Number (Optional)')}
                                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all outline-none"
                                         {...register('phone')}

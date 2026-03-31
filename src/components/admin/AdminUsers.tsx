@@ -691,6 +691,7 @@ export function AdminUsers() {
                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact Email</label>
                                     <input
                                         type="email"
+                                        inputMode="email"
                                         value={conciergeForm.email}
                                         onChange={(e) => setConciergeForm({ ...conciergeForm, email: e.target.value })}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -702,6 +703,7 @@ export function AdminUsers() {
                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone Number</label>
                                 <input
                                     type="tel"
+                                    inputMode="tel"
                                     value={conciergeForm.phone}
                                     onChange={(e) => setConciergeForm({ ...conciergeForm, phone: e.target.value })}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -813,6 +815,7 @@ export function AdminUsers() {
                                                 <label className="text-xs font-semibold text-gray-500 uppercase">User Email <span className="text-red-500">*</span></label>
                                                 <input
                                                     type="email"
+                                                    inputMode="email"
                                                     required
                                                     value={onboardingForm.email}
                                                     onChange={(e) => setOnboardingForm({ ...onboardingForm, email: e.target.value })}
@@ -864,6 +867,7 @@ export function AdminUsers() {
                                             <label className="text-xs font-semibold text-gray-500 uppercase">Phone Number</label>
                                             <input
                                                 type="tel"
+                                                inputMode="tel"
                                                 value={onboardingForm.phone}
                                                 onChange={(e) => setOnboardingForm({ ...onboardingForm, phone: e.target.value })}
                                                 className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

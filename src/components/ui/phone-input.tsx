@@ -668,6 +668,7 @@ export function PhoneInput({
 
       <Input
         type="tel"
+        inputMode="tel"
         value={phoneNumber}
         onChange={handlePhoneChange}
         placeholder={effectivePlaceholder}

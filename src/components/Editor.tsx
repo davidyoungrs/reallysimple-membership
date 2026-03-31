@@ -71,7 +71,8 @@ function SortableSocialLink({ link, handleSocialChange, removeSocialLink, t }: S
 
             <div className="flex-1 flex flex-col gap-2">
                 <input
-                    type="text"
+                    type={link.platform === 'email' ? 'email' : 'url'}
+                    inputMode={link.platform === 'email' ? 'email' : 'url'}
                     placeholder={link.platform === 'email' ? t('Email Address') : t('URL')}
                     value={link.url}
                     onChange={(e) => handleSocialChange(link.id, 'url', e.target.value)}
