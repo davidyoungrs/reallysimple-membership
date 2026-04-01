@@ -519,6 +519,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                 isOpen={isLeadFormOpen}
                 onClose={() => setIsLeadFormOpen(false)}
                 ownerName={fullName.split(' ')[0]}
+                buttonColor={data.buttonColor}
             />
 
             <div className={`flex justify-center pt-2 ${data.stickyActionBar ? 'mb-4' : ''}`}>

@@ -23,10 +23,11 @@ interface LeadFormProps {
     cardId: string; // This should be the UID or Slug
     isOpen: boolean;
     onClose: () => void;
-    ownerName?: string; // To personalize the header "Connect with David"
+    ownerName?: string;
+    buttonColor?: string;
 }
 
-export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) {
+export function LeadForm({ cardId, isOpen, onClose, ownerName, buttonColor }: LeadFormProps) {
     const { t } = useTranslation();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -211,7 +212,8 @@ export function LeadForm({ cardId, isOpen, onClose, ownerName }: LeadFormProps) 
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                style={{ backgroundColor: buttonColor || undefined }}
+                                className={`w-full py-3 rounded-xl font-medium transition-colors shadow-lg hover:shadow-xl transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${!buttonColor ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-white'}`}
                             >
                                 {isSubmitting ? (
                                     <>
