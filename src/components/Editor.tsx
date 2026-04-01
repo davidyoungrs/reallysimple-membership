@@ -55,6 +55,7 @@ function SortableSocialLink({ link, handleSocialChange, removeSocialLink, t }: S
                     <option value="bandcamp">Bandcamp</option>
                     <option value="bandlab">BandLab</option>
                     <option value="deezer">Deezer</option>
+                    <option value="facebook">Facebook</option>
                     <option value="github">GitHub</option>
                     <option value="instagram">Instagram</option>
                     <option value="iheartradio">iHeartRadio</option>

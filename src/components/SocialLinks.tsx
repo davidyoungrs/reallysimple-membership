@@ -8,6 +8,7 @@ import {
     Phone,
     Instagram,
     Youtube,
+    Facebook,
     ExternalLink,
     Link as LinkIcon
 } from 'lucide-react';
@@ -35,6 +36,7 @@ const iconMap: Record<string, any> = {
     phone: Phone,
     instagram: Instagram,
     youtube: Youtube,
+    facebook: Facebook,
     tiktok: TikTok,
     pinterest: Pinterest,
     spotify: Spotify,
@@ -63,6 +65,7 @@ const platformBaseUrls: Record<string, string> = {
     github: 'https://github.com/',
     linkedin: 'https://www.linkedin.com/in/',
     youtube: 'https://www.youtube.com/@', // Modern handle format
+    facebook: 'https://facebook.com/',
     soundcloud: 'https://soundcloud.com/',
     pinterest: 'https://www.pinterest.com/',
     spotify: 'https://open.spotify.com/user/', // Assuming user profile for "username"

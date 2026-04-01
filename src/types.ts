@@ -1,4 +1,4 @@
-export type SocialPlatform = 'linkedin' | 'twitter' | 'github' | 'website' | 'email' | 'phone' | 'instagram' | 'youtube' | 'tiktok' | 'pinterest' | 'spotify' | 'soundcloud' | 'bandcamp' | 'bandlab' | 'tidal' | 'deezer' | 'pandora' | 'iheartradio' | 'amazonmusic' | 'custom';
+export type SocialPlatform = 'linkedin' | 'twitter' | 'facebook' | 'github' | 'website' | 'email' | 'phone' | 'instagram' | 'youtube' | 'tiktok' | 'pinterest' | 'spotify' | 'soundcloud' | 'bandcamp' | 'bandlab' | 'tidal' | 'deezer' | 'pandora' | 'iheartradio' | 'amazonmusic' | 'custom';
 
 export interface PhoneNumber {
     id: string;
