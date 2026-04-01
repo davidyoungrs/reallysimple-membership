@@ -164,7 +164,7 @@ export function AdminCards() {
                                                         {card.data?.jobTitle || 'No Job Title'}
                                                     </div>
                                                     <div className="text-xs text-gray-400 mt-0.5">
-                                                        Owner: {card.userId.slice(0, 8)}...
+                                                        Owner: {card.userId ? `${card.userId.slice(0, 8)}...` : 'Unknown'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -263,7 +263,7 @@ export function AdminCards() {
                                     {card.data?.jobTitle || 'No Job Title'}
                                 </p>
                                 <p className="text-xs text-gray-400 mb-4 font-mono">
-                                    Owner: {card.userId.slice(0, 15)}...
+                                    Owner: {card.userId ? `${card.userId.slice(0, 15)}...` : 'Unknown'}
                                 </p>
 
                                 <div className="space-y-3">
