@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser, useAuth, UserButton } from '@clerk/clerk-react';
 import { ArrowLeft, Edit, Trash2, Eye, Plus, LayoutGrid, Settings as SettingsIcon, BarChart2, Users } from 'lucide-react';
@@ -40,13 +40,15 @@ export function Dashboard() {
     const [activeTab, setActiveTab] = useState<'cards' | 'leads' | 'settings'>('cards'); // Added 'leads'
     const [isLoading, setIsLoading] = useState(true);
     const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true);
+    const hasInitialLoaded = useRef(false);
     const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: number; name: string } | null>(null);
     const [analyticsCard, setAnalyticsCard] = useState<Card | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
     // Load cards and analytics on mount
     useEffect(() => {
-        if (user) {
+        if (user && !hasInitialLoaded.current) {
+            hasInitialLoaded.current = true;
             loadCards();
             loadUserAnalytics();
         }

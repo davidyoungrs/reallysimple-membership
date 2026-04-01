@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-03-31 (Session 5) | Head Commit: `a6485d2`
+> Last Updated: 2026-04-01 (Session 6) | Head Commit: `a6485d2`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -17,6 +17,7 @@ The focus of the last several sessions has been:
 3. **Mobile UX Audit & Optimization**: Keyboard modes, horizontal overflow, centering logic.
 4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title/Name).
 5. **i18n Stability**: Fixed critical syntax and duplicate key issues in `src/i18n.ts` that were blocking production builds.
+6. **Performance & Reliability Optimization**: Reduced redundant API calls, resolved UI warnings, and fixed critical Admin Panel crashes.
 
 ---
 
@@ -73,6 +74,13 @@ The focus of the last several sessions has been:
 - [x] **Build Error Resolution**: Fixed structural syntax errors (missing closing braces) in `src/i18n.ts` for `ru`, `ja`, and `pnb` language blocks.
 - [x] **Hindi Translation Cleanup**: Removed ~35 duplicate keys in the `hi` block that caused TypeScript "duplicate property" errors.
 - [x] **Production Verification**: Confirmed that `npm run build` now completes successfully for all 14 supported languages.
+
+### Performance & Stability (Session 6)
+- [x] **Redundant Fetch Mitigation**: Fixed infinite/redundant `/api/cards` calls in `CardBuilder.tsx` and `Dashboard.tsx` using `useRef` guards. This reduces Vercel serverless function executions and prevents "flicker" during typing/saving.
+- [x] **Admin Gallery Reliability**: Resolved a `TypeError` in `AdminCards.tsx` that caused a blank screen when cards had no `userId`. Added defensive null-handling for owner IDs.
+- [x] **UI Chart Stabilization**: Fixed the Recharts `BarChart` dimension warnings (`width(-1)`) in `DashboardCharts.tsx` by ensuring the container has a minimum height of 300px on render.
+- [x] **Phone Number Formatting**: Updated `BusinessCard.tsx` to automatically sanitize phone numbers for `tel:` and `wa.me` links while preserving international formatting for display.
+- [x] **Layout Polish**: Added vertical spacing in `BusinessCard` to improve legibility between the header, bio, and social icons.
 
 ---
 
@@ -172,11 +180,10 @@ These are features that were discussed or partially started but deliberately set
 
 | File | Last Changed | Summary |
 |---|---|---|
-| `src/components/BusinessCard.tsx` | 2026-03-31 | Dynamic translation + language selector icon |
-| `src/utils/translation.ts` | 2026-03-31 | New MyMemory API utility |
-| `index.html` | 2026-03-31 | CSP update + overflow lockdown |
-| `src/components/OnboardingWizard.tsx` | 2026-03-31 | Mobile keyboard (inputMode) optimization |
-| `PROJECT_STATUS.md` | 2026-03-31 | Session 4 tracking (this file) |
+| `src/components/Dashboard.tsx` | 2026-04-01 | Initial load stabilization (fetch guards) |
+| `src/components/CardBuilder.tsx` | 2026-04-01 | Prevented redundant fetches on URL state updates |
+| `src/components/admin/AdminCards.tsx` | 2026-04-01 | Fixed blank screen (TypeError: userId) |
+| `PROJECT_STATUS.md` | 2026-04-01 | Session 6 tracking (this file) |
 
 ---
 

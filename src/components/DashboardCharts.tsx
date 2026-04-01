@@ -69,7 +69,7 @@ export function DashboardCharts({ data, totalViews, totalClicks, isLoading }: Da
                     <TrendingUp className="w-4 h-4 text-blue-500" />
                     {t('Performance')}
                 </h3>
-                <div className="h-48 w-full">
+                <div className="h-[300px] w-full min-w-0">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={data}>
                             <defs>

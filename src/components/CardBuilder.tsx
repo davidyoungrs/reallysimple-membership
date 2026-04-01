@@ -140,6 +140,7 @@ export function CardBuilder() {
     // Load saved cards from database
     const [isConcierge, setIsConcierge] = useState(false);
     const [targetUserId, setTargetUserId] = useState<string | null>(null);
+    const lastFetchedConciergeRef = useRef<string | null>(null);
 
     // Initial load and URL handling
     useEffect(() => {
@@ -149,8 +150,13 @@ export function CardBuilder() {
         const userIdParam = params.get('userId');
 
         if (conciergeParam && cardIdParam) {
+            // Skip if we already fetched this specific card
+            const fetchKey = `${cardIdParam}-${userIdParam}`;
+            if (lastFetchedConciergeRef.current === fetchKey) return;
+            
             setIsConcierge(true);
             setTargetUserId(userIdParam);
+            lastFetchedConciergeRef.current = fetchKey;
             
             // Fetch exact card for concierge mode
             const fetchConciergeCard = async () => {
