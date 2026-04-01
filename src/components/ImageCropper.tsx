@@ -58,7 +58,7 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspect = 1, circ
             pixelCrop.height
         );
 
-        return canvas.toDataURL('image/jpeg');
+        return canvas.toDataURL('image/png');
     };
 
     const handleSave = async () => {
