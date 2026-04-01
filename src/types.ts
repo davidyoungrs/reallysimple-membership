@@ -24,6 +24,7 @@ export interface CardData {
     themeColor: string;
     textColor: string;
     gradientColor?: string;
+    buttonColor?: string;
     backgroundType: 'solid' | 'gradient';
     showPhoto: boolean;
     photoStyle?: 'circle' | 'rounded' | 'full';
@@ -103,6 +104,7 @@ export const initialCardData: CardData = {
     themeColor: 'blue',
     textColor: '#ffffff',
     gradientColor: '#000000',
+    buttonColor: '#2563eb',
     backgroundType: 'gradient',
     showPhoto: true,
     photoStyle: 'circle',

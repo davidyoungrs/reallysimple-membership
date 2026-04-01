@@ -1065,14 +1065,14 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">{t('Cool Palettes')}</label>
                             <div className="flex flex-wrap gap-2">
                             {[
-                                { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff' },
-                                { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff' },
-                                { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff' },
-                                { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff' },
-                                { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff' },
-                                { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff' },
-                                { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b' },
-                                { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff' }
+                                { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff', button: '#3b82f6' },
+                                { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff', button: '#0284c7' },
+                                { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff', button: '#10b981' },
+                                { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff', button: '#6366f1' },
+                                { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff', button: '#f97316' },
+                                { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff', button: '#dc2626' },
+                                { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b', button: '#2563eb' },
+                                { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' }
                             ].map((p) => (
                                 <button
                                     key={p.name}
@@ -1082,6 +1082,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                                             themeColor: p.theme,
                                             gradientColor: p.gradient,
                                             textColor: p.text,
+                                            buttonColor: p.button,
                                             backgroundType: 'gradient'
                                         });
                                     }}
@@ -1116,7 +1117,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-medium text-gray-500 mb-1">
-                                {data.backgroundType === 'gradient' ? t('Start Color') : t('Color')}
+                                {data.backgroundType === 'solid' ? t('Background Color') : t('Start Color')}
                             </label>
                             <div className="flex items-center gap-2">
                                 <input
@@ -1129,7 +1130,20 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             </div>
                         </div>
 
-                        {data.backgroundType === 'gradient' && (
+                        {data.backgroundType === 'solid' ? (
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="color"
+                                        value={data.buttonColor || '#2563eb'}
+                                        onChange={(e) => handleChange('buttonColor', e.target.value)}
+                                        className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                    />
+                                    <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                                </div>
+                            </div>
+                        ) : (
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">{t('End Color')}</label>
                                 <div className="flex items-center gap-2">
@@ -1144,6 +1158,21 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             </div>
                         )}
                     </div>
+
+                    {data.backgroundType === 'gradient' && (
+                        <div className="mt-4">
+                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="color"
+                                    value={data.buttonColor || '#2563eb'}
+                                    onChange={(e) => handleChange('buttonColor', e.target.value)}
+                                    className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                />
+                                <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                            </div>
+                        </div>
+                    )}
                     </div>
                 </div>
 

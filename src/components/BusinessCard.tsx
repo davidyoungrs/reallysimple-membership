@@ -450,7 +450,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                             <div className="flex gap-3 max-w-md mx-auto">
                                 <button
                                     onClick={handleConnect}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 py-3.5 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer"
+                                    style={{ backgroundColor: data.buttonColor || '#2563eb' }}
+                                    className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer"
                                 >
                                     <MessageSquare className="w-4 h-4" />
                                     <span>{t('Connect')}</span>
@@ -476,7 +477,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                         <div className="flex flex-col gap-3">
                             <button
                                 onClick={handleConnect}
-                                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer transform hover:-translate-y-0.5"
+                                style={{ backgroundColor: data.buttonColor || '#2563eb' }}
+                                className="w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer transform hover:-translate-y-0.5"
                             >
                                 <MessageSquare className="w-5 h-5" />
                                 <span>{t('Connect with {{name}}', { name: fullName.split(' ')[0] })}</span>
