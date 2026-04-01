@@ -1,7 +1,7 @@
 // import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { TierProvider } from './contexts/TierContext';
@@ -30,8 +30,12 @@ function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
   const [loadingSettings, setLoadingSettings] = useState(true);
   const { user } = useUser();
+  const statusFetchedRef = useRef(false);
 
   useEffect(() => {
+    if (statusFetchedRef.current) return;
+    statusFetchedRef.current = true;
+
     fetch('/api/public?resource=status')
       .then(res => res.json())
       .then(data => {

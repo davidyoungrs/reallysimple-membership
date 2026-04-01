@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Check, ArrowRight, Loader2, Globe } from 'lucide-react';
 import { BorderBeam } from './ui/border-beam';
@@ -112,8 +112,12 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
     const [selectedCurrency, setSelectedCurrency] = useState('GBP');
     const [rates, setRates] = useState<Record<string, number>>({});
     const [fxLoading, setFxLoading] = useState(false);
+    const ratesFetchedRef = useRef(false);
 
     useEffect(() => {
+        if (ratesFetchedRef.current) return;
+        ratesFetchedRef.current = true;
+
         const normalizeRates = (rawRates: Record<string, number>): Record<string, number> => {
             const normalized: Record<string, number> = {};
             for (const [key, value] of Object.entries(rawRates)) {

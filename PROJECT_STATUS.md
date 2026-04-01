@@ -18,6 +18,7 @@ The focus of the last several sessions has been:
 4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title/Name).
 5. **i18n Stability**: Fixed critical syntax and duplicate key issues in `src/i18n.ts` that were blocking production builds.
 6. **Performance & Reliability Optimization**: Reduced redundant API calls, resolved UI warnings, and fixed critical Admin Panel crashes.
+7. **Performance & Reliability Phase**: Resolving API redundancy and latency.
 
 ---
 
@@ -75,12 +76,11 @@ The focus of the last several sessions has been:
 - [x] **Hindi Translation Cleanup**: Removed ~35 duplicate keys in the `hi` block that caused TypeScript "duplicate property" errors.
 - [x] **Production Verification**: Confirmed that `npm run build` now completes successfully for all 14 supported languages.
 
-### Performance & Stability (Session 6)
-- [x] **Redundant Fetch Mitigation**: Fixed infinite/redundant `/api/cards` calls in `CardBuilder.tsx` and `Dashboard.tsx` using `useRef` guards. This reduces Vercel serverless function executions and prevents "flicker" during typing/saving.
-- [x] **Admin Gallery Reliability**: Resolved a `TypeError` in `AdminCards.tsx` that caused a blank screen when cards had no `userId`. Added defensive null-handling for owner IDs.
-- [x] **UI Chart Stabilization**: Fixed the Recharts `BarChart` dimension warnings (`width(-1)`) in `DashboardCharts.tsx` by ensuring the container has a minimum height of 300px on render.
-- [x] **Phone Number Formatting**: Updated `BusinessCard.tsx` to automatically sanitize phone numbers for `tel:` and `wa.me` links while preserving international formatting for display.
-- [x] **Layout Polish**: Added vertical spacing in `BusinessCard` to improve legibility between the header, bio, and social icons.
+### Performance Optimizations (Session 7)
+- [x] **Fetch Guards (useRef)**: Implemented standard `ref` based guards in `App.tsx`, `PricingCards.tsx`, and `LeadsManager.tsx` to prevent multiple simultaneous API hits on mount.
+- [x] **FX Rate Latency**: Refactored `api/billing.ts` to prioritize Frankfurter API over Stripe for exchange rates.
+- [x] **Session 6**: Fixed Admin Gallery crash (`AdminCards.tsx`), redundant Concierge fetches, and Dashboard duplicate calls.
+- [x] **Session 7**: Optimized Landing Page performance by eliminating redundant `/api/public` and `/api/billing` calls.
 
 ---
 

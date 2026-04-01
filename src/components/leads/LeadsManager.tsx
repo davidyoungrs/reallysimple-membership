@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Download, Search, User, Mail, Phone, Calendar, CreditCard, ChevronLeft, ChevronRight, FileText, Loader2 } from 'lucide-react';
@@ -28,10 +28,12 @@ export function LeadsManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const leadsFetchedRef = useRef(false);
     const leadsPerPage = 10;
 
     useEffect(() => {
-        if (user) {
+        if (user && !leadsFetchedRef.current) {
+            leadsFetchedRef.current = true;
             fetchLeads();
         }
     }, [user]);

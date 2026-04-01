@@ -25,23 +25,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     if (action === 'get-rates') {
         try {
-            // Try Stripe first
+            // Priority 1: Frankfurter (Fast, public, reliable for basic rates)
+            try {
+                const response = await fetch('https://api.frankfurter.app/latest?base=GBP');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.rates) {
+                        return res.status(200).json({ rates: data.rates });
+                    }
+                }
+            } catch (frankError: any) {
+                console.warn('Frankfurter FX fetch failed, falling back to Stripe:', frankError.message);
+            }
+
+            // Priority 2: Stripe (Slower, account-dependent)
             try {
                 const exchangeRates = await getStripe().exchangeRates.retrieve('gbp');
                 if (exchangeRates.rates) {
                     return res.status(200).json({ rates: exchangeRates.rates });
                 }
             } catch (stripeError: any) {
-                console.warn('Stripe FX fetch failed, falling back to Frankfurter:', stripeError.message);
-            }
-
-            // Fallback to Frankfurter (Server-side fetch to avoid CSP)
-            const response = await fetch('https://api.frankfurter.app/latest?base=GBP');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.rates) {
-                    return res.status(200).json({ rates: data.rates });
-                }
+                console.warn('Stripe FX fetch failed:', stripeError.message);
             }
             
             throw new Error('All FX rate sources exhausted');
