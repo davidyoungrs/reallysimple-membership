@@ -22,7 +22,7 @@ const countries = [
     phoneCode: "+1",
     placeholder: "(555) 123-4567",
     pattern: /^(\([0-9]{3}\))\s?[0-9]{3}-?[0-9]{4}$/,
-    maxLength: 14,
+    maxLength: 19,
   },
   {
     code: "GB",
@@ -31,7 +31,7 @@ const countries = [
     phoneCode: "+44",
     placeholder: "7911 123456",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "CA",
@@ -40,7 +40,7 @@ const countries = [
     phoneCode: "+1",
     placeholder: "(555) 123-4567",
     pattern: /^(\([0-9]{3}\))\s?[0-9]{3}-?[0-9]{4}$/,
-    maxLength: 14,
+    maxLength: 19,
   },
   {
     code: "AU",
@@ -49,7 +49,7 @@ const countries = [
     phoneCode: "+61",
     placeholder: "412 345 678",
     pattern: /^[0-9]{9,10}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "DE",
@@ -58,7 +58,7 @@ const countries = [
     phoneCode: "+49",
     placeholder: "151 12345678",
     pattern: /^[0-9]{10,12}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "FR",
@@ -67,7 +67,7 @@ const countries = [
     phoneCode: "+33",
     placeholder: "6 12 34 56 78",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "IT",
@@ -76,7 +76,7 @@ const countries = [
     phoneCode: "+39",
     placeholder: "312 345 6789",
     pattern: /^[0-9]{9,10}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "ES",
@@ -85,7 +85,7 @@ const countries = [
     phoneCode: "+34",
     placeholder: "612 34 56 78",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "NL",
@@ -94,7 +94,7 @@ const countries = [
     phoneCode: "+31",
     placeholder: "6 12345678",
     pattern: /^[0-9]{9}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "BE",
@@ -103,7 +103,7 @@ const countries = [
     phoneCode: "+32",
     placeholder: "470 12 34 56",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "CH",
@@ -112,7 +112,7 @@ const countries = [
     phoneCode: "+41",
     placeholder: "78 123 45 67",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "AT",
@@ -121,7 +121,7 @@ const countries = [
     phoneCode: "+43",
     placeholder: "664 123456",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "SE",
@@ -130,7 +130,7 @@ const countries = [
     phoneCode: "+46",
     placeholder: "70 123 45 67",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "NO",
@@ -139,7 +139,7 @@ const countries = [
     phoneCode: "+47",
     placeholder: "412 34 567",
     pattern: /^[0-9]{8}$/,
-    maxLength: 8,
+    maxLength: 13,
   },
   {
     code: "DK",
@@ -148,7 +148,7 @@ const countries = [
     phoneCode: "+45",
     placeholder: "20 12 34 56",
     pattern: /^[0-9]{8}$/,
-    maxLength: 8,
+    maxLength: 13,
   },
   {
     code: "FI",
@@ -157,7 +157,7 @@ const countries = [
     phoneCode: "+358",
     placeholder: "50 123 4567",
     pattern: /^[0-9]{9,10}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "PL",
@@ -166,7 +166,7 @@ const countries = [
     phoneCode: "+48",
     placeholder: "512 123 456",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "CZ",
@@ -175,7 +175,7 @@ const countries = [
     phoneCode: "+420",
     placeholder: "601 123 456",
     pattern: /^[0-9]{9}$/,
-    maxLength: 9,
+    maxLength: 14,
   },
   {
     code: "HU",
@@ -184,7 +184,7 @@ const countries = [
     phoneCode: "+36",
     placeholder: "20 123 4567",
     pattern: /^[0-9]{8,9}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "PT",
@@ -193,7 +193,7 @@ const countries = [
     phoneCode: "+351",
     placeholder: "912 345 678",
     pattern: /^[0-9]{9}$/,
-    maxLength: 9,
+    maxLength: 14,
   },
   {
     code: "GR",
@@ -202,7 +202,7 @@ const countries = [
     phoneCode: "+30",
     placeholder: "694 123 4567",
     pattern: /^[0-9]{10}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "TR",
@@ -211,7 +211,7 @@ const countries = [
     phoneCode: "+90",
     placeholder: "532 123 45 67",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "RU",
@@ -220,7 +220,7 @@ const countries = [
     phoneCode: "+7",
     placeholder: "912 123-45-67",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "JP",
@@ -229,7 +229,7 @@ const countries = [
     phoneCode: "+81",
     placeholder: "90 1234 5678",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 13,
+    maxLength: 18,
   },
   {
     code: "KR",
@@ -238,7 +238,7 @@ const countries = [
     phoneCode: "+82",
     placeholder: "10 1234 5678",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 13,
+    maxLength: 18,
   },
   {
     code: "CN",
@@ -247,7 +247,7 @@ const countries = [
     phoneCode: "+86",
     placeholder: "138 0013 8000",
     pattern: /^[0-9]{11}$/,
-    maxLength: 13,
+    maxLength: 18,
   },
   {
     code: "IN",
@@ -256,7 +256,7 @@ const countries = [
     phoneCode: "+91",
     placeholder: "98765 43210",
     pattern: /^[0-9]{10}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "SG",
@@ -265,7 +265,7 @@ const countries = [
     phoneCode: "+65",
     placeholder: "8123 4567",
     pattern: /^[0-9]{8}$/,
-    maxLength: 8,
+    maxLength: 13,
   },
   {
     code: "MY",
@@ -274,7 +274,7 @@ const countries = [
     phoneCode: "+60",
     placeholder: "12-345 6789",
     pattern: /^[0-9]{9,10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "TH",
@@ -283,7 +283,7 @@ const countries = [
     phoneCode: "+66",
     placeholder: "81 234 5678",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "ID",
@@ -292,7 +292,7 @@ const countries = [
     phoneCode: "+62",
     placeholder: "812-3456-789",
     pattern: /^[0-9]{9,13}$/,
-    maxLength: 15,
+    maxLength: 20,
   },
   {
     code: "PH",
@@ -301,7 +301,7 @@ const countries = [
     phoneCode: "+63",
     placeholder: "917 123 4567",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "VN",
@@ -310,7 +310,7 @@ const countries = [
     phoneCode: "+84",
     placeholder: "91 234 56 78",
     pattern: /^[0-9]{9,10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "BD",
@@ -319,7 +319,7 @@ const countries = [
     phoneCode: "+880",
     placeholder: "1712-345678",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 13,
+    maxLength: 18,
   },
   {
     code: "PK",
@@ -328,7 +328,7 @@ const countries = [
     phoneCode: "+92",
     placeholder: "301 2345678",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "LK",
@@ -337,7 +337,7 @@ const countries = [
     phoneCode: "+94",
     placeholder: "71 234 5678",
     pattern: /^[0-9]{9}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "AE",
@@ -346,7 +346,7 @@ const countries = [
     phoneCode: "+971",
     placeholder: "50 123 4567",
     pattern: /^[0-9]{9}$/,
-    maxLength: 9,
+    maxLength: 14,
   },
   {
     code: "SA",
@@ -355,7 +355,7 @@ const countries = [
     phoneCode: "+966",
     placeholder: "50 123 4567",
     pattern: /^[0-9]{9}$/,
-    maxLength: 9,
+    maxLength: 14,
   },
   {
     code: "IL",
@@ -364,7 +364,7 @@ const countries = [
     phoneCode: "+972",
     placeholder: "50-123-4567",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "EG",
@@ -373,7 +373,7 @@ const countries = [
     phoneCode: "+20",
     placeholder: "10 1234 5678",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "ZA",
@@ -382,7 +382,7 @@ const countries = [
     phoneCode: "+27",
     placeholder: "82 123 4567",
     pattern: /^[0-9]{9}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "NG",
@@ -391,7 +391,7 @@ const countries = [
     phoneCode: "+234",
     placeholder: "802 123 4567",
     pattern: /^[0-9]{10}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "KE",
@@ -400,7 +400,7 @@ const countries = [
     phoneCode: "+254",
     placeholder: "712 123456",
     pattern: /^[0-9]{9}$/,
-    maxLength: 9,
+    maxLength: 14,
   },
   {
     code: "GH",
@@ -409,7 +409,7 @@ const countries = [
     phoneCode: "+233",
     placeholder: "23 123 4567",
     pattern: /^[0-9]{9}$/,
-    maxLength: 10,
+    maxLength: 15,
   },
   {
     code: "BR",
@@ -418,7 +418,7 @@ const countries = [
     phoneCode: "+55",
     placeholder: "(11) 91234-5678",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 15,
+    maxLength: 20,
   },
   {
     code: "MX",
@@ -427,7 +427,7 @@ const countries = [
     phoneCode: "+52",
     placeholder: "55 1234 5678",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "AR",
@@ -436,7 +436,7 @@ const countries = [
     phoneCode: "+54",
     placeholder: "9 11 1234-5678",
     pattern: /^[0-9]{10,11}$/,
-    maxLength: 14,
+    maxLength: 19,
   },
   {
     code: "CL",
@@ -445,7 +445,7 @@ const countries = [
     phoneCode: "+56",
     placeholder: "9 8765 4321",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "CO",
@@ -454,7 +454,7 @@ const countries = [
     phoneCode: "+57",
     placeholder: "321 1234567",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "PE",
@@ -463,7 +463,7 @@ const countries = [
     phoneCode: "+51",
     placeholder: "987 654 321",
     pattern: /^[0-9]{9}$/,
-    maxLength: 11,
+    maxLength: 16,
   },
   {
     code: "VE",
@@ -472,7 +472,7 @@ const countries = [
     phoneCode: "+58",
     placeholder: "412-1234567",
     pattern: /^[0-9]{10}$/,
-    maxLength: 12,
+    maxLength: 17,
   },
   {
     code: "UY",
@@ -481,7 +481,7 @@ const countries = [
     phoneCode: "+598",
     placeholder: "91 123 456",
     pattern: /^[0-9]{8}$/,
-    maxLength: 8,
+    maxLength: 13,
   },
 ].sort((a, b) => a.name.localeCompare(b.name));
 

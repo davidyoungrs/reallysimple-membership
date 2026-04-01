@@ -274,14 +274,14 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                 </div>
 
                 {/* Bio */}
-                <div className={`${data.layoutMode === 'modern-left' ? 'text-left' : 'text-center'} max-w-xs`}>
+                <div className={`${data.layoutMode === 'modern-left' ? 'text-left' : 'text-center'} max-w-xs mt-6`}>
                     <p className={`leading-relaxed font-light opacity-90 ${isTranslating ? 'animate-pulse' : ''}`}>
                         {displayBio}
                     </p>
                 </div>
 
                 {/* Social Links */}
-                <div className="w-full">
+                <div className="w-full mt-6">
                     <SocialLinks
                         links={socialLinks}
                         className="mb-8"
@@ -299,8 +299,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                     <div className="w-full flex flex-col gap-3 mb-8">
                         {phoneNumbers?.map((phone) => {
                             const isWhatsApp = phone.label?.toLowerCase() === 'whatsapp';
-                            const cleanNumber = phone.number.replace(/\D/g, '');
-                            const href = isWhatsApp ? `https://wa.me/${cleanNumber}` : `tel:${phone.number}`;
+                            const cleanNumber = phone.number.replace(/[^\d+]/g, '');
+                            const href = isWhatsApp ? `https://wa.me/${cleanNumber.replace('+', '')}` : `tel:${cleanNumber}`;
                             const Icon = isWhatsApp ? WhatsApp : Phone;
 
                             return (
