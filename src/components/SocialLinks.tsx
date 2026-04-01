@@ -1,4 +1,4 @@
-import type { SocialLink } from '../types';
+import { type SocialLink } from '../types';
 import {
     Linkedin,
     Twitter,
@@ -54,6 +54,7 @@ interface SocialLinksProps {
     links: SocialLink[];
     className?: string;
     iconColor?: string;
+    bgColor?: string;
     onLinkClick?: (platform: string, url: string) => void;
 }
 
@@ -71,7 +72,7 @@ const platformBaseUrls: Record<string, string> = {
     spotify: 'https://open.spotify.com/user/', // Assuming user profile for "username"
 };
 
-export function SocialLinks({ links, className = '', iconColor, onLinkClick }: SocialLinksProps) {
+export function SocialLinks({ links, className = '', iconColor, bgColor, onLinkClick }: SocialLinksProps) {
     if (!links.length) return null;
 
     return (
@@ -121,7 +122,8 @@ export function SocialLinks({ links, className = '', iconColor, onLinkClick }: S
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => onLinkClick?.(link.platform, link.url)}
-                        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 border border-white/10 group shadow-lg hover:shadow-xl hover:-translate-y-1 relative flex items-center justify-center w-12 h-12 box-border"
+                        className={`p-3 backdrop-blur-sm rounded-full transition-all duration-300 group shadow-lg hover:shadow-xl hover:-translate-y-1 relative flex items-center justify-center w-12 h-12 box-border ${!bgColor ? 'bg-white/10 border border-white/10' : ''}`}
+                        style={{ backgroundColor: bgColor || undefined }}
                         aria-label={link.label || link.platform}
                         title={link.label || link.platform}
                     >

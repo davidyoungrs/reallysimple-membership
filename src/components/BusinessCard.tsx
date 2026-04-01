@@ -286,6 +286,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                         links={socialLinks}
                         className="mb-8"
                         iconColor={data.textColor}
+                        bgColor={data.buttonColor}
                         onLinkClick={(platform, url) => {
                             const target = platform === 'custom' ? url : platform;
                             onLinkClick?.('social', target);
@@ -309,14 +310,15 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                     target={isWhatsApp ? "_blank" : undefined}
                                     rel={isWhatsApp ? "noopener noreferrer" : undefined}
                                     onClick={() => onLinkClick?.('contact', isWhatsApp ? 'whatsapp' : 'phone')}
-                                    className="flex items-center gap-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl transition-all hover:scale-[1.02] group"
+                                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all hover:scale-[1.02] group ${!data.buttonColor ? 'bg-white/10 border border-white/10 hover:bg-white/20 backdrop-blur-md' : 'shadow-lg border border-white/10'}`}
+                                    style={{ backgroundColor: data.buttonColor || undefined }}
                                 >
                                     <div className="bg-white/20 p-2.5 rounded-full group-hover:bg-white/30 transition-colors">
                                         <Icon className="w-5 h-5" style={{ color: data.textColor || '#ffffff' }} />
                                     </div>
                                     <div className="flex flex-col text-left">
                                         <span className="text-xs font-medium uppercase tracking-wider opacity-60">{t(phone.label)}</span>
-                                        <span className="font-medium text-lg">{phone.number}</span>
+                                        <span className="font-medium text-lg text-white" style={{ color: data.textColor || '#ffffff' }}>{phone.number}</span>
                                     </div>
                                 </a>
                             );
@@ -433,7 +435,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                                 href={embed.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white font-medium transition-all active:scale-95"
+                                                className={`inline-flex items-center gap-2 px-6 py-2 rounded-full text-white font-medium transition-all active:scale-95 shadow-lg ${!data.buttonColor ? 'bg-white/10 hover:bg-white/20' : ''}`}
+                                                style={{ backgroundColor: data.buttonColor || undefined }}
                                             >
                                                 <span>{t('View Content')}</span>
                                                 <ExternalLink className="w-4 h-4" />
@@ -458,7 +461,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                 </button>
                                 <button
                                     onClick={handleDownloadVCard}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-100 py-3.5 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer"
+                                    style={{ backgroundColor: data.buttonColor || undefined }}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl transition-all active:scale-95 font-bold shadow-lg cursor-pointer ${!data.buttonColor ? 'bg-white text-black hover:bg-gray-100' : 'text-white'}`}
                                 >
                                     <Download className="w-4 h-4" />
                                     <span className="hidden sm:inline">{t('Save')}</span>
@@ -466,7 +470,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                 <button
                                     onClick={handleAddToWallet}
                                     disabled={loading}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-black/80 hover:bg-black text-white border border-white/20 py-3.5 rounded-xl transition-all active:scale-95 font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md"
+                                    style={{ backgroundColor: data.buttonColor || undefined }}
+                                    className={`flex-1 flex items-center justify-center gap-2 border border-white/10 py-3.5 rounded-xl transition-all active:scale-95 font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md ${!data.buttonColor ? 'bg-black/80 hover:bg-black text-white' : 'text-white'}`}
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
                                     <span className="hidden sm:inline">{loading ? t('...') : t('Wallet')}</span>
@@ -486,7 +491,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleDownloadVCard}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 py-3 rounded-xl transition-all active:scale-95 font-medium cursor-pointer"
+                                    style={{ backgroundColor: data.buttonColor || undefined }}
+                                    className={`flex-1 flex items-center justify-center gap-2 border border-white/20 py-3 rounded-xl transition-all active:scale-95 font-medium cursor-pointer ${!data.buttonColor ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md' : 'text-white'}`}
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>{t('Save Contact')}</span>
@@ -494,7 +500,8 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                 <button
                                     onClick={handleAddToWallet}
                                     disabled={loading}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/10 py-3 rounded-xl transition-all active:scale-95 font-medium text-white/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    style={{ backgroundColor: data.buttonColor || undefined }}
+                                    className={`flex-1 flex items-center justify-center gap-2 backdrop-blur-md border border-white/10 py-3 rounded-xl transition-all active:scale-95 font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!data.buttonColor ? 'bg-black/40 hover:bg-black/60 text-white/90' : 'text-white'}`}
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
                                     <span>{loading ? t('Creating...') : t('Wallet Pass')}</span>
