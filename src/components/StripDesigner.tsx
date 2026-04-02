@@ -23,12 +23,12 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     const [bgFilters, setBgFilters] = useState(savedConfig?.bgFilters || { grayscale: 0, sepia: 0, opacity: 100 });
 
     const [textConfig, setTextConfig] = useState(savedConfig?.textConfig || {
-        showName: true,
+        showName: initialWalletData.showNameFields !== false,
         nameColor: initialWalletData.foregroundColor || '#000000',
         nameX: 50,
         nameY: 40,
 
-        showTitle: true,
+        showTitle: initialWalletData.showRole !== false,
         titleColor: initialWalletData.labelColor || '#666666',
         titleX: 50,
         titleY: 60,

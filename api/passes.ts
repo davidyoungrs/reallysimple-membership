@@ -142,7 +142,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         // --- FIELD POPULATION ---
         if (effectiveTier !== 'starter') {
             // Fields (Main)
-            pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || 'Your Name' });
+            if (data.wallet?.showNameFields !== false) {
+                pass.primaryFields.push({ key: 'name', label: 'Name', value: data.fullName || 'Your Name' });
+            }
 
             if (data.jobTitle && data.wallet?.showRole !== false) {
                 pass.secondaryFields.push({ key: 'role', label: 'Role', value: data.jobTitle });
@@ -295,8 +297,12 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         const logoUrl = toAbsoluteUrl(card.wallet?.logoUrl || card.logoUrl || '/icon.png');
         const heroUrl = toAbsoluteUrl(card.wallet?.stripImageUrl || '/wallet-strip.png');
         const title = (card.wallet?.logoText || card.company || 'Digital Card').substring(0, 50);
-        const headerValue = (card.fullName || 'Digital Card').substring(0, 50);
-        const subheaderValue = (card.jobTitle || card.company || 'Digital Business Card').substring(0, 50);
+        const headerValue = card.wallet?.showNameFields !== false ? (card.fullName || 'Digital Card').substring(0, 50) : ' ';
+
+        const subheaderParts = [];
+        if (card.wallet?.showRole !== false && card.jobTitle) subheaderParts.push(card.jobTitle);
+        if (card.wallet?.showCompany !== false && card.company) subheaderParts.push(card.company);
+        const subheaderValue = subheaderParts.join(' | ').substring(0, 50) || ' ';
 
         const textModules: any[] = [
             { header: 'Phone', body: card.phoneNumbers?.[0]?.number || '', id: 'phone' },
