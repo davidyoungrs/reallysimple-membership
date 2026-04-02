@@ -55,6 +55,7 @@ export interface WalletData {
     showNameFields?: boolean;
     stripConfig?: StripConfig;
     enabled?: boolean;
+    hideStripText?: boolean;
 }
 
 export interface StripConfig {
