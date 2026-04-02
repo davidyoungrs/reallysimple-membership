@@ -125,19 +125,48 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         pass.type = 'storeCard';
 
         // Add Logic for Images (Logo, Strip)
-        const addImage = (url: string | undefined, name: string) => {
+        const addImage = async (url: string | undefined, name: string) => {
             if (!url) return;
-            if (url.startsWith('/')) {
-                const publicPath = path.join(process.cwd(), 'public', url);
-                if (fs.existsSync(publicPath)) pass.addBuffer(name, fs.readFileSync(publicPath));
-            } else if (url.startsWith('data:image')) {
-                const buffer = Buffer.from(url.split(',')[1], 'base64');
-                pass.addBuffer(name, buffer);
+            try {
+                if (url.startsWith('/')) {
+                    const publicPath = path.join(process.cwd(), 'public', url);
+                    if (fs.existsSync(publicPath)) {
+                        const buffer = fs.readFileSync(publicPath);
+                        pass.addBuffer(name, buffer);
+                        // Retina Sync: Replace high-res versions in model to prevent fallback to default logo
+                        if (name === 'logo.png') {
+                            pass.addBuffer('logo@2x.png', buffer);
+                            pass.addBuffer('logo@3x.png', buffer);
+                        }
+                    }
+                } else if (url.startsWith('data:image')) {
+                    const buffer = Buffer.from(url.split(',')[1], 'base64');
+                    pass.addBuffer(name, buffer);
+                    // Retina Sync: Replace high-res versions in model to prevent fallback to default logo
+                    if (name === 'logo.png') {
+                        pass.addBuffer('logo@2x.png', buffer);
+                        pass.addBuffer('logo@3x.png', buffer);
+                    }
+                } else if (url.startsWith('http')) {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const arrayBuffer = await response.arrayBuffer();
+                        const buffer = Buffer.from(arrayBuffer);
+                        pass.addBuffer(name, buffer);
+                        // Retina Sync: Replace high-res versions in model to prevent fallback to default logo
+                        if (name === 'logo.png') {
+                            pass.addBuffer('logo@2x.png', buffer);
+                            pass.addBuffer('logo@3x.png', buffer);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`Failed to add image ${name}:`, err);
             }
         };
 
-        addImage(data.wallet?.logoUrl || data.logoUrl, 'logo.png');
-        addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
+        await addImage(data.wallet?.logoUrl || data.logoUrl, 'logo.png');
+        await addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
 
         // --- FIELD POPULATION ---
         if (effectiveTier !== 'starter') {
@@ -288,14 +317,24 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         const baseUrl = 'https://reallysimple-new.vercel.app';
 
         const toAbsoluteUrl = (url: string) => {
-            if (!url) return '';
-            if (url.startsWith('data:image')) return ''; // Google Wallet doesn't support data URIs for images in stateless JWT
+            if (!url || url.startsWith('data:')) return '';
             if (url.startsWith('http')) return url;
             return new URL(url, baseUrl).toString();
         };
 
-        const logoUrl = toAbsoluteUrl(card.wallet?.logoUrl || card.logoUrl || '/icon.png');
-        const heroUrl = toAbsoluteUrl(card.wallet?.stripImageUrl || '/wallet-strip.png');
+        // Helper to find first non-data-uri logo
+        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback: string) => {
+            if (preferred && !preferred.startsWith('data:')) return toAbsoluteUrl(preferred);
+            if (secondary && !secondary.startsWith('data:')) return toAbsoluteUrl(secondary);
+            return toAbsoluteUrl(fallback);
+        };
+
+        const logoUrl = getValidUrl(card.wallet?.logoUrl, card.logoUrl, '/icon.png');
+        const heroUrl = getValidUrl(card.wallet?.stripImageUrl, '/wallet-strip.png', '/wallet-strip.png');
+
+        if (card.wallet?.logoUrl?.startsWith('data:')) {
+            console.warn(`[PassGen] Google Wallet does not support data URIs. Falling back for logo.`);
+        }
         const title = (card.wallet?.logoText || card.company || 'Digital Card').substring(0, 50);
         const headerValue = card.wallet?.showNameFields !== false ? (card.fullName || 'Digital Card').substring(0, 50) : ' ';
 

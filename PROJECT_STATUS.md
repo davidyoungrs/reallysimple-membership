@@ -1,5 +1,5 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
-> Last Updated: 2026-04-01 (Session 6) | Head Commit: `a6485d2`
+> Last Updated: 2026-04-02 (Session 9) | Head Commit: `424733f`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -19,6 +19,8 @@ The focus of the last several sessions has been:
 5. **i18n Stability**: Fixed critical syntax and duplicate key issues in `src/i18n.ts` that were blocking production builds.
 6. **Performance & Reliability Optimization**: Reduced redundant API calls, resolved UI warnings, and fixed critical Admin Panel crashes.
 7. **Performance & Reliability Phase**: Resolving API redundancy and latency.
+8. **Wallet & Webhook Fixes**: Fixed field visibility in Apple/Google passes and resolved a critical Stripe webhook signature verification error.
+9. **Wallet Customization Fix**: Resolved "Retina Sync" issue where custom logos were being overwritten by default branding on high-DPI iPhones. Added remote fetch support for S3 logos.
 
 ---
 
@@ -180,10 +182,10 @@ These are features that were discussed or partially started but deliberately set
 
 | File | Last Changed | Summary |
 |---|---|---|
-| `src/components/Dashboard.tsx` | 2026-04-01 | Initial load stabilization (fetch guards) |
-| `src/components/CardBuilder.tsx` | 2026-04-01 | Prevented redundant fetches on URL state updates |
-| `src/components/admin/AdminCards.tsx` | 2026-04-01 | Fixed blank screen (TypeError: userId) |
-| `PROJECT_STATUS.md` | 2026-04-01 | Session 6 tracking (this file) |
+| `api/passes.ts` | 2026-04-02 | Wallet Logo Retina Sync & Remote Fetch |
+| `api/webhooks/stripe.ts` | 2026-04-02 | Fixed signature verification (raw body buffer) |
+| `src/components/StripDesigner.tsx` | 2026-04-01 | Text overlay visibility sync |
+| `PROJECT_STATUS.md` | 2026-04-02 | Session 9 tracking (this file) |
 
 ---
 
