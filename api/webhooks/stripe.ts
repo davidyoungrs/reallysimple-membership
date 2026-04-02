@@ -10,6 +10,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+// Vercel config to disable body parsing for raw body access
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
+// Helper to read the raw body from the request stream
+async function buffer(readable: ReadableStream | any) {
+    const chunks = [];
+    for await (const chunk of readable) {
+        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    }
+    return Buffer.concat(chunks);
+}
+
 // Mapping of Price IDs to Tiers
 // These should ideally be in env vars, but we'll define a map for logic
 const PRICE_ID_TO_TIER: Record<string, string> = {
@@ -29,17 +45,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let event;
 
     try {
-        // Vercel gives us access to raw body for webhook verification
-        // But for @vercel/node, we might need to handle buffer manually if bodyParser is on.
-        // Usually checkout session creates a buffer.
-        // We'll use req.body if it's not already parsed, or use raw-body package if needed.
-        // Assuming Vercel handles raw body in a way compatible with stripe.webhooks.constructEvent.
+        if (!sig) throw new Error('No stripe-signature header');
+        if (!endpointSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET env var');
 
-        // IMPORTANT: We need the raw body for signature verification
-        const rawBody = (req as any).rawBody || req.body;
-        event = stripe.webhooks.constructEvent(rawBody, sig as string, endpointSecret as string);
+        // Read the raw body since bodyParser is disabled
+        const buf = await buffer(req);
+        event = stripe.webhooks.constructEvent(buf, sig as string, endpointSecret);
     } catch (err: any) {
-        console.error(`Webhook signature verification failed: ${err.message}`);
+        console.error(`[Stripe Webhook] Signature verification failed: ${err.message}`);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
