@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { BusinessCard } from './BusinessCard';
+import { FontLoader } from './FontLoader';
 import { type CardData } from '../types';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
@@ -140,6 +141,7 @@ export function PublicCard() {
         <div className="min-h-screen bg-gray-100 flex flex-col">
             {/* Card Display */}
             <div className="flex-1 flex items-center justify-center p-6">
+                <FontLoader font={cardData.font} />
                 <div className="w-full max-w-md">
                     <BusinessCard data={cardData} onLinkClick={handleLinkClick} ownerTier={ownerTier as any} />
                 </div>

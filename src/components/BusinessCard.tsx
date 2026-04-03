@@ -246,14 +246,16 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                         ? 'w-32 h-32 rounded-3xl border-4 border-white/10 shadow-xl mx-auto'
                                         : 'w-32 h-32 rounded-full border-4 border-white/10 shadow-xl mx-auto'
                                 }`}>
-                                <img
-                                    src={avatarUrl}
-                                    alt={fullName}
-                                    className="w-full h-full object-cover transition-transform will-change-transform"
-                                    style={{
-                                        transform: `scale(${data.avatarScale || 1}) translate(${data.avatarPosition?.x || 0}px, ${data.avatarPosition?.y || 0}px)`
-                                    }}
-                                />
+                                    <img
+                                        src={avatarUrl}
+                                        alt={fullName}
+                                        loading="eager"
+                                        decoding="async"
+                                        className="w-full h-full object-cover transition-transform will-change-transform"
+                                        style={{
+                                            transform: `scale(${data.avatarScale || 1}) translate(${data.avatarPosition?.x || 0}px, ${data.avatarPosition?.y || 0}px)`
+                                        }}
+                                    />
                             </div>
                         </div>
                     )}
@@ -381,6 +383,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                                 title={embed.title || "YouTube video player"}
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowFullScreen
+                                                loading="lazy"
                                             ></iframe>
                                         ) : embed.type === 'vimeo' ? (
                                             <iframe
@@ -389,6 +392,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                                 title={embed.title || "Vimeo video player"}
                                                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
                                                 allowFullScreen
+                                                loading="lazy"
                                             ></iframe>
                                         ) : embed.type === 'tiktok' ? (
                                             <div className="w-full flex justify-center bg-black">
@@ -397,6 +401,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                                     className="w-full aspect-[9/16] h-[580px] border-0"
                                                     allow="encrypted-media; picture-in-picture"
                                                     title={embed.title || "TikTok embed"}
+                                                    loading="lazy"
                                                 ></iframe>
                                             </div>
                                         ) : embed.type === 'instagram' ? (
@@ -407,6 +412,7 @@ export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: Busi
                                                     allow="autoplay; encrypted-media; picture-in-picture; clipboard-write"
                                                     allowFullScreen
                                                     title={embed.title || "Instagram Reels embed"}
+                                                    loading="lazy"
                                                 ></iframe>
                                             </div>
                                         ) : (
