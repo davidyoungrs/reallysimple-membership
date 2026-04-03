@@ -1,6 +1,6 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
 
-> Last Updated: 2026-04-03 (Session 10) | Head Commit: `155b16e`
+> Last Updated: 2026-04-03 (Session 11) | Head Commit: `9c8aef9`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -23,6 +23,7 @@ The focus of the last several sessions has been:
 8. **Wallet & Webhook Fixes**: Fixed field visibility in Apple/Google passes and resolved a critical Stripe webhook signature verification error.
 9. **Wallet Customization Fix**: Resolved "Retina Sync" issue where custom logos were being overwritten by default branding on high-DPI iPhones. Added remote fetch support for S3 logos.
 10. **Wallet Builder UX Cleanup (Session 10)**: Resolved redundant dual preview, implemented `showStripImage` toggle, and added minimalist layout mode for non-strip passes. Cross-stack implementation (Types, UI, and Backend).
+11. **Performance Optimization v2 (Session 11)**: Drastically reduced initial render-blocking resources by move 22 font families to a dynamic `FontLoader`. Implemented `display=swap` for visibility, `loading=lazy` for embeds, and made the `App.tsx` status check non-blocking to improve TTI (Time to Interactive).
 
 ---
 
@@ -102,6 +103,15 @@ The focus of the last several sessions has been:
 - [x] **Backend Sync**: Updated Apple Wallet (`passes.ts`) and Google Wallet pass generation to conditionally exclude strip/hero images.
 - [x] **Code Cleanup**: Removed unused state variables (`isFlipped`, `setIsFlipped`) from `WalletBuilder` component.
 
+### Performance & Stability (Session 11)
+
+- [x] **Dynamic Font Loading**: Removed 22 font families from `index.html` (which blocked initial paint).
+- [x] **FOIT Protection**: Implemented `display=swap` across all fonts to ensure text is never invisible while assets load.
+- [x] **FontLoader Utility**: Created `src/components/FontLoader.tsx` to fetch Google Fonts only when required by the specific card being viewed.
+- [x] **Non-Blocking Hydration**: Refactored `App.tsx` so the system status fetch doesn't block the entire application mount.
+- [x] **Lazy Loading Embeds**: All YouTube, Spotify, TikTok, and Instagram iframes now use `loading="lazy"`.
+- [x] **Image Decoding**: Avatar images now use `decoding="async"` to prevent main-thread jank.
+
 ---
 
 ### 1. Enhanced Profile Translation
@@ -161,8 +171,6 @@ These are features that were discussed or partially started but deliberately set
 | Issue | Detail | Workaround |
 |---|---|---|
 | Vercel Hobby = 12 function limit | Currently at ~10 functions. Adding new API routes risks hitting the limit. | Consolidate into existing handlers in `/api/` |
-| Large bundle warning | `index.js` ~677KB gzipped. Not blocking but worth addressing later. | Code-split with dynamic `import()` |
-| `localStorage` data TTL | Pre-auth wizard data sits in `localStorage` indefinitely. No expiry. | Manual clear or add TTL logic in `OnboardingCallback` |
 | TypeScript strict mode | Some `any` types used in older components. Not breaking but not clean. | Gradual cleanup |
 
 ---
@@ -210,10 +218,12 @@ These are features that were discussed or partially started but deliberately set
 
 | File | Last Changed | Summary |
 |---|---|---|
-| `src/components/WalletBuilder.tsx` | 2026-04-03 | Dual preview fix + showStripImage toggle |
-| `api/passes.ts` | 2026-04-03 | Apple/Google Pass conditional strip image support |
-| `src/types.ts` | 2026-04-03 | Added `showStripImage` to WalletData |
-| `PROJECT_STATUS.md` | 2026-04-03 | Session 10 tracking (this file) |
+| `index.html` | 2026-04-03 | Font refactor (removed 22 render-blocking fonts) |
+| `src/components/FontLoader.tsx` | 2026-04-03 | New dynamic font loading utility |
+| `src/components/PublicCard.tsx` | 2026-04-03 | Implemented FontLoader integration |
+| `src/components/BusinessCard.tsx` | 2026-04-03 | Added lazy loading and decoding hints |
+| `src/App.tsx` | 2026-04-03 | Non-blocking app hydration |
+| `PROJECT_STATUS.md` | 2026-04-03 | Session 11 tracking (this file) |
 
 ---
 
