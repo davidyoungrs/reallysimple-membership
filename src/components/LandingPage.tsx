@@ -149,6 +149,7 @@ export const LandingPage = () => {
                             <Link to="/privacy" className="hover:text-white transition-colors">{t('Privacy Policy')}</Link>
                             <Link to="/terms" className="hover:text-white transition-colors">{t('Terms of Service')}</Link>
                             <Link to="/cookies" className="hover:text-white transition-colors">{t('Cookies Policy')}</Link>
+                            <Link to="/userguide" className="hover:text-white transition-colors">{t('User Guide')}</Link>
                             <Link to="/licenses" className="hover:text-white transition-colors">{t('Licenses')}</Link>
                             <a href="mailto:support@reallysimple.apps" className="hover:text-white transition-colors">{t('Support')}</a>
                         </div>

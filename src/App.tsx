@@ -25,6 +25,7 @@ const LapsedSubscription = lazy(() => import('./components/LapsedSubscription'))
 const Pricing = lazy(() => import('./components/Pricing').then(module => ({ default: module.Pricing })));
 const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
 const OnboardingCallback = lazy(() => import('./components/OnboardingCallback').then(module => ({ default: module.OnboardingCallback })));
+const UserGuide = lazy(() => import('./components/UserGuide').then(module => ({ default: module.UserGuide })));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -81,6 +82,7 @@ function App() {
             <Route path="/onboarding-callback" element={<OnboardingCallback />} />
             <Route path="/wordpress-home" element={<WordPressHome />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/userguide" element={<UserGuide />} />
 
             {/* Auth Routes */}
             <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
