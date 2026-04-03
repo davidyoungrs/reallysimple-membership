@@ -56,6 +56,7 @@ export interface WalletData {
     stripConfig?: StripConfig;
     enabled?: boolean;
     hideStripText?: boolean;
+    showStripImage?: boolean;
 }
 
 export interface StripConfig {

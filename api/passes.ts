@@ -166,7 +166,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         };
 
         await addImage(data.wallet?.logoUrl || data.logoUrl, 'logo.png');
-        await addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
+        if (data.wallet?.showStripImage !== false) {
+            await addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
+        }
 
         // --- FIELD POPULATION ---
         if (effectiveTier !== 'starter') {
@@ -398,10 +400,12 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                         sourceUri: { uri: logoUrl },
                         contentDescription: { defaultValue: { language: 'en-US', value: 'LOGO' } }
                     },
-                    heroImage: {
-                        sourceUri: { uri: heroUrl },
-                        contentDescription: { defaultValue: { language: 'en-US', value: 'HERO' } }
-                    },
+                    ...(card.wallet?.showStripImage !== false ? {
+                        heroImage: {
+                            sourceUri: { uri: heroUrl },
+                            contentDescription: { defaultValue: { language: 'en-US', value: 'HERO' } }
+                        }
+                    } : {}),
                     cardTitle: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : title } },
                     header: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'INACTIVE' : headerValue } },
                     subheader: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'Reactivate via app' : subheaderValue } },

@@ -17,7 +17,6 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     const { isFeatureEnabled } = useTier();
     const [showStripDesigner, setShowStripDesigner] = useState(false);
     const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'branding' | 'info'>('style');
-    const [isFlipped, setIsFlipped] = useState(false);
 
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
@@ -26,6 +25,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
         logoText: data.company || '',
         showLogoText: true,
         stripImageUrl: '/wallet-strip.png',
+        showStripImage: true,
         showNameFields: true,
         showRole: true,
         showCompany: true
@@ -304,36 +304,54 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                                         <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${wallet.hideStripText ? 'translate-x-5' : 'translate-x-0'}`} />
                                                     </div>
                                                 </label>
+
+                                                <label className="flex items-center justify-between cursor-pointer group">
+                                                    <div className="space-y-0.5">
+                                                        <span className="text-sm font-bold text-gray-800">{t('Show Strip Image')}</span>
+                                                        <p className="text-[10px] text-gray-500">{t('Include a background image on the front of the card')}</p>
+                                                    </div>
+                                                    <div className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${wallet.showStripImage !== false ? 'bg-blue-600' : 'bg-gray-200'}`}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={wallet.showStripImage !== false}
+                                                            onChange={(e) => updateWallet({ showStripImage: e.target.checked })}
+                                                            className="sr-only"
+                                                        />
+                                                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${wallet.showStripImage !== false ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                    </div>
+                                                </label>
                                             </div>
 
-                                            <div className="space-y-4">
-                                                <div className="aspect-[3/1] bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 relative group">
-                                                    <img
-                                                        src={wallet.stripImageUrl || '/wallet-strip.png'}
-                                                        alt="Wallet Strip"
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                        <button
-                                                            onClick={() => isFeatureEnabled('strip_designer') && setShowStripDesigner(true)}
-                                                            className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2"
-                                                        >
-                                                            <Palette className="w-3.5 h-3.5" />
-                                                            {t('Open Designer')}
-                                                        </button>
+                                            {wallet.showStripImage !== false && (
+                                                <div className="space-y-4">
+                                                    <div className="aspect-[3/1] bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 relative group">
+                                                        <img
+                                                            src={wallet.stripImageUrl || '/wallet-strip.png'}
+                                                            alt="Wallet Strip"
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                            <button
+                                                                onClick={() => isFeatureEnabled('strip_designer') && setShowStripDesigner(true)}
+                                                                className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2"
+                                                            >
+                                                                <Palette className="w-3.5 h-3.5" />
+                                                                {t('Open Designer')}
+                                                            </button>
+                                                        </div>
                                                     </div>
+                                                    
+                                                    <button
+                                                        onClick={() => {
+                                                            const url = prompt(t('Enter Strip Image URL'), wallet.stripImageUrl || '/wallet-strip.png');
+                                                            if (url) updateWallet({ stripImageUrl: url });
+                                                        }}
+                                                        className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        {t('Link External Image URL')}
+                                                    </button>
                                                 </div>
-                                                
-                                                <button
-                                                    onClick={() => {
-                                                        const url = prompt(t('Enter Strip Image URL'), wallet.stripImageUrl || '/wallet-strip.png');
-                                                        if (url) updateWallet({ stripImageUrl: url });
-                                                    }}
-                                                    className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    {t('Link External Image URL')}
-                                                </button>
-                                            </div>
+                                            )}
                                         </>
                                     )}
 
@@ -482,23 +500,8 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     </section>
                 </div>
 
-                {/* Preview Section */}
-                <div className="lg:w-[360px] flex flex-col items-center">
-                    <div className="sticky top-8 space-y-6 flex flex-col items-center">
-                        <div className="relative group">
-                            <WalletPreview data={data} isFlipped={isFlipped} hoveredField={hoveredField} />
-                            
-                            {/* Card Flip Button */}
-                            <button
-                                onClick={() => setIsFlipped(!isFlipped)}
-                                className="absolute -bottom-4 right-4 bg-white text-gray-900 px-4 py-2 rounded-2xl text-xs font-bold shadow-xl border border-gray-100 flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-all z-20 group"
-                            >
-                                <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${isFlipped ? 'rotate-180' : ''}`} />
-                                {isFlipped ? t('Show Front') : t('Show Back')}
-                            </button>
-                        </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('Live 3D Preview')}</p>
-                    </div>
+                {/* Removed internal preview to avoid duplication with parent CardBuilder */}
+                <div className="lg:w-[0px] flex flex-col items-center">
                 </div>
             </div>
 
@@ -532,7 +535,8 @@ export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { da
         showNameFields: true,
         showRole: true,
         showCompany: true,
-        hideStripText: false
+        hideStripText: false,
+        showStripImage: true
     };
 
     const logoUrl = wallet.logoUrl || data.logoUrl;
@@ -572,37 +576,61 @@ export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { da
                         </div>
                     </div>
 
-                    {/* Strip Image */}
-                    <div className="h-[120px] w-full relative">
-                        <img
-                            src={wallet.stripImageUrl || '/wallet-strip.png'}
-                            alt="Strip"
-                            className="w-full h-full object-cover"
-                        />
-                        {/* Primary Field Over Strip (Unless Hidden) */}
-                        {!wallet.hideStripText && (
-                            <div className="absolute inset-0 flex flex-col justify-center px-4 pt-4">
-                                    <div className={`flex flex-col transition-all duration-300 ${hoveredField === 'name' ? 'scale-105 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`}>
-                                        {wallet.showNameFields !== false && (
-                                            <>
-                                                <span
-                                                    className="text-[10px] font-medium opacity-80"
-                                                    style={{ color: wallet.labelColor }}
-                                                >
-                                                    {t('NAME')}
-                                                </span>
-                                                <span
-                                                    className="text-xl font-bold leading-tight"
-                                                    style={{ color: wallet.foregroundColor }}
-                                                >
-                                                    {data.fullName || t('Your Name')}
-                                                </span>
-                                            </>
-                                        )}
-                                    </div>
+                    {/* Strip Image Area */}
+                    {wallet.showStripImage !== false ? (
+                        <div className="h-[120px] w-full relative">
+                            <img
+                                src={wallet.stripImageUrl || '/wallet-strip.png'}
+                                alt="Strip"
+                                className="w-full h-full object-cover"
+                            />
+                            {/* Primary Field Over Strip (Unless Hidden) */}
+                            {!wallet.hideStripText && (
+                                <div className="absolute inset-0 flex flex-col justify-center px-4 pt-4">
+                                        <div className={`flex flex-col transition-all duration-300 ${hoveredField === 'name' ? 'scale-105 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`}>
+                                            {wallet.showNameFields !== false && (
+                                                <>
+                                                    <span
+                                                        className="text-[10px] font-medium opacity-80"
+                                                        style={{ color: wallet.labelColor }}
+                                                    >
+                                                        {t('NAME')}
+                                                    </span>
+                                                    <span
+                                                        className="text-xl font-bold leading-tight"
+                                                        style={{ color: wallet.foregroundColor }}
+                                                    >
+                                                        {data.fullName || t('Your Name')}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        /* Minimalist Non-Strip Mode */
+                        <div className="px-4 py-8 z-10 flex-grow flex flex-col justify-center">
+                            <div className={`flex flex-col transition-all duration-300 ${hoveredField === 'name' ? 'scale-105 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]' : ''}`}>
+                                {wallet.showNameFields !== false && (
+                                    <>
+                                        <span
+                                            className="text-[10px] font-medium opacity-60"
+                                            style={{ color: wallet.labelColor }}
+                                        >
+                                            {t('NAME')}
+                                        </span>
+                                        <span
+                                            className="text-3xl font-black tracking-tight leading-none mb-1"
+                                            style={{ color: wallet.foregroundColor }}
+                                        >
+                                            {data.fullName || t('Your Name')}
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Secondary/Auxiliary Fields */}
                     <div className="px-4 py-4 grid grid-cols-2 gap-y-4 gap-x-2 flex-grow">
