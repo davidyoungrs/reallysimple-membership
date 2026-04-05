@@ -156,7 +156,7 @@ export const UserGuide = () => {
                                     <img 
                                         src={section.image} 
                                         alt={section.title}
-                                        className="w-full h-auto object-cover transform transition duration-700 group-hover:scale-[1.02]"
+                                        className="w-full h-auto object-contain transform transition duration-700 group-hover:scale-[1.02]"
                                     />
                                 </div>
                             </div>
