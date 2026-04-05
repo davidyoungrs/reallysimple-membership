@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { businessCards, cardViews, cardClicks } from '../src/db/schema.js';
+import { businessCards, cardViews, cardClicks, users } from '../src/db/schema.js';
 import { eq, sql, and, gte, lte, desc, inArray } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -79,21 +79,26 @@ async function handleGetCardAnalytics(req: VercelRequest, res: VercelResponse, u
 
     const { startDate, endDate } = getDateRange(req);
 
-    // Fetch Daily Views
+    // Fetch User Tier to check if advanced_analytics are enabled
+    const userData = await db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, userId)).limit(1);
+    const userTier = userData[0]?.tier || 'starter';
+    const isAdvancedAnalyticsEnabled = userTier === 'pro_plus' || userTier === 'business' || userTier === 'grandfathered';
+
+    // Daily Views (Standard)
     const dailyViews = await db.select({
         date: sql<string>`DATE_TRUNC('day', ${cardViews.viewedAt})::text`,
         count: sql<number>`count(*)`
     }).from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate)))
         .groupBy(sql`DATE_TRUNC('day', ${cardViews.viewedAt})`).orderBy(sql`DATE_TRUNC('day', ${cardViews.viewedAt})`);
 
-    // Fetch Daily Clicks
+    // Daily Clicks (Standard)
     const dailyClicks = await db.select({
         date: sql<string>`DATE_TRUNC('day', ${cardClicks.clickedAt})::text`,
         count: sql<number>`count(*)`
     }).from(cardClicks).where(and(eq(cardClicks.cardId, cardId), gte(cardClicks.clickedAt, startDate), lte(cardClicks.clickedAt, endDate)))
         .groupBy(sql`DATE_TRUNC('day', ${cardClicks.clickedAt})`).orderBy(sql`DATE_TRUNC('day', ${cardClicks.clickedAt})`);
 
-    // Click Breakdown
+    // Click Breakdown (Standard)
     const clickBreakdown = await db.select({
         type: cardClicks.type,
         targetInfo: cardClicks.targetInfo,
@@ -101,34 +106,37 @@ async function handleGetCardAnalytics(req: VercelRequest, res: VercelResponse, u
     }).from(cardClicks).where(and(eq(cardClicks.cardId, cardId), gte(cardClicks.clickedAt, startDate), lte(cardClicks.clickedAt, endDate)))
         .groupBy(cardClicks.type, cardClicks.targetInfo).orderBy(desc(sql`count(*)`));
 
-    // Stats Processing
     const totalViews = dailyViews.reduce((acc, curr) => acc + Number(curr.count), 0);
     const totalClicks = dailyClicks.reduce((acc, curr) => acc + Number(curr.count), 0);
     const ctr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
-
     const mergedStats = mergeDailyStats(dailyViews, dailyClicks, startDate, endDate);
 
-    // Geo Stats
-    const geoStats = await db.select({
-        city: cardViews.city, region: cardViews.region, country: cardViews.country,
-        latitude: cardViews.latitude, longitude: cardViews.longitude, viewedAt: cardViews.viewedAt,
-    }).from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate), sql`${cardViews.latitude} IS NOT NULL`))
-        .orderBy(desc(cardViews.viewedAt)).limit(100);
+    // Advanced Stats (Gated)
+    let geoStats: any[] = [];
+    let deviceStats: any[] = [];
+    let sourceStats: any[] = [];
 
-    // Device Stats
-    const deviceStats = await db.select({ deviceType: cardViews.deviceType, count: sql<number>`count(*)` })
-        .from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate))).groupBy(cardViews.deviceType);
+    if (isAdvancedAnalyticsEnabled) {
+        geoStats = await db.select({
+            city: cardViews.city, region: cardViews.region, country: cardViews.country,
+            latitude: cardViews.latitude, longitude: cardViews.longitude, viewedAt: cardViews.viewedAt,
+        }).from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate), sql`${cardViews.latitude} IS NOT NULL`))
+            .orderBy(desc(cardViews.viewedAt)).limit(100);
 
-    // Source Stats
-    const sourceStats = await db.select({ source: cardViews.source, count: sql<number>`count(*)` })
-        .from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate))).groupBy(cardViews.source);
+        deviceStats = await db.select({ deviceType: cardViews.deviceType, count: sql<number>`count(*)` })
+            .from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate))).groupBy(cardViews.deviceType);
+
+        sourceStats = await db.select({ source: cardViews.source, count: sql<number>`count(*)` })
+            .from(cardViews).where(and(eq(cardViews.cardId, cardId), gte(cardViews.viewedAt, startDate), lte(cardViews.viewedAt, endDate))).groupBy(cardViews.source);
+    }
 
     return res.status(200).json({
         totalViews, totalClicks, ctr: parseFloat(ctr.toFixed(2)), dailyStats: mergedStats,
         clickBreakdown: clickBreakdown.map(item => ({ platform: item.targetInfo, type: item.type, count: Number(item.count) })),
         geoStats: geoStats.map(item => ({ ...item, latitude: item.latitude ? parseFloat(item.latitude) : null, longitude: item.longitude ? parseFloat(item.longitude) : null })),
         deviceStats: deviceStats.map(item => ({ type: item.deviceType || 'unknown', count: Number(item.count) })),
-        sourceStats: sourceStats.map(item => ({ source: item.source || 'direct', count: Number(item.count) }))
+        sourceStats: sourceStats.map(item => ({ source: item.source || 'direct', count: Number(item.count) })),
+        isGated: !isAdvancedAnalyticsEnabled
     });
 }
 

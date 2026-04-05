@@ -5,6 +5,9 @@ import type { CardData } from '../types';
 import { downloadQRCodeAsSVG, downloadQRCodeAsPNG } from '../utils/qrDownload';
 import { EmailSignatureModal } from './EmailSignatureModal';
 import { downloadVCard } from '../utils/vcard';
+import { useTier } from '../contexts/TierContext';
+import { UpgradeModal } from './UpgradeModal';
+import { Lock } from 'lucide-react';
 
 interface ShareMenuProps {
     cardSlug: string;
@@ -18,6 +21,8 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [loadingWallet, setLoadingWallet] = useState(false);
     const [loadingGoogle, setLoadingGoogle] = useState(false);
+    const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+    const { isFeatureEnabled } = useTier();
     const menuRef = useRef<HTMLDivElement>(null);
 
     const publicUrl = `${window.location.origin}/card/${cardSlug}`;
@@ -239,25 +244,47 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
                         <div className="border-t border-gray-200 my-1" />
 
                         <button
-                            onClick={handleAddToWallet}
+                            onClick={() => {
+                                if (isFeatureEnabled('wallet_passes')) {
+                                    handleAddToWallet();
+                                } else {
+                                    setUpgradeModalFeature('wallet_passes');
+                                }
+                            }}
                             disabled={loadingWallet}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors text-gray-700 disabled:opacity-50"
                         >
-                            <div className="bg-black text-white p-1.5 rounded-md">
+                            <div className={`p-1.5 rounded-md ${isFeatureEnabled('wallet_passes') ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
                                 {loadingWallet ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
                             </div>
-                            <span className="font-medium">{loadingWallet ? t('Creating...') : t('Add to Apple Wallet')}</span>
+                            <div className="flex-1 flex items-center justify-between">
+                                <span className={isFeatureEnabled('wallet_passes') ? "font-medium" : "text-gray-400"}>
+                                    {loadingWallet ? t('Creating...') : t('Add to Apple Wallet')}
+                                </span>
+                                {!isFeatureEnabled('wallet_passes') && <Lock className="w-3 h-3 text-gray-300" />}
+                            </div>
                         </button>
 
                         <button
-                            onClick={handleAddToGoogleWallet}
+                            onClick={() => {
+                                if (isFeatureEnabled('wallet_passes')) {
+                                    handleAddToGoogleWallet();
+                                } else {
+                                    setUpgradeModalFeature('wallet_passes');
+                                }
+                            }}
                             disabled={loadingGoogle}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors text-gray-700 disabled:opacity-50"
                         >
-                            <div className="bg-white border border-gray-300 text-black p-1.5 rounded-md">
+                            <div className={`border p-1.5 rounded-md ${isFeatureEnabled('wallet_passes') ? 'bg-white border-gray-300 text-black' : 'bg-gray-50 border-gray-100 text-gray-300'}`}>
                                 {loadingGoogle ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
                             </div>
-                            <span className="font-medium">{loadingGoogle ? t('Opening...') : t('Save to Google Pay')}</span>
+                            <div className="flex-1 flex items-center justify-between">
+                                <span className={isFeatureEnabled('wallet_passes') ? "font-medium" : "text-gray-400"}>
+                                    {loadingGoogle ? t('Opening...') : t('Save to Google Pay')}
+                                </span>
+                                {!isFeatureEnabled('wallet_passes') && <Lock className="w-3 h-3 text-gray-300" />}
+                            </div>
                         </button>
 
                         <button
@@ -311,6 +338,13 @@ export function ShareMenu({ cardSlug, data }: ShareMenuProps) {
                     onClose={() => setShowSignatureModal(false)}
                 />
             )}
+
+            {/* Upgrade Modal */}
+            <UpgradeModal
+                isOpen={!!upgradeModalFeature}
+                onClose={() => setUpgradeModalFeature(null)}
+                featureName={upgradeModalFeature || ''}
+            />
         </div>
     );
 }

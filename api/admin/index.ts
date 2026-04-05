@@ -539,8 +539,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (resource === 'global_analytics') {
-            const [recentUsers, recentViews, heatmapData] = await Promise.all([
-                // Recent Signups
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const [recentUsers, recentViews, heatmapData, sourceStats, topCardsRaw] = await Promise.all([
+                // Recent Signups (Enriched with tier if possible, otherwise just users)
                 db.select()
                     .from(users)
                     .orderBy(desc(users.createdAt))
@@ -566,13 +569,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 })
                     .from(cardViews)
                     .where(sql`${cardViews.latitude} IS NOT NULL AND ${cardViews.longitude} IS NOT NULL`)
-                    .groupBy(cardViews.latitude, cardViews.longitude)
+                    .groupBy(cardViews.latitude, cardViews.longitude),
+
+                // Traffic Sources Distribution
+                db.select({
+                    name: cardViews.source,
+                    value: count()
+                })
+                    .from(cardViews)
+                    .groupBy(cardViews.source)
+                    .orderBy(desc(count())),
+
+                // Top Performing Cards (Leaderboard)
+                db.select({
+                    cardId: cardViews.cardId,
+                    views: count()
+                })
+                    .from(cardViews)
+                    .where(gte(cardViews.viewedAt, thirtyDaysAgo))
+                    .groupBy(cardViews.cardId)
+                    .orderBy(desc(count()))
+                    .limit(5)
             ]);
 
-            // Fetch card details for the views (to show card name)
-            const cardIds = recentViews.map(v => v.cardId).filter((id): id is number => id !== null);
-            const cardsInfo = cardIds.length > 0
-                ? await db.select({ id: businessCards.id, data: businessCards.data }).from(businessCards).where(sql`${businessCards.id} IN ${cardIds}`)
+            // Fetch card details for recent views and top cards
+            const viewCardIds = recentViews.map(v => v.cardId).filter((id): id is number => id !== null);
+            const topCardIds = topCardsRaw.map(v => v.cardId).filter((id): id is number => id !== null);
+            const allCardIds = Array.from(new Set([...viewCardIds, ...topCardIds]));
+
+            const cardsInfo = allCardIds.length > 0
+                ? await db.select({ id: businessCards.id, data: businessCards.data, slug: businessCards.slug }).from(businessCards).where(inArray(businessCards.id, allCardIds))
                 : [];
 
             const enrichedViews = recentViews.map(view => {
@@ -581,10 +607,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return { ...view, cardName };
             });
 
+            const enrichedTopCards = topCardsRaw.map(tc => {
+                const card = cardsInfo.find(c => c.id === tc.cardId);
+                const cardName = (card?.data as any)?.fullName || (card?.data as any)?.name || 'Unknown Card';
+                const slug = card?.slug || '';
+                return { ...tc, cardName, slug };
+            });
+
             return res.status(200).json({
                 recentUsers,
                 recentViews: enrichedViews,
+                topCards: enrichedTopCards,
                 heatmapData,
+                sourceStats,
                 deviceStats: await db.select({
                     name: cardViews.deviceType,
                     value: count()

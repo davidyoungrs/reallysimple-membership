@@ -262,6 +262,37 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
     const effectiveUserId = (isAdmin && bodyUserId) ? bodyUserId : authenticatedUserId;
 
     if (!cardData) return res.status(400).json({ error: 'Missing card data' });
+    
+    // BACKEND LIMIT ENFORCEMENT
+    if (!cardId) {
+        // Fetch current user tier and card count
+        const currentUserData = await db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, authenticatedUserId)).limit(1);
+        const userTier = currentUserData[0]?.tier || 'starter';
+        
+        const existingCardsCount = await db.select({ count: sql<number>`count(*)` })
+            .from(businessCards)
+            .where(eq(businessCards.userId, authenticatedUserId));
+        
+        const count = Number(existingCardsCount[0]?.count || 0);
+
+        // Limit definitions
+        const limitMap: Record<string, number> = {
+            'starter': 1,
+            'pro': 5,
+            'pro_plus': 10,
+            'business': 999999, // Practically unlimited
+            'grandfathered': 999999
+        };
+
+        if (count >= (limitMap[userTier as string] || 1) && !isAdmin) {
+            return res.status(403).json({ 
+                error: 'Card limit reached', 
+                message: `You have reached the limit of ${limitMap[userTier as string]} cards for your tier. Please upgrade for more.`,
+                limit: limitMap[userTier as string],
+                current: count
+            });
+        }
+    }
 
     // Sanitize
     if (cardData.fullName) cardData.fullName = sanitize(cardData.fullName);

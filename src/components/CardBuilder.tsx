@@ -14,7 +14,8 @@ import {
     ChevronDown, 
     ArrowLeft, 
     Copy, 
-    LayoutDashboard 
+    LayoutDashboard,
+    Lock
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { LanguageSelector } from './LanguageSelector';
@@ -22,6 +23,7 @@ import { OnboardingTour } from './OnboardingTour';
 import { WalletBuilder, WalletPreview } from './WalletBuilder';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useTier } from '../contexts/TierContext';
+import { UpgradeModal } from './UpgradeModal';
 
 // Declare Clerk on window for TypeScript
 declare global {
@@ -113,8 +115,9 @@ export function CardBuilder() {
     const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid'>('idle');
     const [showTour, setShowTour] = useState(false);
     const [builderMode, setBuilderMode] = useState<'card' | 'wallet'>('card');
+    const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
     const { hasFeature, loading: featuresLoading } = useFeatureFlag();
-    const { tier } = useTier();
+    const { tier, isFeatureEnabled } = useTier();
 
     // Reset to card mode if wallet access is revoked
     useEffect(() => {
@@ -587,21 +590,26 @@ export function CardBuilder() {
                     >
                         {t('Main Card')}
                     </button>
-                    {(hasFeature('wallet_access') || isConcierge) && (
-                        <button
-                            onClick={() => setBuilderMode('wallet')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
-                        >
-                            {t('Apple Wallet')}
-                        </button>
-                    )}
+                    <button
+                        onClick={() => {
+                            if (isFeatureEnabled('wallet_passes') || isConcierge) {
+                                setBuilderMode('wallet');
+                            } else {
+                                setUpgradeModalFeature('Apple Wallet Passes');
+                            }
+                        }}
+                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${builderMode === 'wallet' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}
+                    >
+                        {t('Apple Wallet')}
+                        {!isFeatureEnabled('wallet_passes') && !isConcierge && <Lock className="w-3 h-3" />}
+                    </button>
                 </div>
 
                 <div className="h-full overflow-y-auto pb-40 md:pb-32">
                     {builderMode === 'card' ? (
                         <Editor data={data} onChange={setData} currentCardId={currentCardId} onSlugStatusChange={setSlugStatus} />
                     ) : (
-                        <WalletBuilder data={data} onChange={setData} />
+                        <WalletBuilder data={data} onChange={setData} isConcierge={isConcierge} />
                     )}
                 </div>
             </div>
@@ -705,6 +713,13 @@ export function CardBuilder() {
                     }} />
                 )
             }
-        </div >
+
+            {/* Upsell Modal */}
+            <UpgradeModal
+                isOpen={!!upgradeModalFeature}
+                onClose={() => setUpgradeModalFeature(null)}
+                featureName={upgradeModalFeature || ''}
+            />
+        </div>
     );
 }

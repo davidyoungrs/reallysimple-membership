@@ -1,5 +1,5 @@
 import { type CardData, type SocialLink, type SocialPlatform, type PhoneNumber } from '../types';
-import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, AlertCircle, Lock, Languages, Loader2 } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Upload, X, Music, Youtube, Instagram, Video, Lock, Languages, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateText } from '../utils/translation';
@@ -291,7 +291,7 @@ function SortableEmbed({ embed, handleEmbedChange, removeEmbed, t }: { embed: an
 
 export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: EditorProps) {
     const { t, i18n } = useTranslation();
-    const { isFeatureEnabled } = useTier();
+    const { isFeatureEnabled, tier } = useTier();
 
     // Feature gates
     const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
@@ -367,6 +367,11 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     };
 
     const addSocialLink = () => {
+        const currentCount = (data.socialLinks || []).length;
+        if (tier === 'starter' && currentCount >= 3) {
+            setUpgradeModalFeature('Social Links (Max 3 on Starter)');
+            return;
+        }
         const newLink: SocialLink = {
             id: Date.now().toString(),
             platform: 'website',
@@ -381,6 +386,11 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
     };
 
     const addPhoneNumber = () => {
+        const currentCount = (data.phoneNumbers || []).length;
+        if (tier === 'starter' && currentCount >= 2) {
+            setUpgradeModalFeature('Phone Numbers (Max 2 on Starter)');
+            return;
+        }
         const newPhone: PhoneNumber = {
             id: Date.now().toString(),
             label: 'Mobile',
@@ -606,9 +616,14 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Phone Numbers')}</h3>
                     <button
                         onClick={addPhoneNumber}
-                        className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors group"
                     >
                         <Plus className="w-4 h-4" /> {t('Add Phone')}
+                        {tier === 'starter' && (
+                            <span className="ml-1 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                {(data.phoneNumbers || []).length}/2
+                            </span>
+                        )}
                     </button>
                 </div>
 
@@ -643,9 +658,14 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">{t('Social Links')}</h3>
                     <button
                         onClick={addSocialLink}
-                        className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium py-2 px-3 hover:bg-blue-50 rounded-lg transition-colors group"
                     >
                         <Plus className="w-4 h-4" /> {t('Add Link')}
+                        {tier === 'starter' && (
+                            <span className="ml-1 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                {(data.socialLinks || []).length}/3
+                            </span>
+                        )}
                     </button>
                 </div>
 
@@ -1054,126 +1074,132 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <div className="flex items-center justify-between mb-2">
                         <label className="block text-sm font-medium text-gray-700">{t('Background Style')}</label>
                         {!isFeatureEnabled('custom_theme') && (
-                            <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" /> {t('PRO FEATURE')}
-                            </Link>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-gray-400 font-medium">BASIC TEMPLATES ENABLED</span>
+                                <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded">
+                                    <Lock className="w-2.5 h-2.5" /> UPGRADE
+                                </Link>
+                            </div>
                         )}
                     </div>
 
-                    <div className={!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}>
-                        {/* Cool Palettes */}
+                    <div>
+                        {/* Cool Palettes - Standard Templates for Starter */}
                         <div className="mb-4">
                             <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">{t('Cool Palettes')}</label>
                             <div className="flex flex-wrap gap-2">
-                            {[
-                                { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff', button: '#3b82f6' },
-                                { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff', button: '#0284c7' },
-                                { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff', button: '#10b981' },
-                                { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff', button: '#6366f1' },
-                                { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff', button: '#f97316' },
-                                { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff', button: '#dc2626' },
-                                { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b', button: '#2563eb' },
-                                { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' }
-                            ].map((p) => (
+                                {[
+                                    { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff', button: '#3b82f6' },
+                                    { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff', button: '#0284c7' },
+                                    { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff', button: '#10b981' },
+                                    { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff', button: '#6366f1' },
+                                    { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff', button: '#f97316' },
+                                    { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff', button: '#dc2626' },
+                                    { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b', button: '#2563eb' },
+                                    { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' }
+                                ].map((p) => (
+                                    <button
+                                        key={p.name}
+                                        onClick={() => {
+                                            onChange({
+                                                ...data,
+                                                themeColor: p.theme,
+                                                gradientColor: p.gradient,
+                                                textColor: p.text,
+                                                buttonColor: p.button,
+                                                backgroundType: 'gradient'
+                                            });
+                                        }}
+                                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                                        title={p.name}
+                                    >
+                                        <div className="flex -space-x-1">
+                                            <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.theme }} />
+                                            <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.gradient }} />
+                                        </div>
+                                        <span className="text-[10px] font-medium text-gray-600 group-hover:text-blue-700">{p.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Custom Colors - Gated for Pro+ */}
+                        <div className={!isFeatureEnabled('custom_theme') ? 'opacity-50 pointer-events-none' : ''}>
+                            <div className="flex gap-2 mb-4">
                                 <button
-                                    key={p.name}
-                                    onClick={() => {
-                                        onChange({
-                                            ...data,
-                                            themeColor: p.theme,
-                                            gradientColor: p.gradient,
-                                            textColor: p.text,
-                                            buttonColor: p.button,
-                                            backgroundType: 'gradient'
-                                        });
-                                    }}
-                                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all group"
-                                    title={p.name}
+                                    onClick={() => handleChange('backgroundType', 'solid')}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-all ${data.backgroundType === 'solid' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                                 >
-                                    <div className="flex -space-x-1">
-                                        <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.theme }} />
-                                        <div className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: p.gradient }} />
-                                    </div>
-                                    <span className="text-[10px] font-medium text-gray-600 group-hover:text-blue-700">{p.name}</span>
+                                    {t('Solid Color')}
                                 </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 mb-4">
-                        <button
-                            onClick={() => handleChange('backgroundType', 'solid')}
-                            className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-all ${data.backgroundType === 'solid' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                        >
-                            {t('Solid Color')}
-                        </button>
-                        <button
-                            onClick={() => handleChange('backgroundType', 'gradient')}
-                            className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-all ${data.backgroundType === 'gradient' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                        >
-                            {t('Gradient')}
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
-                                {data.backgroundType === 'solid' ? t('Background Color') : t('Start Color')}
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="color"
-                                    value={data.themeColor}
-                                    onChange={(e) => handleChange('themeColor', e.target.value)}
-                                    className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
-                                />
-                                <span className="text-gray-500 text-xs uppercase">{data.themeColor}</span>
+                                <button
+                                    onClick={() => handleChange('backgroundType', 'gradient')}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-all ${data.backgroundType === 'gradient' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    {t('Gradient')}
+                                </button>
                             </div>
-                        </div>
 
-                        {data.backgroundType === 'solid' ? (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={data.buttonColor || '#2563eb'}
-                                        onChange={(e) => handleChange('buttonColor', e.target.value)}
-                                        className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
-                                    />
-                                    <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                                        {data.backgroundType === 'solid' ? t('Background Color') : t('Start Color')}
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={data.themeColor}
+                                            onChange={(e) => handleChange('themeColor', e.target.value)}
+                                            className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                        />
+                                        <span className="text-gray-500 text-xs uppercase">{data.themeColor}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('End Color')}</label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        value={data.gradientColor || '#000000'}
-                                        onChange={(e) => handleChange('gradientColor', e.target.value)}
-                                        className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
-                                    />
-                                    <span className="text-gray-500 text-xs uppercase">{data.gradientColor || '#000000'}</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
 
-                    {data.backgroundType === 'gradient' && (
-                        <div className="mt-4">
-                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="color"
-                                    value={data.buttonColor || '#2563eb'}
-                                    onChange={(e) => handleChange('buttonColor', e.target.value)}
-                                    className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
-                                />
-                                <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                                {data.backgroundType === 'solid' ? (
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={data.buttonColor || '#2563eb'}
+                                                onChange={(e) => handleChange('buttonColor', e.target.value)}
+                                                className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                            />
+                                            <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('End Color')}</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={data.gradientColor || '#000000'}
+                                                onChange={(e) => handleChange('gradientColor', e.target.value)}
+                                                className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                            />
+                                            <span className="text-gray-500 text-xs uppercase">{data.gradientColor || '#000000'}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
+
+                            {data.backgroundType === 'gradient' && (
+                                <div className="mt-4">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('Button Color')}</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={data.buttonColor || '#2563eb'}
+                                            onChange={(e) => handleChange('buttonColor', e.target.value)}
+                                            className="h-10 w-10 rounded-lg cursor-pointer border-0 p-0"
+                                        />
+                                        <span className="text-gray-500 text-xs uppercase">{data.buttonColor || '#2563eb'}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
                     </div>
                 </div>
 
@@ -1182,7 +1208,11 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                             {t('Typography & Colors')}
-                            {!isFeatureEnabled('custom_theme') && <ProBadge />}
+                            {!isFeatureEnabled('custom_theme') && (
+                                <Link to="/pricing" className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-blue-100 transition-colors">
+                                    <Lock className="w-2.5 h-2.5" /> PRO
+                                </Link>
+                            )}
                         </h3>
                     </div>
 
@@ -1233,36 +1263,37 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         </div>
                     </div>
                 </div>
-            </div>
-            {/* Remove Branding Setting */}
-            <div className="pt-6 border-t border-gray-100">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">{t('Remove Branding')}</label>
-                        <p className="text-xs text-gray-500">{t('Hide "Powered by" footer on public card')}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
-                            <button
-                                disabled={!isFeatureEnabled('remove_branding')}
-                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={() => handleChange('removeBranding', true)}
-                            >
-                                {t('On')}
-                            </button>
-                            <button
-                                disabled={!isFeatureEnabled('remove_branding')}
-                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${!data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={() => handleChange('removeBranding', false)}
-                            >
-                                {t('Off')}
-                            </button>
+
+                {/* Remove Branding Setting */}
+                <div className="pt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">{t('Remove Branding')}</label>
+                            <p className="text-xs text-gray-500">{t('Hide "Powered by" footer on public card')}</p>
                         </div>
-                        {!isFeatureEnabled('remove_branding') && (
-                            <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline">
-                                {t('UPGRADE TO REMOVE')}
-                            </Link>
-                        )}
+                        <div className="flex flex-col items-end gap-2">
+                            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                                <button
+                                    disabled={!isFeatureEnabled('remove_branding')}
+                                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => handleChange('removeBranding', true)}
+                                >
+                                    {t('On')}
+                                </button>
+                                <button
+                                    disabled={!isFeatureEnabled('remove_branding')}
+                                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${!data.removeBranding ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'} ${!isFeatureEnabled('remove_branding') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => handleChange('removeBranding', false)}
+                                >
+                                    {t('Off')}
+                                </button>
+                            </div>
+                            {!isFeatureEnabled('remove_branding') && (
+                                <Link to="/pricing" className="text-[10px] text-blue-600 font-bold hover:underline">
+                                    {t('UPGRADE TO REMOVE')}
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

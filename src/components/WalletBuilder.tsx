@@ -1,22 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Palette, Upload, Layout, Image as ImageIcon, User, RefreshCw } from 'lucide-react';
+import { Palette, Upload, Layout, Image as ImageIcon, User, RefreshCw, Lock } from 'lucide-react';
 import { StripDesigner } from './StripDesigner';
 import { useTier } from '../contexts/TierContext';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type CardData, type WalletData } from '../types';
+import { UpgradeModal } from './UpgradeModal';
 
 interface WalletBuilderProps {
     data: CardData;
     onChange: (data: CardData) => void;
+    isConcierge?: boolean;
 }
 
-export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
+export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBuilderProps) {
     const { t } = useTranslation();
     const { isFeatureEnabled } = useTier();
     const [showStripDesigner, setShowStripDesigner] = useState(false);
+    const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'branding' | 'info'>('style');
+    const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
@@ -149,11 +153,13 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
     ];
 
     const tabs = [
-        { id: 'style', label: t('Style'), icon: Palette },
-        { id: 'strip', label: t('Strip Image'), icon: ImageIcon },
-        { id: 'branding', label: t('Branding'), icon: Layout },
-        { id: 'info', label: t('Information'), icon: User },
+        { id: 'style', label: t('Style'), icon: Palette, enabled: true },
+        { id: 'strip', label: t('Strip Image'), icon: ImageIcon, enabled: isFeatureEnabled('strip_designer') },
+        { id: 'branding', label: t('Branding'), icon: Layout, enabled: true },
+        { id: 'info', label: t('Information'), icon: User, enabled: true },
     ];
+
+    const isStarterGated = !isFeatureEnabled('wallet_passes') && !isConcierge;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -164,14 +170,20 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     <section className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         {/* Tab Navigation */}
                         <div className="flex border-b border-gray-100 bg-gray-50/50 p-1">
-                            {tabs.map((tab: { id: string; label: string; icon: any }) => {
+                            {tabs.map((tab: { id: string; label: string; icon: any; enabled: boolean }) => {
                                 const Icon = tab.icon;
                                 return (
                                     <button
                                         key={tab.id}
-                                        onClick={() => setActiveTab(tab.id as any)}
+                                        onClick={() => {
+                                            if (tab.enabled) {
+                                                setActiveTab(tab.id as any);
+                                            } else {
+                                                setUpgradeModalFeature(tab.label);
+                                            }
+                                        }}
                                         className={`
-                                            flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-2xl text-xs font-bold transition-all
+                                            flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-2xl text-xs font-bold transition-all relative
                                             ${activeTab === tab.id 
                                                 ? 'bg-white text-blue-600 shadow-sm' 
                                                 : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'}
@@ -179,6 +191,7 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                                     >
                                         <Icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-400'}`} />
                                         <span className="hidden sm:inline">{tab.label}</span>
+                                        {!tab.enabled && <Lock className="w-2.5 h-2.5 ml-1 inline-block text-gray-400" />}
                                     </button>
                                 );
                             })}
@@ -519,6 +532,37 @@ export function WalletBuilder({ data, onChange }: WalletBuilderProps) {
                     onClose={() => setShowStripDesigner(false)}
                 />
             )}
+
+            {/* Starter Locked Overlay */}
+            {isStarterGated && (
+                <div className="absolute inset-x-0 bottom-0 top-[49px] z-50 flex items-center justify-center p-6 text-center rounded-b-3xl overflow-hidden">
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px]" />
+                    <div className="relative bg-white rounded-3xl shadow-xl border border-gray-100 p-8 max-w-sm w-full space-y-6">
+                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto">
+                            <Lock className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-gray-900">{t('Wallet Passes Gated')}</h3>
+                            <p className="text-sm text-gray-500">
+                                {t('Upgrade to Pro to create and customize Apple & Google Wallet passes for your business cards.')}
+                            </p>
+                        </div>
+                        <Link 
+                            to="/pricing"
+                            className="block w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-200"
+                        >
+                            {t('Upgrade to Pro')}
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* Upgrade Modal for Specific Features */}
+            <UpgradeModal
+                isOpen={!!upgradeModalFeature}
+                onClose={() => setUpgradeModalFeature(null)}
+                featureName={upgradeModalFeature || ''}
+            />
         </div>
     );
 }

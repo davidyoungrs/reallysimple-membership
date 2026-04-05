@@ -13,6 +13,8 @@ import { DashboardCharts } from './DashboardCharts';
 import { ProfileSettings } from './ProfileSettings';
 import { WalletPreview } from './WalletBuilder';
 import { LeadsManager } from './leads/LeadsManager';
+import { useTier } from '../contexts/TierContext';
+import { UpgradeModal } from './UpgradeModal';
 
 interface Card {
     id: number;
@@ -44,6 +46,8 @@ export function Dashboard() {
     const [deleteConfirmCard, setDeleteConfirmCard] = useState<{ id: number; name: string } | null>(null);
     const [analyticsCard, setAnalyticsCard] = useState<Card | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { isFeatureEnabled } = useTier();
+    const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
     // Load cards and analytics on mount
     useEffect(() => {
@@ -334,11 +338,29 @@ export function Dashboard() {
                                                 {card.slug && (
                                                     <>
                                                         <button
-                                                            onClick={() => setAnalyticsCard(card)}
-                                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                                            title={t('View Analytics') || "View Analytics"}
+                                                            onClick={() => {
+                                                                if (isFeatureEnabled('advanced_analytics')) {
+                                                                    setAnalyticsCard(card);
+                                                                } else {
+                                                                    setUpgradeModalFeature('advanced_analytics');
+                                                                }
+                                                            }}
+                                                            className={`p-2 rounded-xl transition-all ${isFeatureEnabled('advanced_analytics')
+                                                                ? 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                                                                : 'text-gray-300 hover:text-gray-500'
+                                                                }`}
+                                                            title={isFeatureEnabled('advanced_analytics') ? (t('View Analytics') || "View Analytics") : t('Advanced Analytics (Pro Plus)')}
                                                         >
-                                                            <BarChart2 className="w-5 h-5" />
+                                                            {isFeatureEnabled('advanced_analytics') ? (
+                                                                <BarChart2 className="w-5 h-5" />
+                                                            ) : (
+                                                                <div className="relative">
+                                                                    <BarChart2 className="w-5 h-5 opacity-50" />
+                                                                    <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
+                                                                        <Plus className="w-2 h-2 text-blue-600" />
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </button>
                                                         <ShareMenu
                                                             cardSlug={card.slug || card.uid}
@@ -405,6 +427,13 @@ export function Dashboard() {
                     </div>
                 </div>
             )}
+
+            {/* Upgrade Modal */}
+            <UpgradeModal
+                isOpen={!!upgradeModalFeature}
+                onClose={() => setUpgradeModalFeature(null)}
+                featureName={upgradeModalFeature || ''}
+            />
         </div>
     );
 }

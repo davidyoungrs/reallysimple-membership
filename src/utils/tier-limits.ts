@@ -72,14 +72,14 @@ export function applyTierLimits(data: CardData, tier: SubscriptionTier): CardDat
         limitedData.embeds = limitedData.embeds.slice(0, 1);
     }
 
-    // Limit Social Links (Max 5)
-    if (limitedData.socialLinks && limitedData.socialLinks.length > 5) {
-        limitedData.socialLinks = limitedData.socialLinks.slice(0, 5);
+    // Limit Social Links (Max 3)
+    if (limitedData.socialLinks && limitedData.socialLinks.length > 3) {
+        limitedData.socialLinks = limitedData.socialLinks.slice(0, 3);
     }
 
-    // Limit Phone Numbers (Max 1)
-    if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > 1) {
-        limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, 1);
+    // Limit Phone Numbers (Max 2)
+    if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > 2) {
+        limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, 2);
     }
 
     return limitedData;
