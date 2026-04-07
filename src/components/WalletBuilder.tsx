@@ -20,7 +20,6 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
     const [showStripDesigner, setShowStripDesigner] = useState(false);
     const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'branding' | 'info'>('style');
-    const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
