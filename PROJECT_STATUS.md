@@ -1,6 +1,6 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
 
-> Last Updated: 2026-04-05 (Session 12) | Head Commit: `d7615e9`
+> Last Updated: 2026-04-07 (Session 14) | Head Commit: `e787f09`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -9,240 +9,87 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The project is a **digital business card SaaS** built in **React + Vite + TypeScript**, deployed on **Vercel (Hobby plan)**, using **Clerk** for auth, **Neon DB** for the database, and **Stripe** for billing.
+The project is a **digital business card SaaS** built in **React + Vite + TypeScript**. We have recently completed two major infrastructure and UX phases:
 
-The focus of the last several sessions has been:
-
-1. **Stabilising the Vercel deployment** (function count, build errors)
-2. **Redesigning the Onboarding Wizard** (`/create` route) for high conversion (PLG — "Try Before You Buy")
-3. **Mobile UX Audit & Optimization**: Keyboard modes, horizontal overflow, centering logic.
-4. **Multi-Language Expansion**: Dynamic "on-the-fly" translation for user-entered content (Bio/Job Title/Name).
-5. **i18n Stability**: Fixed critical syntax and duplicate key issues in `src/i18n.ts` that were blocking production builds.
-6. **Performance & Reliability Optimization**: Reduced redundant API calls, resolved UI warnings, and fixed critical Admin Panel crashes.
-7. **Performance & Reliability Phase**: Resolving API redundancy and latency.
-8. **Wallet & Webhook Fixes**: Fixed field visibility in Apple/Google passes and resolved a critical Stripe webhook signature verification error.
-9. **Wallet Customization Fix**: Resolved "Retina Sync" issue where custom logos were being overwritten by default branding on high-DPI iPhones. Added remote fetch support for S3 logos.
-10. **Wallet Builder UX Cleanup (Session 10)**: Resolved redundant dual preview, implemented `showStripImage` toggle, and added minimalist layout mode for non-strip passes. Cross-stack implementation (Types, UI, and Backend).
-11. **Performance Optimization v2 (Session 11)**: Drastically reduced initial render-blocking resources by move 22 font families to a dynamic `FontLoader`. Implemented `display=swap` for visibility, `loading=lazy` for embeds, and made the `App.tsx` status check non-blocking to improve TTI (Time to Interactive).
+1. **Phase 5 (Tier Gating)**: Implemented strict feature gating for Starter and Pro tiers. Starter users are now limited to 1 card, 2 phone numbers, and 3 social links, with high-end branding disabled.
+2. **Phase 13 (Admin Dashboard)**: Transformed the Super Admin dashboard into a premium analytics suite with traffic source distribution, top-performer leaderboards, and interactive stat cards.
+3. **Build Stability**: Resolved a critical build error caused by an unused state variable in `WalletBuilder.tsx`, ensuring smooth production deployments.
 
 ---
 
 ## ✅ COMPLETED WORK
 
-### Onboarding Wizard (`/src/components/OnboardingWizard.tsx`)
+### Feature Gating & Tier Limits (Phase 5)
 
-- [x] Converted from 3-step to **2-step PLG flow**: Step 1 = Design, Step 2 = Pricing
-- [x] Step 1 includes: Profile Photo, Name, Title, Email, Mobile, Office, Website, Company, Bio, Logo, **14 Cool Palettes**, 20 fonts
-- [x] **Fixed sidebar scrolling** — footer is now in the flex flow (not `absolute bottom-0`)
-- [x] **Fixed colour change lag** — removed `animate-gradient-slow` from `BusinessCard.tsx` background div; all colours now change instantly
-- [x] **Expanded typography** from 4 → 20 options (full parity with the card editor)
-- [x] **Step 2 layout** is now **70% pricing panel / 30% card preview** (widens on step transition)
-- [x] **Step 1 layout** is 50% form / 50% preview
-- [x] Step 2 uses the shared `PricingCards` component (100% consistent with `/pricing` page)
-- [x] **6 new COOL PALETTES** added: Copper, Neo Mint, Aurora, Blush, Slate, Gold
-- [x] **Step 1 heading** updated to **"Design Your Online Card"**
+- [x] **Strict Card Limits**: Users are now capped based on tier (Starter: 1, Pro: 5, Pro+: 10).
+- [x] **Field Constraints**: Starter tier cards now enforced to 2 phone numbers and 3 social links.
+- [x] **Branding Gating**: High-end background effects, themes, and "Matched Logo" colors now require a Pro upgrade.
+- [x] **Upgrade Modals**: Integrated `UpgradeModal` triggers across the Card Builder, Dashboard, and Wallet Designer.
+- [x] **Tier Logic Utility**: Centralized tier checks in `src/utils/tier-limits.ts`.
 
-### Landing Page (`/src/components/LandingPage.tsx`)
+### Super Admin Dashboard (Phase 13)
 
-- [x] Removed **"View Demo"** button from hero — only "Start for Free" CTA remains
-- [x] Homepage CTA buttons route to `/create` (the onboarding wizard)
-
-### Pricing (`/src/components/Pricing.tsx` + `PricingCards.tsx`)
-
-- [x] Pricing section added to homepage as a preview
-- [x] `PricingCards` refactored with an `onSelect` prop so it works both standalone and inside the wizard
-- [x] Annual pricing standardised to 10x monthly ("2 Months Free")
-- [x] Localized across all supported languages
-
-### Billing & Emails
-
-- [x] Automated welcome email on registration
-- [x] Automated billing notification emails for renewals and payment failures
-- [x] Resend API sender domain updated to `reallysimpleapps.com`
-- [x] Leads email notifications working
-
-### Auth & Routing
-
-- [x] Clerk auth integrated — `/create` is **public**, `/dashboard` is protected
-- [x] `/onboarding-callback` route processes Clerk sign-up and saves pre-auth data from `localStorage` to Neon DB
-- [x] `/editor` route added and working
+- [x] **Interactive Overview**: Clickable summary cards for Users and Cards for instant management navigation.
+- [x] **Aggregate Analytics**: New backend queries for **Traffic Source Distribution** (QR, Direct, Social).
+- [x] **Performance Leaderboard**: "Top Performing Cards" module showing profiles with highest 30-day view counts.
+- [x] **Premium UX**: Integrated **Skeleton Screen Loaders** for all data-heavy sections (Charts, Heatmaps, Activity feeds).
+- [x] **Live Activity Feed**: Added pulsating indicator and enhanced formatting to the platform-wide activity stream.
 
 ### Deployment & Stability
 
-- [x] Vercel Hobby plan function limit fixed (consolidated to ≤12 serverless functions)
-- [x] All known TypeScript build errors resolved
-- [x] Build consistently exits with code 0
-- [x] **CSP Updated**: Allowed connection to `api.mymemory.translated.net` for translations.
-
-### Mobile & Responsive UX (`ui-ux-pro-max-skill` Audit)
-
-- [x] **Horizontal Scroll Lockdown**: Added `overflow-x-hidden w-full` to `body` in `index.html`.
-- [x] **Mobile Keyboards**: Added `inputMode` (email, tel, numeric) to all critical fields app-wide.
-- [x] **Navbar Centering**: Fixed "Log in" and "Create Card" wrapping/alignment on small screens.
-- [x] **Dynamic Card Translation**: Added floating globe icon + MyMemory API integration for Bio & Title translation.
-- [x] **Pro Plan Features**: Expanded list with unlimited phone numbers, social links, and style control.
-
-### Internationalization (i18n) Stability
-
-- [x] **Build Error Resolution**: Fixed structural syntax errors (missing closing braces) in `src/i18n.ts` for `ru`, `ja`, and `pnb` language blocks.
-- [x] **Hindi Translation Cleanup**: Removed ~35 duplicate keys in the `hi` block that caused TypeScript "duplicate property" errors.
-- [x] **Production Verification**: Confirmed that `npm run build` now completes successfully for all 14 supported languages.
-
-### Performance Optimizations (Session 7)
-
-- [x] **Fetch Guards (useRef)**: Implemented standard `ref` based guards in `App.tsx`, `PricingCards.tsx`, and `LeadsManager.tsx` to prevent multiple simultaneous API hits on mount.
-- [x] **FX Rate Latency**: Refactored `api/billing.ts` to prioritize Frankfurter API over Stripe for exchange rates.
-- [x] **Session 6**: Fixed Admin Gallery crash (`AdminCards.tsx`), redundant Concierge fetches, and Dashboard duplicate calls.
-- [x] **Session 7**: Optimized Landing Page performance by eliminating redundant `/api/public` and `/api/billing` calls.
-
-### Wallet Builder Refinement (Session 10)
-
-- [x] **Resolved Dual Preview**: Removed the internal sidebar preview in `WalletBuilder.tsx`, leaving only the main live 3D preview for a cleaner UI.
-- [x] **Strip Image Toggle**: Added `showStripImage` to `WalletData` interface.
-- [x] **Minimalist Card Mode**: Redesigned the card front for cases where the strip image is hidden (bold typography, centered layout).
-- [x] **Backend Sync**: Updated Apple Wallet (`passes.ts`) and Google Wallet pass generation to conditionally exclude strip/hero images.
-- [x] **Code Cleanup**: Removed unused state variables (`isFlipped`, `setIsFlipped`) from `WalletBuilder` component.
-
-### Performance & Stability (Session 11)
-
-- [x] **Dynamic Font Loading**: Removed 22 font families from `index.html` (which blocked initial paint).
-- [x] **FOIT Protection**: Implemented `display=swap` across all fonts to ensure text is never invisible while assets load.
-- [x] **FontLoader Utility**: Created `src/components/FontLoader.tsx` to fetch Google Fonts only when required by the specific card being viewed.
-- [x] **Non-Blocking Hydration**: Refactored `App.tsx` so the system status fetch doesn't block the entire application mount.
-- [x] **Lazy Loading Embeds**: All YouTube, Spotify, TikTok, and Instagram iframes now use `loading="lazy"`.
-- [x] **Image Decoding**: Avatar images now use `decoding="async"` to prevent main-thread jank.
-
----
-
-### 1. Enhanced Profile Translation
-
-- **Goal:** Include `fullName` in the card's dynamic translation and add a "push back" mechanism to allow users to apply translated content to their card data permanently.
-- **Status:** Planning phase; implementation plan created and awaiting approval.
-- **Files:** `BusinessCard.tsx`, `CardBuilder.tsx`, `Editor.tsx`.
-
----
-
-## 🟡 PARKED — To Come Back To
-
-These are features that were discussed or partially started but deliberately set aside:
-
-### 1. End-to-End Onboarding Data Flow Verification
-
-- **What:** Verify that all new Step 1 fields (Mobile, Office, Profile Photo, Bio, Logo) are correctly:
-  1. Persisted to `localStorage` after the wizard
-  2. Successfully read and saved to Neon DB in `/onboarding-callback`
-- **Why parked:** Core UI was the focus; E2E was not fully tested
-- **File to check:** `src/pages/OnboardingCallback.tsx`
-
-### 2. Card Editor Parity with Wizard
-
-- **What:** The card editor (`/editor`) has more advanced options (Layout Mode, Photo Style, Sticky Action Bar, custom colour pickers). Consider whether these should also be surfaced in the Wizard or remain editor-only.
-- **Why parked:** Scope decision needed from user
-
-### 3. Rich Media Embeds in Wizard
-
-- **What:** The full card editor supports YouTube, Spotify, Instagram, TikTok, Vimeo embeds. The Wizard does not.
-- **Why parked:** Complexity — post-MVP feature
-
-### 4. Google Wallet Integration (Known Issue)
-
-- **What:** Google Wallet `.pkpass` generation has a known bug (see KI: `google_wallet_integration`). The Apple Wallet pass generation is working.
-- **Why parked:** Requires Google Pay credentials and extra backend work
-
-### 5. Analytics Dashboard
-
-- **What:** Card analytics (click tracking, lead tracking, Recharts dashboard) are implemented. No known issues but has not been reviewed recently.
-- **File:** Used in `/dashboard` — the `analytics_system` KI has details
-
-### 6. Admin Panel — Logo URL
-
-- **What:** Custom logo URL was removed from the Admin Panel UI; logos are now managed directly in Neon DB DB. This is intentional.
-- **Note:** If you need to add a logo for a user, do it directly in the `cards` table in Neon DB.
-
-### 7. Website Sitemap / SEO
-
-- **What:** A website map was generated (see previous session). SEO meta tags and structured data have not yet been implemented per that map.
-- **Why parked:** Not prioritised
-
----
-
-## 🔴 KNOWN ISSUES / GOTCHAS
-
-| Issue | Detail | Workaround |
-|---|---|---|
-| Vercel Hobby = 12 function limit | Currently at ~10 functions. Adding new API routes risks hitting the limit. | Consolidate into existing handlers in `/api/` |
-| TypeScript strict mode | Some `any` types used in older components. Not breaking but not clean. | Gradual cleanup |
+- [x] Vercel Hobby plan function limit fixed (consolidated to ≤12 serverless functions).
+- [x] **Build Fix (Session 14)**: Removed unused `croppingImage` state in `WalletBuilder.tsx` to resolve `TS6133` error blocking production.
+- [x] All known TypeScript build errors resolved; `npm run build` exits with code 0.
 
 ---
 
 ## 🏗️ KEY ARCHITECTURE
 
-```
+```bash
 /src
   /components
     OnboardingWizard.tsx   ← Public /create route (PLG wizard)
-    BusinessCard.tsx       ← The card renderer (used everywhere)
-    Editor.tsx             ← Full card editor (authenticated users)
+    Admin/AdminDashboard.tsx ← Super Admin mission control
+    WalletBuilder.tsx      ← Apple/Google Wallet Designer
     PricingCards.tsx       ← Shared pricing component
-    LandingPage.tsx        ← Homepage
-    /Admin/                ← Admin panel components
-    /leads/                ← Lead capture form
+    UpgradeModal.tsx       ← Gating trigger component
 
-/api                       ← Vercel serverless functions
-  billing.ts               ← Stripe billing (consolidated)
-  user.ts                  ← User CRUD (consolidated)
-  admin.ts                 ← Admin operations
-  leads.ts                 ← Lead form + email notification
-  passes.ts                ← Apple Wallet .pkpass generation
+/api/admin
+  index.ts                 ← Consolidated admin analytics & aggregation
 
-/src/types.ts              ← CardData interface (single source of truth)
+/src/utils
+  tier-limits.ts           ← Centralized business logic for tier constraints
 ```
-
-### State Management
-
-- **Pre-auth data:** `localStorage` key `wizard_data`
-- **Post-auth data:** Neon DB `cards` table
-- **Feature gating:** `useTier()` context hook
-
-### Pricing Tiers
-
-- **Starter** — Free, limited features
-- **Pro** — Paid, custom themes, analytics
-- **Pro Plus** — Advanced features
-- **Business** — Team features
-- **Grandfathered** — Legacy users with locked pricing
 
 ---
 
 ## 📁 FILES MOST RECENTLY MODIFIED
 
 | File | Last Changed | Summary |
-|---|---|---|
-| `index.html` | 2026-04-03 | Font refactor (removed 22 render-blocking fonts) |
-| `src/components/FontLoader.tsx` | 2026-04-03 | New dynamic font loading utility |
-| `src/components/PublicCard.tsx` | 2026-04-03 | Implemented FontLoader integration |
-| `src/components/BusinessCard.tsx` | 2026-04-03 | Added lazy loading and decoding hints |
-| `src/App.tsx` | 2026-04-03 | Non-blocking app hydration |
-| `PROJECT_STATUS.md` | 2026-04-03 | Session 11 tracking (this file) |
+| --- | --- | --- |
+| `src/components/WalletBuilder.tsx` | 2026-04-07 | Removed unused state to fix build error |
+| `src/components/admin/AdminDashboard.tsx` | 2026-04-05 | Implemented Phase 13 premium UX & analytics |
+| `api/admin/index.ts` | 2026-04-05 | Enriched analytics for sources and top cards |
+| `src/utils/tier-limits.ts` | 2026-04-05 | Implemented strict enforcement logic |
+| `PROJECT_STATUS.md` | 2026-04-07 | Session 14 tracking (this file) |
 
 ---
 
 ## ▶️ HOW TO RESUME
 
-1. **Start dev server:** `npm run dev -- --port 5173` in `/Users/davidyoung/contact-tree`
-2. **Open browser:** http://localhost:5173
-3. **Test onboarding:** http://localhost:5173/create
-4. **Check build:** `npm run build`
-5. **Push to deploy:** `git add -A && git commit -m "..." && git push`
-6. **Vercel logs:** Check the dashboard at https://vercel.com for deployment status
+1. **Start dev server:** `npm run dev -- --port 5173`
+2. **Check build health:** `npm run build` (should exit with 0)
+3. **Verify Gating:** Log in as a Starter user and try to add a 2nd card or more than 3 social links.
+4. **Inspect Admin Hub:** Access `/admin` to verify the new source distribution charts and leaderboard.
 
 ### Suggested Next Session Starting Point
 
-> Pick up from **"PARKED #1"** — verify the E2E data flow from the wizard through to Neon DB on sign-up. This ensures all the new fields (mobile, office, photo) are actually being saved and shown in the editor after registration.
+- **Fine-Tune Onboarding Conversion**: Now that gating is strictly enforced, consider adding "Upgrade hints" inside the free tier dashboard to drive Pro conversions.
+- **Google Wallet Credentials**: Pick up from "PARKED #4" to finalize the Google Pay integration now that the UI is stable.
 
 ---
 
-## 💡 DESIGN PRINCIPLES (don't forget these)
+## 💡 DESIGN PRINCIPLES
 
 - **"Value First"** — Users design their card *before* being asked to sign up or pay
 - **Consistency** — `PricingCards` is one component used in both `/pricing` and the wizard
