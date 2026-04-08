@@ -236,8 +236,9 @@ export function CardBuilder() {
     };
 
     // Handle navigation from Dashboard
+    // Select a card from the state if passed from navigation
     useEffect(() => {
-        if (location.state?.cardId && savedCards.length > 0) {
+        if (location.state?.cardId && (savedCards || []).length > 0) {
             const cardToLoad = savedCards.find(c => c.id === location.state.cardId);
             if (cardToLoad) {
                 handleLoadCard(cardToLoad);
@@ -351,9 +352,8 @@ export function CardBuilder() {
     // Save card to database
     const handleSaveCard = async () => {
         // Check if user is trying to create a new card based on tier limits
-        const maxCards = tier === 'starter' ? 1 : 5; // Starter: 1, Pro/Pro+: 5, Business/Grandfathered: allowed by isFeatureEnabled
-
-        if (!currentCardId && savedCards.length >= maxCards && tier !== 'grandfathered' && tier !== 'business') {
+        const maxCards = tier === 'starter' ? 1 : 10;
+        if (!currentCardId && (savedCards || []).length >= maxCards && tier !== 'grandfathered' && tier !== 'business') {
             alert(t('You have reached the maximum number of cards for your plan ({{count}}). Please upgrade to create more.', { count: maxCards }));
             setSaveStatus('error');
             setTimeout(() => setSaveStatus('idle'), 3000);

@@ -210,7 +210,7 @@ export function Dashboard() {
                     <>
                         {/* Cards Section */}
                         {/* Dashboard Insights */}
-                        {cards.length > 0 && (
+                        {(cards || []).length > 0 && (
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 <div className="lg:col-span-2">
                                     <DashboardCharts
@@ -258,14 +258,16 @@ export function Dashboard() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-1000 mb-12">
-                                {cards.map((card) => (
+                                {(cards || []).map((card) => {
+                                    if (!card) return null;
+                                    return (
                                     <div
                                         key={card.id}
                                         className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1"
                                     >
                                         {/* Card Preview */}
                                         <div className="relative bg-gray-50 h-[380px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
-                                            {card.data.wallet && isFeatureEnabled('wallet_passes') ? (
+                                            {card.data?.wallet && isFeatureEnabled('wallet_passes') ? (
                                                 <div className="flex h-full p-4 gap-4 items-center justify-center overflow-hidden">
                                                     {/* Online Card */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
@@ -311,7 +313,7 @@ export function Dashboard() {
                                         <div className="p-5">
                                             <div className="flex items-start justify-between gap-2 mb-3">
                                                 <h3 className="font-bold text-gray-900 truncate flex-1">
-                                                    {card.data.name || card.data.fullName || t('Untitled Card')}
+                                                    {card.data?.name || card.data?.fullName || t('Untitled Card')}
                                                 </h3>
                                                 <div className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
                                                     <Eye className="w-3 h-3" />
@@ -370,7 +372,7 @@ export function Dashboard() {
                                                 )}
 
                                                 <button
-                                                    onClick={() => setDeleteConfirmCard({ id: card.id, name: card.data.name || card.data.fullName || t('Untitled Card') })}
+                                                    onClick={() => setDeleteConfirmCard({ id: card.id, name: card.data?.name || card.data?.fullName || t('Untitled Card') })}
                                                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                                                     title={t('Delete card') || "Delete card"}
                                                 >
@@ -379,7 +381,7 @@ export function Dashboard() {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )})}
                             </div>
                         )}
                     </>

@@ -78,6 +78,7 @@ export function SocialLinks({ links, className = '', iconColor, bgColor, onLinkC
     return (
         <div className={`flex flex-wrap gap-3 justify-center ${className}`}>
             {links.map((link) => {
+                if (!link) return null;
                 const isCustom = link.platform === 'custom';
                 const Icon = isCustom ? LinkIcon : (iconMap[link.platform] || ExternalLink);
 
