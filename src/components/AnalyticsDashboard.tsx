@@ -370,7 +370,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
     if (!data) return null;
 
     // Prepare chart data with formatted labels
-    const chartData = data.clickBreakdown.map(item => ({
+    const chartData = (data.clickBreakdown || []).map(item => ({
         ...item,
         platformLabel: formatPlatformName(item.platform)
     }));
@@ -378,7 +378,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
     // Custom Tick for Y-Axis to show ONLY icons
     const CustomYAxisTick = (props: any) => {
         const { x, y, payload } = props;
-        const platform = data.clickBreakdown[payload.index]?.platform || '';
+        const platform = (data.clickBreakdown || [])[payload.index]?.platform || '';
 
         return (
             <g transform={`translate(${x},${y})`}>
@@ -495,7 +495,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                             </div>
                             <span className="text-sm font-medium text-blue-800">{t('Total Views')}</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{data.totalViews}</p>
+                        <p className="text-3xl font-bold text-gray-900">{data.totalViews || 0}</p>
                     </div>
 
                     <div className="bg-violet-50 p-6 rounded-2xl border border-violet-100">
@@ -505,7 +505,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                             </div>
                             <span className="text-sm font-medium text-violet-800">{t('Total Clicks')}</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{data.totalClicks}</p>
+                        <p className="text-3xl font-bold text-gray-900">{data.totalClicks || 0}</p>
                     </div>
 
                     <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
@@ -515,7 +515,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                             </div>
                             <span className="text-sm font-medium text-emerald-800">{t('Click Through Rate')}</span>
                         </div>
-                        <p className="text-3xl font-bold text-gray-900">{data.ctr}%</p>
+                        <p className="text-3xl font-bold text-gray-900">{data.ctr || 0}%</p>
                     </div>
                 </div>
 
@@ -526,7 +526,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                         <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('Traffic Overview')}</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={data.dailyStats}>
+                                <LineChart data={data.dailyStats || []}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis
                                         dataKey="fullDate"
@@ -646,7 +646,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                                 dataKey="count"
                                                 nameKey="type"
                                             >
-                                                {data.deviceStats.map((entry, index) => (
+                                                {(data.deviceStats || []).map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={
                                                         entry.type === 'mobile' ? '#3B82F6' :
                                                             entry.type === 'tablet' ? '#8B5CF6' :
@@ -721,7 +721,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                                                 radius={[0, 4, 4, 0]}
                                                 barSize={32}
                                             >
-                                                {data.sourceStats.map((entry, index) => (
+                                                {(data.sourceStats || []).map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={
                                                         entry.source === 'qr' ? '#F59E0B' :
                                                             entry.source === 'direct' ? '#10B981' :
@@ -743,7 +743,7 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                     {/* Engagement Chart */}
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                         <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('Top Interactions')}</h3>
-                        {data.clickBreakdown.length > 0 ? (
+                        {(data.clickBreakdown || []).length > 0 ? (
                             <div className="h-64 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
@@ -784,10 +784,10 @@ export function AnalyticsDashboard({ slug, cardId, onClose }: AnalyticsDashboard
                     </div>
                 </div>
 
-                {data.clickBreakdown.length > 5 && (
+                {(data.clickBreakdown || []).length > 5 && (
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-500">
-                            {t('And more interaction types', { count: data.clickBreakdown.length - 5 })}
+                            {t('And more interaction types', { count: (data.clickBreakdown || []).length - 5 })}
                         </p>
                     </div>
                 )}

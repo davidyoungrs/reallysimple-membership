@@ -473,7 +473,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
 
     const removeLinkFromSection = (sectionId: string, linkId: string) => {
         const newSections = (data.sections || []).map(s =>
-            s.id === sectionId ? { ...s, links: s.links.filter(l => l.id !== linkId) } : s
+            s.id === sectionId ? { ...s, links: (s.links || []).filter(l => l.id !== linkId) } : s
         );
         handleChange('sections', newSections);
     };
@@ -482,7 +482,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
         const newSections = (data.sections || []).map(s =>
             s.id === sectionId ? {
                 ...s,
-                links: s.links.map(l => l.id === linkId ? { ...l, [field]: value } : l)
+                links: (s.links || []).map(l => l.id === linkId ? { ...l, [field]: value } : l)
             } : s
         );
         handleChange('sections', newSections);

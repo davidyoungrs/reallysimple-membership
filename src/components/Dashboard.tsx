@@ -122,7 +122,7 @@ export function Dashboard() {
             });
 
             if (response.ok) {
-                setCards(cards.filter(c => c.id !== cardId));
+                setCards((cards || []).filter(c => c.id !== cardId));
                 setDeleteConfirmCard(null);
                 // Reload analytics as well
                 loadUserAnalytics();
@@ -232,7 +232,7 @@ export function Dashboard() {
                         {/* Cards Section */}
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-gray-900">{t('Your Cards')}</h2>
-                            <p className="text-sm text-gray-500">{cards.length} {t('cards')}</p>
+                            <p className="text-sm text-gray-500">{(cards || []).length} {t('cards')}</p>
                         </div>
 
                         {isLoading ? (
@@ -241,7 +241,7 @@ export function Dashboard() {
                                     <div key={i} className="bg-white rounded-2xl h-[400px] animate-pulse border border-gray-100" />
                                 ))}
                             </div>
-                        ) : cards.length === 0 ? (
+                        ) : (cards || []).length === 0 ? (
                             <div className="bg-white rounded-3xl border-2 border-dashed border-gray-200 p-12 text-center max-w-2xl mx-auto mt-12">
                                 <div className="text-8xl mb-6 grayscale opacity-50 select-none">📇</div>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('Ready to make an impression?')}</h2>
