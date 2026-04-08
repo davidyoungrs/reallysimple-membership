@@ -104,7 +104,7 @@ export function OnboardingWizard() {
     };
 
     const addSocialLink = () => {
-        if ((data.socialLinks?.length || 0) >= 3) return;
+        if ((data.socialLinks?.length || 0) >= 5) return;
         const newLinks = [...(data.socialLinks || []), { id: Date.now().toString(), platform: 'instagram', url: '' } as SocialLink];
         handleChange('socialLinks', newLinks);
     };
@@ -338,9 +338,9 @@ export function OnboardingWizard() {
                                         <div className="bg-green-100 p-2 rounded-lg">
                                             <LinkIcon className="w-5 h-5 text-green-600" />
                                         </div>
-                                        <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Social Links')} (Max 3)</h3>
+                                        <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Social Links')} (Max 5)</h3>
                                     </div>
-                                    {(!data.socialLinks || data.socialLinks.length < 3) && (
+                                    {(!data.socialLinks || data.socialLinks.length < 5) && (
                                         <button
                                             onClick={addSocialLink}
                                             className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"

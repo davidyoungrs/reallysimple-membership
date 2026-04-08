@@ -265,7 +265,7 @@ export function Dashboard() {
                                     >
                                         {/* Card Preview */}
                                         <div className="relative bg-gray-50 h-[380px] overflow-hidden border-b border-gray-50 rounded-t-2xl">
-                                            {card.data.wallet ? (
+                                            {card.data.wallet && isFeatureEnabled('wallet_passes') ? (
                                                 <div className="flex h-full p-4 gap-4 items-center justify-center overflow-hidden">
                                                     {/* Online Card */}
                                                     <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
