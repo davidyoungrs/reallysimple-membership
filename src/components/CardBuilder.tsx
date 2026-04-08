@@ -126,9 +126,26 @@ export function CardBuilder() {
         }
     }, [builderMode, featuresLoading, hasFeature]);
 
+    // Helper to ensure card data is robust (no null arrays)
+    const sanitizeData = (incoming: any): CardData => {
+        return {
+            ...initialCardData,
+            ...incoming,
+            phoneNumbers: Array.isArray(incoming?.phoneNumbers) ? incoming.phoneNumbers : [],
+            socialLinks: Array.isArray(incoming?.socialLinks) ? incoming.socialLinks : [],
+            embeds: Array.isArray(incoming?.embeds) ? incoming.embeds : [],
+            sections: Array.isArray(incoming?.sections) ? incoming.sections : [],
+            wallet: {
+                ...initialCardData.wallet,
+                ...(incoming?.wallet || {})
+            }
+        };
+    };
+
     // Initialize state from URL or default
     const [data, setData] = useState<CardData>(() => {
-        return loadFromUrl() || initialCardData;
+        const fromUrl = loadFromUrl();
+        return fromUrl ? sanitizeData(fromUrl) : initialCardData;
     });
 
     // Save to URL whenever data changes
@@ -209,13 +226,11 @@ export function CardBuilder() {
 
     // Load a specific card
     const handleLoadCard = (card: any) => {
-        // Merge with initialCardData fallback to ensure all arrays (socialLinks, phoneNumbers, embeds) exist
-        // This prevents "undefined is not an object" crashes on older card data
-        setData({ 
-            ...initialCardData,
-            ...card.data, 
-            slug: card.slug 
-        });
+        // Use sanitizeData to ensure all arrays exist even if DB has nulls
+        setData(sanitizeData({
+            ...card.data,
+            slug: card.slug
+        }));
         setCurrentCardId(card.id);
         setShowCardsDropdown(false);
     };

@@ -800,10 +800,10 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                                     }}
                                 >
                                     <SortableContext
-                                        items={section.links}
+                                        items={section.links || []}
                                         strategy={verticalListSortingStrategy}
                                     >
-                                        {section.links.map((link) => (
+                                        {(section.links || []).map((link) => (
                                             <SortableSocialLink
                                                 key={link.id}
                                                 link={link}
