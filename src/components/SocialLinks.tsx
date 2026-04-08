@@ -73,7 +73,7 @@ const platformBaseUrls: Record<string, string> = {
 };
 
 export function SocialLinks({ links, className = '', iconColor, bgColor, onLinkClick }: SocialLinksProps) {
-    if (!links.length) return null;
+    if (!links || !links.length) return null;
 
     return (
         <div className={`flex flex-wrap gap-3 justify-center ${className}`}>
