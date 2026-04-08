@@ -719,7 +719,7 @@ export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { da
                                 </div>
                             )}
 
-                            {data.phoneNumbers && data.phoneNumbers.length > 0 && (
+                            {Array.isArray(data.phoneNumbers) && data.phoneNumbers.length > 0 && (
                                 <div className="space-y-1">
                                     <span className="text-[8px] font-bold opacity-50" style={{ color: wallet.labelColor }}>{t('PHONE')}</span>
                                     {data.phoneNumbers.map((p: any, i: number) => (
@@ -728,7 +728,7 @@ export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { da
                                 </div>
                             )}
 
-                            {data.socialLinks && data.socialLinks.length > 0 && (
+                            {Array.isArray(data.socialLinks) && data.socialLinks.length > 0 && (
                                 <div className="space-y-1">
                                     <span className="text-[8px] font-bold opacity-50" style={{ color: wallet.labelColor }}>{t('LINKS')}</span>
                                     {data.socialLinks.map((l: any, i: number) => (

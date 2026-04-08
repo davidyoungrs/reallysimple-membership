@@ -73,11 +73,13 @@ const platformBaseUrls: Record<string, string> = {
 };
 
 export function SocialLinks({ links, className = '', iconColor, bgColor, onLinkClick }: SocialLinksProps) {
-    if (!links || !links.length) return null;
+    // Use Array.isArray so we never call .length on null
+    const safeLinks = Array.isArray(links) ? links : [];
+    if (safeLinks.length === 0) return null;
 
     return (
         <div className={`flex flex-wrap gap-3 justify-center ${className}`}>
-            {links.map((link) => {
+            {safeLinks.map((link) => {
                 if (!link) return null;
                 const isCustom = link.platform === 'custom';
                 const Icon = isCustom ? LinkIcon : (iconMap[link.platform] || ExternalLink);

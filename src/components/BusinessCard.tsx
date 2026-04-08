@@ -20,20 +20,21 @@ interface BusinessCardProps {
 export function BusinessCard({ data, onLinkClick, onTranslate, ownerTier }: BusinessCardProps) {
     const { t, i18n } = useTranslation();
     const {
-        fullName,
-        jobTitle,
-        company,
-        bio,
+        fullName = '',
+        jobTitle = '',
+        company = '',
+        bio = '',
         avatarUrl,
         logoUrl,
         themeColor,
         gradientColor,
         backgroundType,
         showPhoto,
-        phoneNumbers,
-        socialLinks,
-        embeds
     } = data;
+    // Always use safe array defaults — DB may return null for these fields
+    const phoneNumbers = Array.isArray(data.phoneNumbers) ? data.phoneNumbers : [];
+    const socialLinks = Array.isArray(data.socialLinks) ? data.socialLinks : [];
+    const embeds = Array.isArray(data.embeds) ? data.embeds : [];
     const [loading, setLoading] = useState(false);
     const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
