@@ -382,20 +382,20 @@ export function OnboardingWizard() {
 
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     {[
-                                        { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff' },
-                                        { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff' },
-                                        { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff' },
-                                        { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff' },
-                                        { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff' },
-                                        { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff' },
-                                        { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b' },
-                                        { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff' },
-                                        { name: 'Copper', theme: '#92400e', gradient: '#b45309', text: '#fef3c7' },
-                                        { name: 'Neo Mint', theme: '#10b981', gradient: '#0d9488', text: '#ecfdf5' },
-                                        { name: 'Aurora', theme: '#8b5cf6', gradient: '#06b6d4', text: '#ffffff' },
-                                        { name: 'Blush', theme: '#ec4899', gradient: '#f43f5e', text: '#ffffff' },
-                                        { name: 'Slate', theme: '#334155', gradient: '#0f172a', text: '#e2e8f0' },
-                                        { name: 'Gold', theme: '#ca8a04', gradient: '#92400e', text: '#fefce8' }
+                                        { name: 'Midnight', theme: '#000000', gradient: '#1a1a1a', text: '#ffffff', button: '#3b82f6' },
+                                        { name: 'Ocean', theme: '#0ea5e9', gradient: '#000000', text: '#ffffff', button: '#0284c7' },
+                                        { name: 'Forest', theme: '#059669', gradient: '#000000', text: '#ffffff', button: '#10b981' },
+                                        { name: 'Royal', theme: '#4f46e5', gradient: '#000000', text: '#ffffff', button: '#6366f1' },
+                                        { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff', button: '#f97316' },
+                                        { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff', button: '#dc2626' },
+                                        { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b', button: '#2563eb' },
+                                        { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' },
+                                        { name: 'Copper', theme: '#92400e', gradient: '#b45309', text: '#fef3c7', button: '#d97706' },
+                                        { name: 'Neo Mint', theme: '#10b981', gradient: '#0d9488', text: '#ecfdf5', button: '#14b8a6' },
+                                        { name: 'Aurora', theme: '#8b5cf6', gradient: '#06b6d4', text: '#ffffff', button: '#c084fc' },
+                                        { name: 'Blush', theme: '#ec4899', gradient: '#f43f5e', text: '#ffffff', button: '#fb7185' },
+                                        { name: 'Slate', theme: '#334155', gradient: '#0f172a', text: '#e2e8f0', button: '#64748b' },
+                                        { name: 'Gold', theme: '#ca8a04', gradient: '#92400e', text: '#fefce8', button: '#eab308' }
                                     ].map((p) => (
                                         <button
                                             key={p.name}
@@ -404,6 +404,7 @@ export function OnboardingWizard() {
                                                 themeColor: p.theme,
                                                 gradientColor: p.gradient,
                                                 textColor: p.text,
+                                                buttonColor: p.button,
                                                 backgroundType: 'gradient'
                                             }))}
                                             className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-colors ${data.themeColor === p.theme ? 'border-blue-500 bg-blue-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}

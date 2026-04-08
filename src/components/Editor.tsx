@@ -1096,7 +1096,13 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                                     { name: 'Sunset', theme: '#f43f5e', gradient: '#fbbf24', text: '#ffffff', button: '#f97316' },
                                     { name: 'Lava', theme: '#ef4444', gradient: '#000000', text: '#ffffff', button: '#dc2626' },
                                     { name: 'Cloud', theme: '#f8fafc', gradient: '#e2e8f0', text: '#1e293b', button: '#2563eb' },
-                                    { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' }
+                                    { name: 'Glass', theme: '#6366f1', gradient: '#a855f7', text: '#ffffff', button: '#ffffff' },
+                                    { name: 'Copper', theme: '#92400e', gradient: '#b45309', text: '#fef3c7', button: '#d97706' },
+                                    { name: 'Neo Mint', theme: '#10b981', gradient: '#0d9488', text: '#ecfdf5', button: '#14b8a6' },
+                                    { name: 'Aurora', theme: '#8b5cf6', gradient: '#06b6d4', text: '#ffffff', button: '#c084fc' },
+                                    { name: 'Blush', theme: '#ec4899', gradient: '#f43f5e', text: '#ffffff', button: '#fb7185' },
+                                    { name: 'Slate', theme: '#334155', gradient: '#0f172a', text: '#e2e8f0', button: '#64748b' },
+                                    { name: 'Gold', theme: '#ca8a04', gradient: '#92400e', text: '#fefce8', button: '#eab308' }
                                 ].map((p) => (
                                     <button
                                         key={p.name}
