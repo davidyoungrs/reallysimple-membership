@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { initialCardData, type CardData } from '../types';
+import { initialCardData, type CardData, type SocialLink, type SocialPlatform } from '../types';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, ArrowLeft, Upload, X, Building2, User, Palette, Type, Globe } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, X, Building2, User, Palette, Type, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
 import { PricingCards } from './PricingCards';
 import { PhoneInput } from './ui/phone-input';
 import { BusinessCard } from './BusinessCard';
@@ -96,35 +96,22 @@ export function OnboardingWizard() {
         return data.phoneNumbers?.find(p => p.label === label)?.number || '';
     };
 
-    const handleWebsiteChange = (value: string) => {
-        let links = data.socialLinks || [];
-        const websiteIndex = links.findIndex(l => l.platform === 'website');
-        
-        if (websiteIndex >= 0) {
-            const newLinks = [...links];
-            newLinks[websiteIndex] = { ...newLinks[websiteIndex], url: value };
-            handleChange('socialLinks', newLinks);
-        } else {
-            handleChange('socialLinks', [...links, { id: 'web1', platform: 'website', url: value, label: '' }]);
-        }
+    const handleSocialChange = (id: string, field: keyof SocialLink, value: string) => {
+        const newLinks = data.socialLinks?.map(link =>
+            link.id === id ? { ...link, [field]: value } : link
+        ) || [];
+        handleChange('socialLinks', newLinks);
     };
 
-    const handleEmailChange = (value: string) => {
-        let links = data.socialLinks || [];
-        const emailIndex = links.findIndex(l => l.platform === 'email');
-        
-        if (emailIndex >= 0) {
-            const newLinks = [...links];
-            newLinks[emailIndex] = { ...newLinks[emailIndex], url: `mailto:${value.replace('mailto:', '')}` };
-            handleChange('socialLinks', newLinks);
-        } else {
-            handleChange('socialLinks', [...links, { id: 'email1', platform: 'email', url: `mailto:${value}`, label: 'Email' }]);
-        }
+    const addSocialLink = () => {
+        if ((data.socialLinks?.length || 0) >= 3) return;
+        const newLinks = [...(data.socialLinks || []), { id: Date.now().toString(), platform: 'instagram', url: '' } as SocialLink];
+        handleChange('socialLinks', newLinks);
     };
 
-    const getEmail = () => {
-        const link = data.socialLinks?.find(l => l.platform === 'email');
-        return link?.url?.replace('mailto:', '') || '';
+    const removeSocialLink = (id: string) => {
+        const newLinks = data.socialLinks?.filter(link => link.id !== id) || [];
+        handleChange('socialLinks', newLinks);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,10 +125,7 @@ export function OnboardingWizard() {
         }
     };
 
-    const getWebsiteUrl = () => {
-        const link = data.socialLinks?.find(l => l.platform === 'website');
-        return link?.url || '';
-    };
+
 
 
 
@@ -257,17 +241,7 @@ export function OnboardingWizard() {
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-                                        <input
-                                            type="email"
-                                            inputMode="email"
-                                            value={getEmail()}
-                                            onChange={(e) => handleEmailChange(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
-                                            placeholder="john@example.com"
-                                        />
-                                    </div>
+
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
@@ -290,21 +264,7 @@ export function OnboardingWizard() {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Website URL (Optional)</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Globe className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                            <input
-                                                type="url"
-                                                value={getWebsiteUrl()}
-                                                onChange={(e) => handleWebsiteChange(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
-                                                placeholder="https://example.com"
-                                            />
-                                        </div>
-                                    </div>
+
                                 </div>
                             </section>
 
@@ -368,6 +328,68 @@ export function OnboardingWizard() {
                                         </div>
                                         <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                                     </div>
+                                </div>
+                            </section>
+
+                            {/* Social Links Section */}
+                            <section className="space-y-4 pt-6 border-t border-gray-100">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-green-100 p-2 rounded-lg">
+                                            <LinkIcon className="w-5 h-5 text-green-600" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Social Links')} (Max 3)</h3>
+                                    </div>
+                                    {(!data.socialLinks || data.socialLinks.length < 3) && (
+                                        <button
+                                            onClick={addSocialLink}
+                                            className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Link
+                                        </button>
+                                    )}
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    {data.socialLinks?.map((link) => (
+                                        <div key={link.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                                            <select
+                                                value={link.platform}
+                                                onChange={(e) => handleSocialChange(link.id, 'platform', e.target.value as SocialPlatform)}
+                                                className="flex-1 sm:flex-none sm:w-1/3 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 outline-none p-2.5"
+                                            >
+                                                <option value="email">{t('Email')}</option>
+                                                <option value="website">{t('Website')}</option>
+                                                <option value="linkedin">LinkedIn</option>
+                                                <option value="instagram">Instagram</option>
+                                                <option value="facebook">Facebook</option>
+                                                <option value="youtube">YouTube</option>
+                                                <option value="tiktok">TikTok</option>
+                                                <option value="twitter">X / Twitter</option>
+                                            </select>
+
+                                            <input
+                                                type={link.platform === 'email' ? 'email' : 'url'}
+                                                placeholder={link.platform === 'email' ? t('Email Address') : t('URL')}
+                                                value={link.url}
+                                                onChange={(e) => handleSocialChange(link.id, 'url', e.target.value)}
+                                                className="flex-[2] px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
+                                            />
+
+                                            <button
+                                                onClick={() => removeSocialLink(link.id)}
+                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors self-end sm:self-auto"
+                                                title="Remove link"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {(!data.socialLinks || data.socialLinks.length === 0) && (
+                                        <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                            Add some social links to help people connect with you.
+                                        </p>
+                                    )}
                                 </div>
                             </section>
 
@@ -457,6 +479,27 @@ export function OnboardingWizard() {
                                                 <span className={`text-sm ${data.font === f.font ? 'text-blue-700 font-bold' : 'text-gray-700 font-medium'}`}>{f.name}</span>
                                             </button>
                                         ))}
+                                    </div>
+                                </div>
+
+                                {/* Text Color Setup */}
+                                <div className="space-y-3 pt-4 border-t border-gray-100 mt-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="bg-rose-100 p-2 rounded-lg">
+                                            <Palette className="w-5 h-5 text-rose-600" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">{t('Text Color')}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                                        <input
+                                            type="color"
+                                            value={data.textColor || '#ffffff'}
+                                            onChange={(e) => handleChange('textColor', e.target.value)}
+                                            className="h-12 w-12 rounded-lg cursor-pointer border-0 p-0 shadow-sm"
+                                        />
+                                        <span className="text-gray-700 font-medium text-sm font-mono uppercase bg-white px-3 py-1.5 rounded-lg border border-gray-200">
+                                            {data.textColor || '#ffffff'}
+                                        </span>
                                     </div>
                                 </div>
                             </section>
