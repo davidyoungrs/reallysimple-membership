@@ -17,15 +17,18 @@ type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'in
 
 export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled, onUpgradeClick }: SlugCustomizerProps) {
     const { t } = useTranslation();
-    const [slug, setSlug] = useState(value || '');
+    // Guard against null — DB can return null for slug which would crash slug.length
+    const [slug, setSlug] = useState(value ?? '');
     const [status, setStatus] = useState<SlugStatus>('idle');
     const [suggestion, setSuggestion] = useState('');
     const [debouncedSlug, setDebouncedSlug] = useState(slug);
 
     // Sync slug state when value prop changes (e.g., when loading a saved card)
+    // Use ?? '' to guard against null — a null slug would cause slug.length to crash
     useEffect(() => {
-        if (value !== undefined && value !== slug) {
-            setSlug(value);
+        const safeValue = value ?? '';
+        if (safeValue !== slug) {
+            setSlug(safeValue);
         }
     }, [value]);
 
@@ -145,7 +148,9 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
         }
     };
 
-    const charCount = slug.length;
+    // Ensure slug is always a string — null would crash .length
+    const safeSlug = slug ?? '';
+    const charCount = safeSlug.length;
     const isValid = charCount >= 3 && charCount <= 50;
 
     return (
