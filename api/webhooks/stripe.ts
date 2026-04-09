@@ -132,9 +132,17 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
     const priceId = subscription.items.data[0].price.id;
     
     const priceMap = getPriceMap();
-    const tier = priceMap[priceId] || 'pro'; // Default to pro if mapping fails, safer than starter!
+    const tier = priceMap[priceId] || 'pro'; 
     
     console.log(`[Stripe] Found price ${priceId} -> Assigned tier: ${tier}`);
+
+    // Safely parse the period end date - Stripe SDK can be inconsistent between camelCase/snake_case
+    const rawPeriodEnd = (subscription as any).current_period_end || (subscription as any).currentPeriodEnd;
+    let periodEnd: Date | null = null;
+    
+    if (rawPeriodEnd && !isNaN(Number(rawPeriodEnd))) {
+        periodEnd = new Date(Number(rawPeriodEnd) * 1000);
+    }
 
     // Update user: Try stripeCustomerId first, fallback to clerkId from metadata
     const whereClause = clerkId 
@@ -145,8 +153,8 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
         .set({
             subscriptionStatus: subscription.status,
             tier: tier,
-            stripeCustomerId: customerId, // Ensure it's set
-            currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
+            stripeCustomerId: customerId,
+            currentPeriodEnd: periodEnd
         } as any)
         .where(whereClause);
 
@@ -161,11 +169,18 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const priceMap = getPriceMap();
     const tier = priceMap[priceId] || 'pro';
 
+    const rawPeriodEnd = (subscription as any).current_period_end || (subscription as any).currentPeriodEnd;
+    let periodEnd: Date | null = null;
+    
+    if (rawPeriodEnd && !isNaN(Number(rawPeriodEnd))) {
+        periodEnd = new Date(Number(rawPeriodEnd) * 1000);
+    }
+
     await db.update(users)
         .set({
             subscriptionStatus: subscription.status,
             tier: tier,
-            currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
+            currentPeriodEnd: periodEnd
         } as any)
         .where(eq(users.stripeCustomerId, customerId));
 
