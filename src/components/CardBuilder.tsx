@@ -128,13 +128,37 @@ export function CardBuilder() {
 
     // Helper to ensure card data is robust (no null arrays)
     const sanitizeData = (incoming: any): CardData => {
+        // Ensure an item has a valid string id (dnd-kit crashes on null ids)
+        const ensureId = (item: any, index: number) => ({
+            ...item,
+            id: item?.id != null ? String(item.id) : `generated-${index}-${Date.now()}`
+        });
+
+        const safePhoneNumbers = Array.isArray(incoming?.phoneNumbers)
+            ? incoming.phoneNumbers.filter(Boolean).map(ensureId)
+            : [];
+        const safeSocialLinks = Array.isArray(incoming?.socialLinks)
+            ? incoming.socialLinks.filter(Boolean).map(ensureId)
+            : [];
+        const safeEmbeds = Array.isArray(incoming?.embeds)
+            ? incoming.embeds.filter(Boolean).map(ensureId)
+            : [];
+        const safeSections = Array.isArray(incoming?.sections)
+            ? incoming.sections.filter(Boolean).map((s: any, i: number) => ({
+                ...ensureId(s, i),
+                links: Array.isArray(s?.links)
+                    ? s.links.filter(Boolean).map(ensureId)
+                    : []
+            }))
+            : [];
+
         return {
             ...initialCardData,
             ...incoming,
-            phoneNumbers: Array.isArray(incoming?.phoneNumbers) ? incoming.phoneNumbers : [],
-            socialLinks: Array.isArray(incoming?.socialLinks) ? incoming.socialLinks : [],
-            embeds: Array.isArray(incoming?.embeds) ? incoming.embeds : [],
-            sections: Array.isArray(incoming?.sections) ? incoming.sections : [],
+            phoneNumbers: safePhoneNumbers,
+            socialLinks: safeSocialLinks,
+            embeds: safeEmbeds,
+            sections: safeSections,
             wallet: {
                 ...initialCardData.wallet,
                 ...(incoming?.wallet || {})
