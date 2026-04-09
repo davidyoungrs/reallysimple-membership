@@ -327,7 +327,9 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
 }
 
 async function handleDeleteCard(req: VercelRequest, res: VercelResponse, authenticatedUserId: string, isAdmin: boolean = false) {
-    const { cardId, userId: bodyUserId } = req.body;
+    // Support both body.cardId and query.id (Dashboard sends ?id=)
+    const cardId = req.body?.cardId ?? (req.query?.id ? Number(req.query.id) : undefined);
+    const bodyUserId = req.body?.userId;
     if (!isAdmin && bodyUserId && bodyUserId !== authenticatedUserId) return res.status(403).json({ error: 'Unauthorized user mismatch' });
     if (!cardId) return res.status(400).json({ error: 'Missing cardId' });
 
