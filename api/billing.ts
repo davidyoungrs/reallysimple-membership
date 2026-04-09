@@ -93,11 +93,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 stripeCustomerId = customer.id;
 
                 if (userByEmail.length > 0) {
-                    await db.update(users).set({ stripeCustomerId }).where(eq(users.email, email));
+                    await db.update(users).set({ stripeCustomerId, clerkId: userId }).where(eq(users.email, email));
                 } else {
                     await db.insert(users).values({
                         email,
                         stripeCustomerId,
+                        clerkId: userId,
                         tier: 'starter',
                     } as any);
                 }

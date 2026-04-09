@@ -1,6 +1,6 @@
 import { db } from '../../src/db/index.js';
 import { users, walletPushRegistrations, businessCards } from '../../src/db/schema.js';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, or } from 'drizzle-orm';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
@@ -28,12 +28,25 @@ async function buffer(readable: ReadableStream | any) {
 
 // Mapping of Price IDs to Tiers
 // These should ideally be in env vars, but we'll define a map for logic
-const PRICE_ID_TO_TIER: Record<string, string> = {
-    [process.env.VITE_STRIPE_PRICE_PRO_MONTHLY as string]: 'pro',
-    [process.env.VITE_STRIPE_PRICE_PRO_YEARLY as string]: 'pro',
-    [process.env.VITE_STRIPE_PRICE_PLUS_MONTHLY as string]: 'pro_plus',
-    [process.env.VITE_STRIPE_PRICE_PLUS_YEARLY as string]: 'pro_plus',
-    [process.env.VITE_STRIPE_PRICE_BUSINESS_MONTHLY as string]: 'business',
+// Mapping of Price IDs to Tiers
+// We'll look for both VITE_ prefixed and standard STRIPE_ prefixed env vars
+const getPriceMap = () => {
+    const map: Record<string, string> = {};
+    const prefixes = ['', 'VITE_', 'A-VITE_'];
+    const tiers = ['PRO_MONTHLY', 'PRO_YEARLY', 'PLUS_MONTHLY', 'PLUS_YEARLY', 'BUSINESS_MONTHLY'];
+    
+    for (const prefix of prefixes) {
+        for (const tier of tiers) {
+            const key = `${prefix}STRIPE_PRICE_${tier}`;
+            const val = process.env[key];
+            if (val) {
+                const tierName = tier.toLowerCase().startsWith('pro') ? 'pro' : 
+                               tier.toLowerCase().startsWith('plus') ? 'pro_plus' : 'business';
+                map[val] = tierName;
+            }
+        }
+    }
+    return map;
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -48,13 +61,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!sig) throw new Error('No stripe-signature header');
         if (!endpointSecret) throw new Error('Missing STRIPE_WEBHOOK_SECRET env var');
 
-        // Read the raw body since bodyParser is disabled
         const buf = await buffer(req);
         event = stripe.webhooks.constructEvent(buf, sig as string, endpointSecret);
     } catch (err: any) {
         console.error(`[Stripe Webhook] Signature verification failed: ${err.message}`);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
+
+    console.log(`[Stripe Webhook] Received event: ${event.type}`);
 
     try {
         switch (event.type) {
@@ -110,31 +124,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
     const customerId = session.customer as string;
     const subscriptionId = session.subscription as string;
+    const clerkId = session.metadata?.userId;
+
+    console.log(`[Stripe] Session completed for customer ${customerId}, metadata clerkId: ${clerkId}`);
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = subscription.items.data[0].price.id;
-    const tier = PRICE_ID_TO_TIER[priceId] || 'starter';
+    
+    const priceMap = getPriceMap();
+    const tier = priceMap[priceId] || 'pro'; // Default to pro if mapping fails, safer than starter!
+    
+    console.log(`[Stripe] Found price ${priceId} -> Assigned tier: ${tier}`);
 
-    await db.update(users)
+    // Update user: Try stripeCustomerId first, fallback to clerkId from metadata
+    const whereClause = clerkId 
+        ? or(eq(users.stripeCustomerId, customerId), eq(users.clerkId, clerkId))
+        : eq(users.stripeCustomerId, customerId);
+
+    const updateResult = await db.update(users)
         .set({
             subscriptionStatus: subscription.status,
             tier: tier,
+            stripeCustomerId: customerId, // Ensure it's set
             currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
         } as any)
-        .where(eq(users.stripeCustomerId, customerId));
+        .where(whereClause);
 
+    console.log(`[Stripe] Database update result: ${JSON.stringify(updateResult)}`);
     console.log(`[Stripe] Provisioned tier ${tier} for customer ${customerId}`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const customerId = subscription.customer as string;
     const priceId = subscription.items.data[0].price.id;
-    const tier = PRICE_ID_TO_TIER[priceId] || 'starter';
+    
+    const priceMap = getPriceMap();
+    const tier = priceMap[priceId] || 'pro';
 
     await db.update(users)
         .set({
             subscriptionStatus: subscription.status,
-            tier: (subscription.status === 'active' || subscription.status === 'trialing') ? tier : tier, // Always set assigned tier, logic in passes.ts handles voiding based on status/periodEnd
+            tier: tier,
             currentPeriodEnd: new Date((subscription as any).current_period_end * 1000)
         } as any)
         .where(eq(users.stripeCustomerId, customerId));
