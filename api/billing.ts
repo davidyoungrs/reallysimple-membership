@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
 import { users } from '../src/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -75,35 +75,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (action === 'checkout') {
             const { priceId, successUrl, cancelUrl, currency } = req.body;
 
-            console.log(`[Billing] Action: checkout, PriceID: ${priceId}`);
-            console.log(`[Billing] Stripe Key starts with: ${process.env.STRIPE_SECRET_KEY?.substring(0, 7)}`);
+            console.log(`[Billing] Action: checkout, PriceID: ${priceId}, ClerkId: ${userId}`);
 
             if (!priceId) {
                 return res.status(400).json({ error: 'Missing priceId' });
             }
 
-            let userByEmail = await db.select().from(users).where(eq(users.email, email)).limit(1);
-            let stripeCustomerId = userByEmail[0]?.stripeCustomerId;
+            // Look up user by clerkId FIRST (works regardless of which email the user paid with)
+            // Fall back to email only as a secondary match
+            let existingUser = await db.select().from(users)
+                .where(or(eq(users.clerkId, userId), eq(users.email, email)))
+                .limit(1);
+
+            let stripeCustomerId = existingUser[0]?.stripeCustomerId;
 
             if (!stripeCustomerId) {
+                // Create a Stripe customer, tagging with clerkId so the webhook can always find them
                 const customer = await getStripe().customers.create({
                     email: email,
                     metadata: { clerkId: userId },
                 });
                 stripeCustomerId = customer.id;
-
-                if (userByEmail.length > 0) {
-                    await db.update(users).set({ stripeCustomerId, clerkId: userId }).where(eq(users.email, email));
-                } else {
-                    await db.insert(users).values({
-                        email,
-                        stripeCustomerId,
-                        clerkId: userId,
-                        tier: 'starter',
-                    } as any);
-                }
             }
 
+            // Always upsert the user record, ensuring clerkId + stripeCustomerId are both set
+            if (existingUser.length > 0) {
+                await db.update(users)
+                    .set({ stripeCustomerId, clerkId: userId } as any)
+                    .where(eq(users.id, existingUser[0].id));
+            } else {
+                await db.insert(users).values({
+                    email,
+                    stripeCustomerId,
+                    clerkId: userId,
+                    tier: 'starter',
+                } as any);
+            }
+
+            // session.metadata.userId (clerkId) is the webhook's source of truth —
+            // it works even if the user pays with Apple Pay using a different email
             const session = await getStripe().checkout.sessions.create({
                 customer: stripeCustomerId,
                 line_items: [{ price: priceId, quantity: 1 }],
@@ -111,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 currency: currency || 'gbp',
                 success_url: successUrl || `${req.headers.origin}/dashboard?checkout=success`,
                 cancel_url: cancelUrl || `${req.headers.origin}/pricing?checkout=cancel`,
-                metadata: { userId },
+                metadata: { userId }, // clerkId — webhook uses this to find the right account
             });
 
             return res.status(200).json({ url: session.url });
