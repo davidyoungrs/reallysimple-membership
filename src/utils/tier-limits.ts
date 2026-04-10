@@ -40,46 +40,57 @@ export function getEffectiveTier(info: UserSubscriptionInfo): SubscriptionTier {
 }
 
 /**
- * Strips premium features from card data if the user is on a starter tier.
+ * Strips premium features from card data based on the user's tier.
  */
 export function applyTierLimits(data: CardData, tier: SubscriptionTier): CardData {
-    if (tier !== 'starter') return data;
-
     // Create a shallow copy to avoid mutating original
     const limitedData = { ...data };
 
-    // Starter Tier Restrictions
-    limitedData.removeBranding = false;
-    limitedData.stickyActionBar = false;
-
-    // Explicitly disable Wallet features on Starter
-    if (limitedData.wallet) {
-        (limitedData.wallet as any).enabled = false;
+    // --- SHARED LIMITS (Starter & Pro) ---
+    if (tier === 'starter' || tier === 'pro') {
+        if (limitedData.wallet) {
+            limitedData.wallet = {
+                ...limitedData.wallet,
+                showStripImage: false, // Solid background only
+                stripImageUrl: undefined
+            };
+        }
     }
 
-    // Limit Layouts
-    if (limitedData.layoutMode !== 'classic') {
-        limitedData.layoutMode = 'classic';
-    }
+    // --- STARTER ONLY LIMITS ---
+    if (tier === 'starter') {
+        limitedData.removeBranding = false;
+        limitedData.stickyActionBar = false;
 
-    // Limit Sections (Max 1)
-    if (limitedData.sections && limitedData.sections.length > 1) {
-        limitedData.sections = limitedData.sections.slice(0, 1);
-    }
+        // Explicitly disable Wallet features on Starter
+        if (limitedData.wallet) {
+            (limitedData.wallet as any).enabled = false;
+        }
 
-    // Limit Embeds (Max 1)
-    if (limitedData.embeds && limitedData.embeds.length > 1) {
-        limitedData.embeds = limitedData.embeds.slice(0, 1);
-    }
+        // Limit Layouts
+        if (limitedData.layoutMode !== 'classic') {
+            limitedData.layoutMode = 'classic';
+        }
 
-    // Limit Social Links (Max 3)
-    if (limitedData.socialLinks && limitedData.socialLinks.length > 3) {
-        limitedData.socialLinks = limitedData.socialLinks.slice(0, 3);
-    }
+        // Limit Sections (Max 1)
+        if (limitedData.sections && limitedData.sections.length > 1) {
+            limitedData.sections = limitedData.sections.slice(0, 1);
+        }
 
-    // Limit Phone Numbers (Max 2)
-    if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > 2) {
-        limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, 2);
+        // Limit Embeds (Max 1)
+        if (limitedData.embeds && limitedData.embeds.length > 1) {
+            limitedData.embeds = limitedData.embeds.slice(0, 1);
+        }
+
+        // Limit Social Links (Max 3)
+        if (limitedData.socialLinks && limitedData.socialLinks.length > 3) {
+            limitedData.socialLinks = limitedData.socialLinks.slice(0, 3);
+        }
+
+        // Limit Phone Numbers (Max 2)
+        if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > 2) {
+            limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, 2);
+        }
     }
 
     return limitedData;

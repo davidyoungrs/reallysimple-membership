@@ -27,8 +27,8 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
         labelColor: '#000000',
         logoText: data.company || '',
         showLogoText: true,
-        stripImageUrl: '/wallet-strip.png',
-        showStripImage: true,
+        stripImageUrl: isFeatureEnabled('strip_designer') ? '/wallet-strip.png' : undefined,
+        showStripImage: isFeatureEnabled('strip_designer'),
         showNameFields: true,
         showRole: true,
         showCompany: true
@@ -567,22 +567,27 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
 }
 
 export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { data: CardData; isPreview?: boolean; isFlipped?: boolean; hoveredField?: string | null }) {
-    const { t } = useTranslation();
+    const { isFeatureEnabled } = useTier();
+    const canShowStrip = isFeatureEnabled('strip_designer');
+
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
         foregroundColor: '#000000',
         labelColor: '#000000',
         logoText: data.company || '',
         showLogoText: true,
-        stripImageUrl: '/wallet-strip.png',
+        stripImageUrl: canShowStrip ? '/wallet-strip.png' : undefined,
         showNameFields: true,
         showRole: true,
         showCompany: true,
         hideStripText: false,
-        showStripImage: true
+        showStripImage: canShowStrip
     };
 
     const logoUrl = wallet.logoUrl || data.logoUrl;
+    
+    // Final override: if tier doesn't support strip, force it off in preview
+    const effectiveShowStrip = canShowStrip && (wallet.showStripImage !== false);
 
     return (
         <div className={`
@@ -620,7 +625,7 @@ export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { da
                     </div>
 
                     {/* Strip Image Area */}
-                    {wallet.showStripImage !== false ? (
+                    {effectiveShowStrip ? (
                         <div className="h-[120px] w-full relative">
                             <img
                                 src={wallet.stripImageUrl || '/wallet-strip.png'}
