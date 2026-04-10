@@ -181,7 +181,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const priceId = subscription.items.data[0].price.id;
     
     const priceMap = getPriceMap();
-    const tier = priceMap[priceId] || 'pro';
+    let tier = priceMap[priceId] || 'pro';
+
+    // If the update signifies a cancellation or unpaid status, override the price's mapped tier
+    if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+        tier = 'starter';
+    }
 
     const rawPeriodEnd = (subscription as any).current_period_end || (subscription as any).currentPeriodEnd;
     let periodEnd: Date | null = null;
