@@ -83,6 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
         return res.status(200).json({
             success: true,
             user: {

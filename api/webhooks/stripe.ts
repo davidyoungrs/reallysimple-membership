@@ -5,8 +5,10 @@ import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
 import { sendRenewalNotice, sendPaymentFailedNotice } from '../_utils/billing_emails.js';
+import { createClerkClient } from '@clerk/backend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -160,6 +162,11 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
 
     console.log(`[Stripe] Database update result: ${JSON.stringify(updateResult)}`);
     console.log(`[Stripe] Provisioned tier ${tier} for customer ${customerId}`);
+
+    // Sync to Clerk if clerkId is known
+    if (clerkId) {
+        await syncUserToClerk(clerkId, tier, subscription.status);
+    }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -187,6 +194,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const user = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
     // Always notify devices on any update to sync status
     if (user[0]?.clerkId) {
+        await syncUserToClerk(user[0].clerkId, tier, subscription.status);
         await notifyDevices(user[0].clerkId);
     }
 }
@@ -204,10 +212,30 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
     const user = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
     if (user[0]?.clerkId) {
+        await syncUserToClerk(user[0].clerkId, 'starter', 'canceled');
         await notifyDevices(user[0].clerkId);
     }
 
     console.log(`[Stripe] Subscription deleted for customer ${customerId}. Reset to starter.`);
+}
+
+async function syncUserToClerk(clerkId: string, tier: string, status: string) {
+    try {
+        console.log(`[Clerk Sync] Updating user ${clerkId} with tier ${tier}...`);
+        await clerkClient.users.updateUserMetadata(clerkId, {
+            publicMetadata: {
+                tier: tier,
+                subscriptionStatus: status,
+                // Also add a flag for legacy systems checking features
+                features: {
+                    wallet_access: tier !== 'starter'
+                }
+            }
+        });
+        console.log(`[Clerk Sync] Successfully updated Clerk for ${clerkId}`);
+    } catch (err) {
+        console.error(`[Clerk Sync] Failed to update Clerk for ${clerkId}:`, err);
+    }
 }
 
 async function notifyDevices(userId: string) {

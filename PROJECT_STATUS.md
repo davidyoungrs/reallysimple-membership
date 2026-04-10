@@ -1,6 +1,6 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
 
-> Last Updated: 2026-04-07 (Session 14) | Head Commit: `e787f09`
+> Last Updated: 2026-04-09 (Session 15) | Head Commit: `e787f09`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -13,7 +13,7 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 
 1. **Phase 5 (Tier Gating)**: Implemented strict feature gating for Starter and Pro tiers. Starter users are now limited to 1 card, 2 phone numbers, and 3 social links, with high-end branding disabled.
 2. **Phase 13 (Admin Dashboard)**: Transformed the Super Admin dashboard into a premium analytics suite with traffic source distribution, top-performer leaderboards, and interactive stat cards.
-3. **Build Stability**: Resolved a critical build error caused by an unused state variable in `WalletBuilder.tsx`, ensuring smooth production deployments.
+3. **Session 15 (Tier Sync Fix)**: Resolved critical desync where Pro upgrades weren't reflecting in the dashboard due to aggressive API caching and missing Clerk metadata synchronization.
 
 ---
 
@@ -38,8 +38,11 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 ### Deployment & Stability
 
 - [x] Vercel Hobby plan function limit fixed (consolidated to ≤12 serverless functions).
-- [x] **Build Fix (Session 14)**: Removed unused `croppingImage` state in `WalletBuilder.tsx` to resolve `TS6133` error blocking production.
-- [x] All known TypeScript build errors resolved; `npm run build` exits with code 0.
+- [x] **Build Fix (Session 14)**: Removed unused `croppingImage` state in `WalletBuilder.tsx` to resolve `TS6133` error.
+- [x] **Tier Sync Fix (Session 15)**: 
+    - [x] Disabled caching for `/api/user` with `Cache-Control: no-store`.
+    - [x] Implemented Clerk `publicMetadata` sync in Stripe webhook handlers.
+    - [x] Manually synchronized affected accounts to ensure immediate unlock.
 
 ---
 
@@ -67,11 +70,10 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
+| `api/user.ts` | 2026-04-09 | Disabled API caching to fix tier desync |
+| `api/webhooks/stripe.ts` | 2026-04-09 | Added Clerk publicMetadata synchronization |
 | `src/components/WalletBuilder.tsx` | 2026-04-07 | Removed unused state to fix build error |
-| `src/components/admin/AdminDashboard.tsx` | 2026-04-05 | Implemented Phase 13 premium UX & analytics |
-| `api/admin/index.ts` | 2026-04-05 | Enriched analytics for sources and top cards |
-| `src/utils/tier-limits.ts` | 2026-04-05 | Implemented strict enforcement logic |
-| `PROJECT_STATUS.md` | 2026-04-07 | Session 14 tracking (this file) |
+| `PROJECT_STATUS.md` | 2026-04-09 | Session 15 tracking (this file) |
 
 ---
 
@@ -84,8 +86,8 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 
 ### Suggested Next Session Starting Point
 
-- **Fine-Tune Onboarding Conversion**: Now that gating is strictly enforced, consider adding "Upgrade hints" inside the free tier dashboard to drive Pro conversions.
-- **Google Wallet Credentials**: Pick up from "PARKED #4" to finalize the Google Pay integration now that the UI is stable.
+- **Verify Stripe Webhook Robustness**: Investigate the intermittent "Signature verification" failures mentioned in Vercel logs to ensure no events are being dropped.
+- **Google Wallet Credentials**: Pick up from "PARKED #4" to finalize the Google Pay integration.
 
 ---
 
