@@ -567,6 +567,7 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
 }
 
 export function WalletPreview({ data, isPreview, isFlipped, hoveredField }: { data: CardData; isPreview?: boolean; isFlipped?: boolean; hoveredField?: string | null }) {
+    const { t } = useTranslation();
     const { isFeatureEnabled } = useTier();
     const canShowStrip = isFeatureEnabled('strip_designer');
 
