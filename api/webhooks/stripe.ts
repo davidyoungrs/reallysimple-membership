@@ -253,7 +253,7 @@ async function notifyDevices(userId: string) {
             passType: walletPushRegistrations.passTypeIdentifier
         })
             .from(walletPushRegistrations)
-            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber}::uuid = ${businessCards.uid}`)
+            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber} = ${businessCards.uid}::text`)
             .where(eq(businessCards.userId, userId));
 
         if (devices.length === 0) return;
