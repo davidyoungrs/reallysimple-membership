@@ -27,6 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // --- RESOURCE: Feature Flags (from Clerk publicMetadata) ---
         if (resource === 'features') {
+            res.setHeader('Cache-Control', 'no-store, max-age=0');
             const user = await clerkClient.users.getUser(clerkUserId);
             const features = (user.publicMetadata as any)?.features || {};
             return res.status(200).json({
