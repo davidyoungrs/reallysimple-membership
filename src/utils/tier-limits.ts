@@ -3,6 +3,18 @@ import type { CardData } from '../types';
 export type SubscriptionTier = 'starter' | 'pro' | 'pro_plus' | 'business' | 'grandfathered';
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'unpaid' | null;
 
+/**
+ * Single source of truth for Starter plan display limits.
+ * Data is NEVER deleted — these limits only affect what is shown publicly.
+ * Items beyond these limits are restored automatically when a user upgrades.
+ */
+export const STARTER_LIMITS = {
+    socialLinks: 5,
+    phoneNumbers: 2,
+    sections: 1,
+    embeds: 1,
+} as const;
+
 export interface UserSubscriptionInfo {
     tier: SubscriptionTier;
     status: SubscriptionStatus;
@@ -82,14 +94,17 @@ export function applyTierLimits(data: CardData, tier: SubscriptionTier): CardDat
             limitedData.embeds = limitedData.embeds.slice(0, 1);
         }
 
-        // Limit Social Links (Max 3)
-        if (limitedData.socialLinks && limitedData.socialLinks.length > 3) {
-            limitedData.socialLinks = limitedData.socialLinks.slice(0, 3);
+        // Limit Social Links (Max 5 on Starter)
+        // NOTE: This only affects the *displayed* data — the full list is always
+        // preserved in the database and restored when the user upgrades.
+        if (limitedData.socialLinks && limitedData.socialLinks.length > STARTER_LIMITS.socialLinks) {
+            limitedData.socialLinks = limitedData.socialLinks.slice(0, STARTER_LIMITS.socialLinks);
         }
 
-        // Limit Phone Numbers (Max 2)
-        if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > 2) {
-            limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, 2);
+        // Limit Phone Numbers (Max 2 on Starter)
+        // Same non-destructive approach — data is safe in the database.
+        if (limitedData.phoneNumbers && limitedData.phoneNumbers.length > STARTER_LIMITS.phoneNumbers) {
+            limitedData.phoneNumbers = limitedData.phoneNumbers.slice(0, STARTER_LIMITS.phoneNumbers);
         }
     }
 

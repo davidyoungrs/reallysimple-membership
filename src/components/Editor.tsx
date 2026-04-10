@@ -650,6 +650,17 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         </SortableContext>
                     </DndContext>
                 </div>
+
+                {/* Hidden items notice for Starter downgrade */}
+                {tier === 'starter' && (data.phoneNumbers || []).length > 2 && (
+                    <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                        <span className="text-base">🔒</span>
+                        <span>
+                            <strong>{(data.phoneNumbers || []).length - 2} phone number{(data.phoneNumbers || []).length - 2 > 1 ? 's' : ''} hidden</strong> on your public card.
+                            {' '}They are safely stored and will reappear when you upgrade.
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* Social Links */}
@@ -663,7 +674,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         <Plus className="w-4 h-4" /> {t('Add Link')}
                         {tier === 'starter' && (
                             <span className="ml-1 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                {(data.socialLinks || []).length}/3
+                                {(data.socialLinks || []).length}/5
                             </span>
                         )}
                     </button>
@@ -692,6 +703,17 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                             </SortableContext>
                         </DndContext>
                     </div>
+
+                    {/* Hidden items notice for Starter downgrade */}
+                    {tier === 'starter' && (data.socialLinks || []).length > 5 && (
+                        <div className="flex items-center gap-2 mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                            <span className="text-base">🔒</span>
+                            <span>
+                                <strong>{(data.socialLinks || []).length - 5} social link{(data.socialLinks || []).length - 5 > 1 ? 's' : ''} hidden</strong> on your public card.
+                                {' '}They are safely stored and will reappear when you upgrade.
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
