@@ -163,9 +163,16 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
     console.log(`[Stripe] Database update result: ${JSON.stringify(updateResult)}`);
     console.log(`[Stripe] Provisioned tier ${tier} for customer ${customerId}`);
 
-    // Sync to Clerk if clerkId is known
-    if (clerkId) {
-        await syncUserToClerk(clerkId, tier, subscription.status);
+    let targetClerkId = clerkId;
+    if (!targetClerkId) {
+        const userRecord = await db.select({ clerkId: users.clerkId }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
+        targetClerkId = userRecord[0]?.clerkId as string | undefined;
+    }
+
+    // Sync to Clerk and trigger Apple Wallet refresh if we found the user
+    if (targetClerkId) {
+        await syncUserToClerk(targetClerkId, tier, subscription.status);
+        await notifyDevices(targetClerkId);
     }
 }
 
