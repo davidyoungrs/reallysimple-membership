@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, X, Loader2, AlertCircle } from 'lucide-react';
-import { generateSlug, validateSlugFormat } from '../utils/slugUtils';
+import { Check, X, Loader2, AlertCircle, RefreshCw, Lock } from 'lucide-react';
+import { generateSlug, validateSlugFormat, generateRandomSlug } from '../utils/slugUtils';
 
 interface SlugCustomizerProps {
     value: string | undefined;
@@ -10,13 +10,15 @@ interface SlugCustomizerProps {
     currentCardId?: number | null;
     onStatusChange?: (status: SlugStatus, suggestion?: string) => void;
     disabled?: boolean;
+    tier?: string;
     onUpgradeClick?: () => void;
 }
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'reserved' | 'invalid';
 
-export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled, onUpgradeClick }: SlugCustomizerProps) {
+export function SlugCustomizer({ value, onChange, fullName, currentCardId, onStatusChange, disabled, tier, onUpgradeClick }: SlugCustomizerProps) {
     const { t } = useTranslation();
+    const isStarter = tier === 'starter';
     // Guard against null — DB can return null for slug which would crash slug.length
     const [slug, setSlug] = useState(value ?? '');
     const [status, setStatus] = useState<SlugStatus>('idle');
@@ -35,11 +37,11 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
     // Auto-generate slug from name if empty
     useEffect(() => {
         if (!slug && fullName) {
-            const generated = generateSlug(fullName);
+            const generated = isStarter ? generateRandomSlug(16) : generateSlug(fullName);
             setSlug(generated);
             onChange(generated);
         }
-    }, [fullName, slug]); // Removed onChange from dependencies
+    }, [fullName, slug, isStarter]); // Added isStarter and slug to deps
 
     // Debounce slug input
     useEffect(() => {
@@ -157,73 +159,80 @@ export function SlugCustomizer({ value, onChange, fullName, currentCardId, onSta
         <div className="space-y-2">
             <div className="flex justify-between items-center">
                 <label className="block text-sm font-medium text-gray-700">
-                    {t('Custom URL')}
+                    {t('Public Card URL')}
                 </label>
-                <span className={`text-xs ${!isValid && charCount > 0 ? 'text-red-500' : 'text-gray-400'}`}>
-                    {charCount} / 50 {t('characters')}
-                </span>
-            </div>
-
-            <div className="relative">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">yourdomain.com/card/</span>
-                    <div className="flex-1 relative">
-                        <input
-                            type="text"
-                            value={slug}
-                            onChange={(e) => handleSlugChange(e.target.value)}
-                            disabled={disabled}
-                            placeholder="your-name"
-                            className={`w-full px-4 py-2 pr-10 rounded-lg border ${status === 'available' ? 'border-green-500' :
-                                status === 'taken' || status === 'reserved' || status === 'invalid' ? 'border-red-500' :
-                                    'border-gray-300'
-                                } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${disabled ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
-                        />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {disabled ? <AlertCircle className="w-4 h-4 text-gray-400" /> : getStatusIcon()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {disabled && (
-                <div 
-                    onClick={onUpgradeClick}
-                    className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-100 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-                >
-                    <AlertCircle className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs text-blue-700 font-medium">
-                        {t('Custom URLs are available on Professional plans and above.')}
+                {!isStarter && (
+                    <span className={`text-xs ${!isValid && charCount > 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                        {charCount} / 50 {t('characters')}
                     </span>
-                    <button className="text-xs text-blue-600 hover:underline font-bold ml-auto">{t('Upgrade')}</button>
-                </div>
-            )}
-
-            <div className="flex items-center justify-between text-xs">
-                <div>{getStatusText()}</div>
-                {charCount < 3 && charCount > 0 && (
-                    <span className="text-red-500">Minimum 3 characters</span>
                 )}
             </div>
 
-            {suggestion && (status === 'taken' || status === 'reserved') && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    <div className="flex-1 text-sm text-blue-800">
-                        Try: <code className="font-mono bg-white px-1 rounded">{suggestion}</code>
-                    </div>
-                    <button
-                        onClick={useSuggestion}
-                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+            <div className={`
+                flex items-center gap-2 p-3 bg-white border rounded-xl transition-all shadow-sm
+                ${status === 'available' ? 'border-emerald-200' : 
+                  status === 'taken' || status === 'reserved' || status === 'invalid' ? 'border-red-200' : 
+                  'border-gray-200'}
+                ${(disabled || isStarter) ? 'bg-gray-50/50' : 'focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50'}
+            `}>
+                <div className="flex items-center gap-2 text-gray-400 min-w-fit border-r border-gray-100 pr-2">
+                    {isStarter ? <Lock className="w-3.5 h-3.5" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] sm:text-xs font-medium select-none text-gray-400">reallysimple.apps/card/</span>
+                </div>
+                <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => !isStarter && handleSlugChange(e.target.value)}
+                    placeholder={isStarter ? t('Auto-generated ID') : t('username')}
+                    disabled={disabled || isStarter}
+                    className="flex-1 bg-transparent border-none p-0 text-sm font-semibold text-gray-900 focus:ring-0 placeholder:text-gray-300 disabled:text-gray-500"
+                />
+                <div className="flex items-center gap-1 justify-end min-w-fit pl-2">
+                    {!isStarter && getStatusIcon()}
+                </div>
+            </div>
+
+            {isStarter ? (
+                <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-blue-50/50 rounded-lg border border-blue-100">
+                    <AlertCircle className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                    <p className="text-[10px] text-blue-700 leading-tight">
+                        <strong>{t('System-Assigned URL')}:</strong> {t('Standard plans receive a unique 16-character digital ID. Upgrade to Pro for custom profile handles.')}
+                    </p>
+                    <button 
+                        onClick={(e) => { e.preventDefault(); onUpgradeClick?.(); }}
+                        className="text-[10px] font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap underline ml-auto"
                     >
-                        Use This
+                        {t('Upgrade')}
                     </button>
                 </div>
-            )}
+            ) : (
+                <>
+                    <div className="flex items-center justify-between text-[11px]">
+                        <div>{getStatusText()}</div>
+                        {charCount < 3 && charCount > 0 && (
+                            <span className="text-red-500">{t('Minimum 3 characters')}</span>
+                        )}
+                    </div>
 
-            <p className="text-xs text-gray-500">
-                Lowercase letters, numbers, and hyphens only. This will be your public card URL.
-            </p>
+                    {suggestion && (status === 'taken' || status === 'reserved') && (
+                        <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg mt-2">
+                            <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            <div className="flex-1 text-xs text-blue-800">
+                                {t('Try')}: <code className="font-mono bg-white px-1 rounded">{suggestion}</code>
+                            </div>
+                            <button
+                                onClick={useSuggestion}
+                                className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                            >
+                                {t('Use This')}
+                            </button>
+                        </div>
+                    )}
+                    <p className="text-[10px] text-gray-500 mt-1">
+                        {t('Lowercase letters, numbers, and hyphens only.')}
+                    </p>
+                </>
+            )}
         </div>
     );
 }

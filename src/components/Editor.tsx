@@ -605,6 +605,7 @@ export function Editor({ data, onChange, currentCardId, onSlugStatusChange }: Ed
                         currentCardId={currentCardId}
                         onStatusChange={onSlugStatusChange}
                         disabled={!isFeatureEnabled('custom_slug')}
+                        tier={tier}
                         onUpgradeClick={() => setUpgradeModalFeature('Custom URLs')}
                     />
                 </div>

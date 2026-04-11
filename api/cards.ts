@@ -263,11 +263,13 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
 
     if (!cardData) return res.status(400).json({ error: 'Missing card data' });
     
+    // Fetch current user tier
+    const currentUserData = await db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, authenticatedUserId)).limit(1);
+    const userTier = currentUserData[0]?.tier || 'starter';
+
     // BACKEND LIMIT ENFORCEMENT
     if (!cardId) {
-        // Fetch current user tier and card count
-        const currentUserData = await db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, authenticatedUserId)).limit(1);
-        const userTier = currentUserData[0]?.tier || 'starter';
+        // Fetch card count for new cards
         
         const existingCardsCount = await db.select({ count: sql<number>`count(*)` })
             .from(businessCards)
@@ -301,6 +303,40 @@ async function handleSaveCard(req: VercelRequest, res: VercelResponse, authentic
     if (cardData.company) cardData.company = sanitize(cardData.company);
 
     let slug = cardData.slug;
+
+    // SLUG ENFORCEMENT: Starter gets 16-char random, Pro+ can have custom
+    if (userTier === 'starter' && !isAdmin) {
+        const { generateRandomSlug } = await import('../src/utils/slugUtils.js');
+        
+        // If it's a new card, or if it's an update and they don't have a 16-char slug yet
+        // we force a random one. Or if they're trying to change it.
+        let needsNewSlug = !cardId || !slug || slug.length !== 16;
+        
+        if (cardId) {
+            const existing = await db.select({ slug: businessCards.slug }).from(businessCards).where(eq(businessCards.id, cardId)).limit(1);
+            if (existing[0]?.slug && existing[0].slug.length === 16) {
+                // Keep existing 16-char slug
+                slug = existing[0].slug;
+                needsNewSlug = false;
+            }
+        }
+
+        if (needsNewSlug) {
+            let unique = false;
+            let attempts = 0;
+            while (!unique && attempts < 5) {
+                const candidate = generateRandomSlug(16);
+                const collision = await db.select({ id: businessCards.id }).from(businessCards).where(eq(businessCards.slug, candidate)).limit(1);
+                if (collision.length === 0) {
+                    slug = candidate;
+                    unique = true;
+                }
+                attempts++;
+            }
+        }
+        // Update the cardData object so the slug is reflected in those fields too if saved as JSON
+        cardData.slug = slug;
+    }
 
     if (slug) {
         const existingCard = await db.select().from(businessCards).where(eq(businessCards.slug, slug)).limit(1);

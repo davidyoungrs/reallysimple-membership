@@ -1,11 +1,23 @@
 /**
+ * Generate a random alphanumeric slug
+ */
+export function generateRandomSlug(length: number = 16): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+/**
  * Generate a URL-friendly slug from a name
  * Example: "David Young" -> "david-young"
  */
 export function generateSlug(name: string): string {
     if (!name || name.trim().length === 0) {
         // Fallback to random slug if name is empty
-        return `card-${Math.random().toString(36).substring(2, 9)}`;
+        return generateRandomSlug(8);
     }
 
     return name
