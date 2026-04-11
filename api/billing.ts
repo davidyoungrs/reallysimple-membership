@@ -129,8 +129,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // --- ACTION: Create Customer Portal Session ---
         if (action === 'portal') {
-            const userByEmail = await db.select().from(users).where(eq(users.email, email)).limit(1);
-            const stripeCustomerId = userByEmail[0]?.stripeCustomerId;
+            const existingUser = await db.select().from(users)
+                .where(or(eq(users.clerkId, userId), eq(users.email, email)))
+                .limit(1);
+            
+            const stripeCustomerId = existingUser[0]?.stripeCustomerId;
 
             if (!stripeCustomerId) {
                 return res.status(404).json({ error: 'No active subscription found. Please subscribe first.' });
@@ -142,6 +145,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
 
             return res.status(200).json({ url: portalSession.url });
+        }
+
+        // --- ACTION: Cancel Subscription ---
+        if (action === 'cancel') {
+            const existingUser = await db.select().from(users)
+                .where(or(eq(users.clerkId, userId), eq(users.email, email)))
+                .limit(1);
+            
+            const stripeCustomerId = existingUser[0]?.stripeCustomerId;
+
+            if (!stripeCustomerId) {
+                return res.status(404).json({ error: 'No active subscription found.' });
+            }
+
+            // Find their active or past_due subscriptions
+            const subscriptions = await getStripe().subscriptions.list({
+                customer: stripeCustomerId,
+                limit: 1,
+            });
+
+            const activeSub = subscriptions.data.find(sub => sub.status === 'active' || sub.status === 'past_due' || sub.status === 'trialing');
+
+            if (!activeSub) {
+                return res.status(404).json({ error: 'No active subscription to cancel.' });
+            }
+
+            // Cancel immediately
+            await getStripe().subscriptions.cancel(activeSub.id);
+
+            return res.status(200).json({ success: true, message: 'Subscription successfully cancelled.' });
         }
 
         return res.status(400).json({ error: 'Invalid action.' });

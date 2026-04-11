@@ -7,9 +7,39 @@ import { useTier } from '../contexts/TierContext';
 export function SubscriptionManager() {
     const { t } = useTranslation();
     const { getToken } = useAuth();
-    const { tier, isLoading: isTierLoading } = useTier();
+    const { tier, isLoading: isTierLoading, refreshTier } = useTier();
     const [isLoading, setIsLoading] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const handleCancelSubscription = async () => {
+        if (!window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features immediately.')) return;
+        
+        setIsCancelling(true);
+        setError(null);
+        try {
+            const token = await getToken();
+            const response = await fetch('/api/billing?action=cancel', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to cancel subscription.');
+            }
+
+            alert('Your subscription has been successfully cancelled.');
+            await refreshTier();
+        } catch (err: any) {
+            console.error('Cancel error:', err);
+            setError(err.message || 'An error occurred while cancelling your subscription.');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     const handleManageBilling = async () => {
         setIsLoading(true);
@@ -88,6 +118,7 @@ export function SubscriptionManager() {
 
                 <div className="flex gap-3">
                     {isPremium ? (
+                        <>
                         <button
                             onClick={handleManageBilling}
                             disabled={isLoading}
@@ -96,6 +127,14 @@ export function SubscriptionManager() {
                             {isLoading ? t('Loading...') : t('Manage Billing')}
                             <ExternalLink className="w-4 h-4" />
                         </button>
+                        <button
+                            onClick={handleCancelSubscription}
+                            disabled={isCancelling}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors disabled:opacity-50"
+                        >
+                            {isCancelling ? t('Cancelling...') : t('Cancel Subscription')}
+                        </button>
+                        </>
                     ) : (
                         <a
                             href="/pricing"
