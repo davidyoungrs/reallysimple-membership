@@ -43,12 +43,14 @@ export default defineConfig({
                   for await (const chunk of req) {
                     buffers.push(chunk);
                   }
-                  const data = Buffer.concat(buffers).toString();
+                  const rawBuffer = Buffer.concat(buffers);
+                  (req as any).__rawBody = rawBuffer; // Export for Stripe verification
+                  const data = rawBuffer.toString();
                   if (data) {
                     try {
                       (req as any).body = JSON.parse(data);
                     } catch (e) {
-                      console.error('Failed to parse body', e);
+                      // If JSON parsing fails (e.g., Stripe webhooks or binary), ignore
                       (req as any).body = {};
                     }
                   } else {

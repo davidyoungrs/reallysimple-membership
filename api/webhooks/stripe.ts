@@ -20,7 +20,12 @@ export const config = {
 };
 
 // Helper to read the raw body from the request stream
-async function buffer(readable: ReadableStream | any) {
+async function buffer(readable: any) {
+    if (readable.__rawBody) return readable.__rawBody;
+    if (readable.rawBody) return readable.rawBody;
+    if (readable.body && Buffer.isBuffer(readable.body)) return readable.body;
+    if (typeof readable.body === 'string') return Buffer.from(readable.body);
+
     const chunks = [];
     for await (const chunk of readable) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
