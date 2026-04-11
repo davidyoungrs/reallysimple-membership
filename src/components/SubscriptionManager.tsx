@@ -13,7 +13,7 @@ export function SubscriptionManager() {
     const [error, setError] = useState<string | null>(null);
 
     const handleCancelSubscription = async () => {
-        if (!window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features immediately.')) return;
+        if (!window.confirm('Are you sure you want to cancel your subscription IMMEDIATELY? You will lose access to premium features right now, without finishing your paid billing cycle.')) return;
         
         setIsCancelling(true);
         setError(null);
@@ -31,7 +31,7 @@ export function SubscriptionManager() {
                 throw new Error(data.error || 'Failed to cancel subscription.');
             }
 
-            alert('Your subscription has been successfully cancelled.');
+            alert('Your subscription has been successfully cancelled immediately.');
             await refreshTier();
         } catch (err: any) {
             console.error('Cancel error:', err);
@@ -132,7 +132,7 @@ export function SubscriptionManager() {
                             disabled={isCancelling}
                             className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors disabled:opacity-50"
                         >
-                            {isCancelling ? t('Cancelling...') : t('Cancel Subscription')}
+                            {isCancelling ? t('Cancelling...') : t('Cancel Subscription Immediately')}
                         </button>
                         </>
                     ) : (
