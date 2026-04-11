@@ -12,7 +12,7 @@ export const STARTER_LIMITS = {
     socialLinks: 5,
     phoneNumbers: 2,
     sections: 1,
-    embeds: 1,
+    embeds: 0,
 } as const;
 
 export interface UserSubscriptionInfo {
@@ -89,9 +89,9 @@ export function applyTierLimits(data: CardData, tier: SubscriptionTier): CardDat
             limitedData.sections = limitedData.sections.slice(0, 1);
         }
 
-        // Limit Embeds (Max 1)
-        if (limitedData.embeds && limitedData.embeds.length > 1) {
-            limitedData.embeds = limitedData.embeds.slice(0, 1);
+        // Hide all Embeds on Starter
+        if (limitedData.embeds && limitedData.embeds.length > 0) {
+            limitedData.embeds = [];
         }
 
         // Limit Social Links (Max 5 on Starter)
