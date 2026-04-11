@@ -1,6 +1,6 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
 
-> Last Updated: 2026-04-09 (Session 15) | Head Commit: `e787f09`
+> Last Updated: 2026-04-11 (Session 17) | Head Commit: `e3f1dc1`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -13,11 +13,20 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 
 1. **Phase 5 (Tier Gating)**: Implemented strict feature gating for Starter and Pro tiers. Starter users are now limited to 1 card, 2 phone numbers, and 3 social links, with high-end branding disabled.
 2. **Phase 13 (Admin Dashboard)**: Transformed the Super Admin dashboard into a premium analytics suite with traffic source distribution, top-performer leaderboards, and interactive stat cards.
-3. **Session 15 (Tier Sync Fix)**: Resolved critical desync where Pro upgrades weren't reflecting in the dashboard due to aggressive API caching and missing Clerk metadata synchronization.
+3. **Session 16-17 (Billing & Wallet Sync)**: Resolved Stripe webhook race conditions affecting tier state. Added direct subscription cancellation functionality and a manual APNs "Push to Wallet" sync system directly within the React Designer.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Subscription & Wallet Integrations (Session 16-17)
+
+- [x] **Webhook Race Condition**: Fixed stale `update` webhooks reverting explicit `deleted` cancellations.
+- [x] **Direct Subscription Cleanup**: Added `api/billing.ts?action=cancel`, enabling direct Stripe direct plan termination immediately from the frontend UI.
+- [x] **UI Tier Syncing**: Modified `TierContext.tsx` with a `window` focus listener to auto-refresh tier status dynamically.
+- [x] **Manual Wallet Push (APNs)**: Designed `/api/wallet-sync.ts` and created a "Push Updates" UI so users can trigger forced Apple Wallet syncs globally.
+- [x] **Wallet UI Refactor**: Merged `Branding` and `Style` sections inside the Wallet App Designer into a streamlined layout with React Portals fixing container constraints.
+- [x] **Clerk Smart Routing**: Configured auth to push returning users dynamically to `/dashboard` while tunneling organic sign-ups directly to `/onboarding`.
 
 ### Feature Gating & Tier Limits (Phase 5)
 
@@ -70,10 +79,11 @@ The project is a **digital business card SaaS** built in **React + Vite + TypeSc
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `api/user.ts` | 2026-04-09 | Disabled API caching to fix tier desync |
-| `api/webhooks/stripe.ts` | 2026-04-09 | Added Clerk publicMetadata synchronization |
-| `src/components/WalletBuilder.tsx` | 2026-04-07 | Removed unused state to fix build error |
-| `PROJECT_STATUS.md` | 2026-04-09 | Session 15 tracking (this file) |
+| `api/webhooks/stripe.ts` | 2026-04-10 | Fixed webhook race condition dropping tier deletions |
+| `src/components/WalletBuilder.tsx` | 2026-04-11 | Integrated Apple wallet manual sync and condensed layout |
+| `api/wallet-sync.ts` | 2026-04-11 | Created direct Apple Push Notification route |
+| `src/main.tsx` | 2026-04-11 | Clerk auto-routing updated to dashboard/onboarding paths |
+| `PROJECT_STATUS.md` | 2026-04-11 | Session 17 tracking (this file) |
 
 ---
 
