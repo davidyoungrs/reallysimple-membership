@@ -20,13 +20,17 @@ export const config = {
 };
 
 // Helper to read the raw body from the request stream
-async function buffer(readable: any) {
-    if (readable.__rawBody) return readable.__rawBody;
-    if (readable.rawBody) return readable.rawBody;
-    if (readable.body && Buffer.isBuffer(readable.body)) return readable.body;
+async function buffer(readable: any): Promise<Buffer> {
+    // If Vercel or middleware already provided a raw body, use it
+    if (readable.__rawBody) return Buffer.isBuffer(readable.__rawBody) ? readable.__rawBody : Buffer.from(readable.__rawBody);
+    if (readable.rawBody) return Buffer.isBuffer(readable.rawBody) ? readable.rawBody : Buffer.from(readable.rawBody);
+    
+    // For local dev or if raw body is missing but body is a string
     if (typeof readable.body === 'string') return Buffer.from(readable.body);
+    if (Buffer.isBuffer(readable.body)) return readable.body;
 
-    const chunks = [];
+    // Otherwise, read from the stream
+    const chunks: Uint8Array[] = [];
     for await (const chunk of readable) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
     }
