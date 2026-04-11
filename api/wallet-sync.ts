@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             secretKey: process.env.CLERK_SECRET_KEY,
         });
         const userId = verifiedToken.sub; // clerkId
-        const { cardId } = req.body;
+        const { cardId } = req.body || {};
 
         // If a specific cardId is provided, we can sync just that card.
         // Otherwise, sync all cards for the user.
