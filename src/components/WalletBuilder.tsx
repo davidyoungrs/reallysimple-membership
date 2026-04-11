@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Palette, Upload, Layout, Image as ImageIcon, User, RefreshCw, Lock } from 'lucide-react';
+import { Palette, Upload, Layout, Image as ImageIcon, User, RefreshCw, Lock, Send } from 'lucide-react';
 import { StripDesigner } from './StripDesigner';
 import { useTier } from '../contexts/TierContext';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@clerk/clerk-react';
 import { type CardData, type WalletData } from '../types';
 import { UpgradeModal } from './UpgradeModal';
 
@@ -16,10 +17,12 @@ interface WalletBuilderProps {
 
 export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBuilderProps) {
     const { t } = useTranslation();
+    const { getToken } = useAuth();
     const { isFeatureEnabled } = useTier();
     const [showStripDesigner, setShowStripDesigner] = useState(false);
     const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'branding' | 'info'>('style');
+    const [isPushing, setIsPushing] = useState(false);
 
     const wallet = data.wallet || {
         backgroundColor: '#ffffff',
@@ -39,6 +42,27 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
 
     const [hoveredField, setHoveredField] = useState<string | null>(null);
     const [isExtracting, setIsExtracting] = useState(false);
+
+    const handlePushUpdates = async () => {
+        setIsPushing(true);
+        try {
+            const token = await getToken();
+            const res = await fetch('/api/wallet-sync', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Failed to sync devices');
+            alert(result.message || 'Updates successfully pushed to active devices.');
+        } catch (err: any) {
+            console.error('Push error:', err);
+            alert('Failed to push updates: ' + err.message);
+        } finally {
+            setIsPushing(false);
+        }
+    };
 
     const updateWallet = (updates: Partial<WalletData>) => {
         onChange({
@@ -495,14 +519,22 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
                                                 </label>
                                             </div>
 
-                                            <div className="mt-8 p-4 bg-blue-50 rounded-2xl border border-blue-100 space-y-2">
-                                                <div className="flex items-center gap-2 text-blue-700">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
+                                                <div className="flex items-center gap-2 text-blue-900 mb-2">
                                                     <RefreshCw className="w-3.5 h-3.5" />
-                                                    <span className="text-xs font-bold uppercase tracking-wider">{t('Automatic Sync')}</span>
+                                                    <span className="text-xs font-bold uppercase tracking-wider">{t('Wallet Synchronization')}</span>
                                                 </div>
-                                                <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
-                                                    {t('The back of your Apple Wallet card automatically syncs your Bio, Professional Links, and Contact Details from your profile.')}
+                                                <p className="text-[11px] text-blue-800 leading-relaxed font-medium mb-3">
+                                                    {t('The back of your Apple Wallet card automatically syncs your Bio, Professional Links, and Contact Details from your profile. Push changes manually to update all installed passes on your connections\' phones.')}
                                                 </p>
+                                                <button
+                                                    onClick={handlePushUpdates}
+                                                    disabled={isPushing}
+                                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm disabled:opacity-50"
+                                                >
+                                                    <Send className={`w-4 h-4 ${isPushing ? 'animate-pulse' : ''}`} />
+                                                    {isPushing ? t('Pushing Updates...') : t('Push Updates to Devices')}
+                                                </button>
                                             </div>
                                         </>
                                     )}
