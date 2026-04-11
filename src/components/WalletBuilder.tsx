@@ -21,7 +21,7 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
     const { isFeatureEnabled } = useTier();
     const [showStripDesigner, setShowStripDesigner] = useState(false);
     const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'branding' | 'info'>('style');
+    const [activeTab, setActiveTab] = useState<'style' | 'strip' | 'info'>('style');
     const [isPushing, setIsPushing] = useState(false);
 
     const wallet = data.wallet || {
@@ -176,9 +176,8 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
     ];
 
     const tabs = [
-        { id: 'style', label: t('Style'), icon: Palette, enabled: true },
+        { id: 'style', label: t('Style & Branding'), icon: Palette, enabled: true },
         { id: 'strip', label: t('Strip Image'), icon: ImageIcon, enabled: isFeatureEnabled('strip_designer') },
-        { id: 'branding', label: t('Branding'), icon: Layout, enabled: true },
         { id: 'info', label: t('Information'), icon: User, enabled: true },
     ];
 
@@ -312,6 +311,71 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
                                                     ))}
                                                 </div>
                                             </div>
+
+                                            {/* Branding merged into Style */}
+                                            <div className="flex items-center gap-3 mb-2 mt-8">
+                                                <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                                                    <Layout className="w-4 h-4 text-purple-600" />
+                                                </div>
+                                                <h3 className="font-bold text-gray-900">{t('Logo & Branding')}</h3>
+                                            </div>
+
+                                            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+                                                <label className="flex items-center justify-between">
+                                                    <span className="text-sm font-bold text-gray-700">{t('Show Logo Text')}</span>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={wallet.showLogoText !== false}
+                                                        onChange={(e) => updateWallet({ showLogoText: e.target.checked })}
+                                                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                                    />
+                                                </label>
+
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] uppercase font-bold text-gray-400">{t('Logo Label')}</label>
+                                                    <input
+                                                        type="text"
+                                                        value={wallet.logoText || ''}
+                                                        onChange={(e) => updateWallet({ logoText: e.target.value })}
+                                                        disabled={wallet.showLogoText === false}
+                                                        placeholder={data.company || t('Company Name')}
+                                                        className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3 mt-6">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] uppercase font-bold text-gray-400">{t('Wallet Logo Icon')}</label>
+                                                    {wallet.logoUrl && (
+                                                        <button onClick={() => updateWallet({ logoUrl: undefined })} className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors">
+                                                            {t('Remove')}
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                <div
+                                                    onDragOver={onDragOver}
+                                                    onDragLeave={onDragLeave}
+                                                    onDrop={onDrop}
+                                                    onClick={() => isFeatureEnabled('custom_theme') && logoInputRef.current?.click()}
+                                                    className={`
+                                                        relative min-h-[100px] flex items-center justify-center border-2 border-dashed rounded-2xl transition-all
+                                                        ${isDragging ? 'border-blue-500 bg-blue-50/50' : 'border-gray-200 hover:border-blue-400 hover:bg-gray-50/50'}
+                                                        ${!isFeatureEnabled('custom_theme') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                                    `}
+                                                >
+                                                    <input type="file" ref={logoInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                                                    {wallet.logoUrl ? (
+                                                        <img src={wallet.logoUrl} alt="Logo" className="max-h-16 max-w-[80%] object-contain" />
+                                                    ) : (
+                                                        <div className="text-center">
+                                                            <Upload className="w-5 h-5 text-gray-400 mx-auto mb-2" />
+                                                            <p className="text-[10px] font-bold text-gray-500">{t('Click to Upload Logo')}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </>
                                     )}
 
@@ -388,74 +452,6 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
                                                     </button>
                                                 </div>
                                             )}
-                                        </>
-                                    )}
-
-                                    {activeTab === 'branding' && (
-                                        <>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                                                    <Layout className="w-4 h-4 text-purple-600" />
-                                                </div>
-                                                <h3 className="font-bold text-gray-900">{t('Logo & Branding')}</h3>
-                                            </div>
-
-                                            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
-                                                <label className="flex items-center justify-between">
-                                                    <span className="text-sm font-bold text-gray-700">{t('Show Logo Text')}</span>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={wallet.showLogoText !== false}
-                                                        onChange={(e) => updateWallet({ showLogoText: e.target.checked })}
-                                                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                                    />
-                                                </label>
-
-                                                <div className="space-y-2">
-                                                    <label className="block text-[10px] uppercase font-bold text-gray-400">{t('Logo Label')}</label>
-                                                    <input
-                                                        type="text"
-                                                        value={wallet.logoText || ''}
-                                                        onChange={(e) => updateWallet({ logoText: e.target.value })}
-                                                        disabled={wallet.showLogoText === false}
-                                                        placeholder={data.company || t('Company Name')}
-                                                        className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] uppercase font-bold text-gray-400">{t('Wallet Logo Icon')}</label>
-                                                    {wallet.logoUrl && (
-                                                        <button onClick={() => updateWallet({ logoUrl: undefined })} className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors">
-                                                            {t('Remove')}
-                                                        </button>
-                                                    )}
-                                                </div>
-
-                                                <div
-                                                    onDragOver={onDragOver}
-                                                    onDragLeave={onDragLeave}
-                                                    onDrop={onDrop}
-                                                    onClick={() => isFeatureEnabled('custom_theme') && logoInputRef.current?.click()}
-                                                    className={`
-                                                        relative min-h-[100px] flex items-center justify-center border-2 border-dashed rounded-2xl transition-all
-                                                        ${isDragging ? 'border-blue-500 bg-blue-50/50' : 'border-gray-200 hover:border-blue-400 hover:bg-gray-50/50'}
-                                                        ${!isFeatureEnabled('custom_theme') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                                                    `}
-                                                >
-                                                    <input type="file" ref={logoInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-                                                    {wallet.logoUrl ? (
-                                                        <img src={wallet.logoUrl} alt="Logo" className="max-h-16 max-w-[80%] object-contain" />
-                                                    ) : (
-                                                        <div className="text-center">
-                                                            <Upload className="w-5 h-5 text-gray-400 mx-auto mb-2" />
-                                                            <p className="text-[10px] font-bold text-gray-500">{t('Click to Upload Logo')}</p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
                                         </>
                                     )}
 
