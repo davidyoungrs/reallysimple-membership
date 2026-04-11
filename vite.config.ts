@@ -105,4 +105,34 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') && !id.includes('react-router') && !id.includes('@clerk')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@clerk')) {
+              return 'vendor-clerk';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            return 'vendor-core'; // all other dependencies
+          }
+        }
+      }
+    }
+  }
 })
