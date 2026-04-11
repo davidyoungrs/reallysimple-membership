@@ -49,6 +49,15 @@ export function TierProvider({ children }: { children: React.ReactNode }) {
         if (isLoaded) {
             fetchTier();
         }
+
+        const handleFocus = () => {
+            if (isLoaded && isSignedIn) {
+                fetchTier();
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, [isLoaded, isSignedIn]);
 
     const isFeatureEnabled = (feature: string): boolean => {
