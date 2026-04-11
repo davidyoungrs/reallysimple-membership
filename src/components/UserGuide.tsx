@@ -41,7 +41,7 @@ export const UserGuide = () => {
             bg: 'bg-blue-50',
             steps: [
                 t('Monitor total views and link clicks'),
-                t('View recent activity and visitor locations'),
+                t('Manage and cancel active subscriptions directly'),
                 t('Manage multiple cards from one place')
             ]
         },
@@ -54,7 +54,7 @@ export const UserGuide = () => {
             color: 'text-emerald-500',
             bg: 'bg-emerald-50',
             steps: [
-                t('Choose from "Cool Palettes" themes'),
+                t('Choose from "Cool Palettes" preset themes'),
                 t('Add rich media like TikTok or Instagram embeds'),
                 t('Update contact info and social links instantly')
             ]
@@ -68,9 +68,9 @@ export const UserGuide = () => {
             color: 'text-purple-500',
             bg: 'bg-purple-50',
             steps: [
-                t('Customize your wallet pass appearance'),
-                t('Add to phone for offline sharing'),
-                t('Automatic updates across all devices')
+                t('Customize Style & Branding in one dedicated tab'),
+                t('Push manual updates directly to installed passes'),
+                t('Full compatibility with Apple Wallet')
             ]
         },
         {
