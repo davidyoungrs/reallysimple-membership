@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X, Lock } from 'lucide-react';
 import { PricingCards } from './PricingCards';
 
@@ -8,9 +9,9 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ isOpen, onClose, featureName }: UpgradeModalProps) {
-    if (!isOpen) return null;
+    if (!isOpen || typeof document === 'undefined') return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
             
@@ -43,6 +44,7 @@ export function UpgradeModal({ isOpen, onClose, featureName }: UpgradeModalProps
                     <PricingCards compact />
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
