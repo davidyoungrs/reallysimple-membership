@@ -17,6 +17,10 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/card/(.*)",
+            "destination": "/api/render-card?slug=$1"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

@@ -203,3 +203,9 @@
         - [x] Frontend: Implement Actions Dropdown in `AdminUsers.tsx` <!-- id: 351 -->
         - [x] Frontend: Implement User Detail View (Modal) <!-- id: 352 -->
         - [x] Global: Implement Maintenance Mode middleware logic <!-- id: 294 -->
+
+## Phase 15: OpenGraph Dynamic Images
+- [x] Install `@vercel/og` dependency
+- [x] Create `api/og.tsx` (Edge Function) for generating OG images
+- [x] Create `api/render-card.ts` (Edge Function) for injecting meta tags
+- [x] Update `vercel.json` routing rules for `/card/:slug`
