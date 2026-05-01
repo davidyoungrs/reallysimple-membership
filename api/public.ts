@@ -162,7 +162,7 @@ async function handleRenderCard(req: VercelRequest, res: VercelResponse) {
         const proto = host.includes('localhost') ? 'http' : 'https';
         
         const fetch = globalThis.fetch; 
-        const htmlRes = await fetch(`${proto}://${host}/index.html`);
+        const htmlRes = await fetch(`${proto}://${host}/index.html`, { cache: 'no-store' });
         if (!htmlRes.ok) return res.status(500).send('Failed to load base HTML');
         let html = await htmlRes.text();
 
