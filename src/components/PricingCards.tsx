@@ -225,6 +225,7 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
                         <button 
                             onClick={() => setIsAnnual(!isAnnual)}
                             className="w-14 h-7 bg-gray-200 rounded-full relative p-1 transition-colors hover:bg-gray-300"
+                            aria-label="Toggle pricing period"
                         >
                             <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${isAnnual ? 'translate-x-7' : 'translate-x-0'}`} />
                         </button>
@@ -236,7 +237,7 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
                     <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
                         <Globe className="w-4 h-4 text-gray-400" />
                         <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                            <SelectTrigger className="w-[100px] h-7 text-xs font-bold border-none bg-transparent hover:bg-gray-50 transition-colors p-0">
+                            <SelectTrigger className="w-[100px] h-7 text-xs font-bold border-none bg-transparent hover:bg-gray-50 transition-colors p-0" aria-label="Select currency">
                                 <SelectValue placeholder="Currency" />
                             </SelectTrigger>
                             <SelectContent className="bg-white">
@@ -275,7 +276,7 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
                             {tier.popular && (
                                 <>
                                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                                        <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm">
+                                        <span className="bg-indigo-600 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm">
                                             {t('Recommended')}
                                         </span>
                                     </div>
@@ -293,7 +294,7 @@ export function PricingCards({ showButtons = true, compact = false, onSelect }: 
                                     <span className="text-5xl font-black text-gray-900 tracking-tighter">
                                         {formatPrice(displayPrice)}
                                     </span>
-                                    <span className="text-gray-400 font-bold uppercase text-xs">{displayPeriod}</span>
+                                    <span className="text-gray-600 font-bold uppercase text-xs">{displayPeriod}</span>
                                 </div>
                                 {selectedCurrency !== 'GBP' && tier.priceMonthlyGbp > 0 && !fxLoading && (
                                     <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-tight">

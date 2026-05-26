@@ -17,7 +17,7 @@ export const LandingPage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt="ReallySimple" className="h-16 w-auto" />
+                            <img src="/logo.png" alt="ReallySimple" className="h-16 w-auto" width="112" height="64" />
                         </div>
                         <div className="flex items-center gap-4">
                             {/* Language Selector */}
@@ -43,8 +43,9 @@ export const LandingPage = () => {
                 </div>
             </nav>
 
-            {/* Hero Section */}
-            <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
+            <main>
+                {/* Hero Section */}
+                <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center max-w-3xl mx-auto">
                         <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6">
@@ -71,9 +72,14 @@ export const LandingPage = () => {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                                 <div className="relative bg-white rounded-[2rem] overflow-hidden shadow-2xl border border-gray-100">
                                     <img
-                                        src="/homepage-mockup.png"
+                                        src="/homepage-mockup.webp"
                                         alt="Really Simple Apps Digital Card Preview"
                                         className="w-full h-auto object-cover transform transition duration-700 hover:scale-[1.02]"
+                                        width="734"
+                                        height="734"
+                                        fetchPriority="high"
+                                        loading="eager"
+                                        decoding="sync"
                                     />
                                 </div>
                             </div>
@@ -83,7 +89,7 @@ export const LandingPage = () => {
 
                 {/* Background Gradients */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-50 rounded-full blur-3xl -z-10 opacity-60 pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-indigo-50 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none" />
+                <div className="absolute top-[600px] right-0 w-[800px] h-[600px] bg-indigo-50 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none" />
             </div>
 
             {/* Features Grid */}
@@ -135,6 +141,8 @@ export const LandingPage = () => {
                     </div>
                 </div>
             </div>
+
+            </main>
 
             {/* Footer */}
             <footer className="bg-gray-900 text-gray-400 py-12">
