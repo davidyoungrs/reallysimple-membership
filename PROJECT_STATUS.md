@@ -1,6 +1,8 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
+| Date | Head Commit |
+| --- | --- |
+| 2026-06-07 (Session 20) | `6f671eb` |
 
-> Last Updated: 2026-05-02 (Session 19) | Head Commit: `5954270`
 > Repo: https://github.com/davidyoungrs/reallysimple-new
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
@@ -9,15 +11,35 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is now in an **Optimized & Hardened** state. We have shifted from core feature building to performance optimization and strict business logic enforcement:
+The platform is now in an **Optimized, Hardened, and Secure** state. We have completed the following key tasks:
 
-1. **Performance (Session 18)**: Slashed initial bundle load times by **75%** (800kB → 210kB) using manual Vite code splitting and vendor isolation.
-2. **Business Logic Enforcement**: Implemented system-assigned random 16-char slugs for Starter users and explicitly gated embedded media (YouTube/Spotify) behind Pro tiers.
-3. **Infrastructure Stability**: Bulletproofed Stripe Webhook signature verification to handle Vercel's raw body parsing quirks and resolved production bundle circularity issues.
+1. **API Security Hardening**: Implemented rate limiting and JSON payload validation middleware (`api/_utils/security.ts`) and integrated them across all key serverless functions to protect against abuse.
+2. **Privacy Policy Synchronization**: Synced the frontend [PolicyPage.tsx](file:///Users/davidyoung/contact-tree/src/components/PolicyPage.tsx) with the new June 7, 2026 version of [privacy_policy.md](file:///Users/davidyoung/contact-tree/privacy_policy.md). Re-structured the component to support rich formats (e.g. bulleted lists) and dynamically render policy-specific emails (`info@reallysimpleapps.com` vs `support@reallysimple.apps`).
+3. **Vercel Build Stability**: Resolved a deployment-blocking peer dependency conflict between Vite 8 and Tailwind CSS Vite plugin by creating a root [.npmrc](file:///Users/davidyoung/contact-tree/.npmrc) file that enforces `legacy-peer-deps=true`.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Privacy & Build Stability (Session 20)
+
+- [x] **Frontend Policy Sync**: Updated [PolicyPage.tsx](file:///Users/davidyoung/contact-tree/src/components/PolicyPage.tsx) with the updated Privacy Policy text (effective June 7, 2026), replacing the hardcoded outdated policy sections.
+- [x] **Dynamic Contact Info**: Introduced dynamic email matching based on the active policy type, showing `info@reallysimpleapps.com` for Privacy and `support@reallysimple.apps` for Terms and Cookies.
+- [x] **Rich Text Support**: Added support for React JSX structure inside the policy sections to render list items instead of relying entirely on simple strings.
+- [x] **Deployment Peer Dependency Fix**: Created a root [.npmrc](file:///Users/davidyoung/contact-tree/.npmrc) file configuring `legacy-peer-deps=true` to resolve the Vite 8 vs Tailwind peer dependency conflict on Vercel builds.
+
+### API Security Hardening (Session 20)
+
+- [x] **Security Middleware**: Implemented rate-limiting and request payload validation in `api/_utils/security.ts`.
+- [x] **Endpoint Integration**: Integrated security checks into all key backend API entry points:
+  * User onboarding and management (`api/user.ts`)
+  * Billing and billing actions (`api/billing.ts`)
+  * Apple Wallet pass generation (`api/passes.ts`)
+  * Cards endpoint (`api/cards.ts`)
+  * Leads collection (`api/leads.ts`)
+  * Public routes (`api/public.ts`)
+  * Webhook receivers (`api/apple-webhook.ts`, `api/webhooks/stripe.ts`)
+  * Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`, `api/wallet-sync.ts`)
 
 ### Growth & SEO (Session 19)
 
@@ -26,38 +48,18 @@ The platform is now in an **Optimized & Hardened** state. We have shifted from c
 - [x] **Vercel Function Consolidation**: Successfully avoided Vercel Hobby plan limits by consolidating edge functions directly into `api/public.ts`, ensuring smooth deployment of the OG feature.
 - [x] **Branding Updates**: Updated root favicon across the platform to the new "RS" logo (`favicon.png` and `favicon.ico`), including cache-busting configurations.
 
-### Performance & Stability (Session 18)
-
-- [x] **Vite Code Splitting**: Implemented `manualChunks` in `vite.config.ts`, slicing the app into parallel chunks (`vendor-core`, `vendor-clerk`, `vendor-icons`, etc.) for faster mobile loads.
-- [x] **Circular Dependency Fix**: Resolved chunk circularity that was causing production site crashes on the landing page.
-- [x] **Resilient Stripe Webhooks**: Overhauled `api/webhooks/stripe.ts` buffer logic to ensure 100% signature verification success on Vercel/Node.
-- [x] **DNS Cleanup**: Removed non-functional `clerk.reallysimple.apps` preconnect rules.
-
-### Tier Logic & Gating Enhancements (Session 18)
-
-- [x] **Restricted Slugs**: Starter users now receive a unique, randomly generated 16-character alphanumeric slug (e.g., `8f9g4k2m1n5p9q3r`).
-- [x] **Custom URL Gating**: Editing slugs is now strictly locked to Pro/Pro+ tiers in both the UI and the Backend API.
-- [x] **Media Gating**: Hid all embedded media (YouTube, Spotify, etc.) from Starter cards.
-- [x] **User Journey Documentation**: Created `user_journey_flow.md` with visual structural diagrams mapping the free-to-paid lifecycle.
-
-### Subscription & Wallet Integrations (Session 16-17)
-
-- [x] **Webhook Race Condition**: Fixed stale `update` webhooks reverting explicit `deleted` cancellations.
-- [x] **Direct Subscription Cleanup**: Added `api/billing.ts?action=cancel` for immediate plan termination.
-- [x] **Manual Wallet Push (APNs)**: Created `api/wallet-sync.ts` and React UI for forced Apple Wallet synchronization.
-
 ---
 
 ## 🏗️ KEY ARCHITECTURE
 
 ```bash
 /src
-  /utils
-    tier-limits.ts         ← Master logic for feature/media gating
-    slugUtils.ts           ← Slug generation and validation (16-char randomizer)
+  /components
+    PolicyPage.tsx         ← Front-end rendering of privacy, terms, and cookies
 /api
-  webhooks/stripe.ts       ← Bulletproofed webhook verification logic
-  cards.ts                 ← Backend enforcement for restricted slugs
+  _utils/security.ts       ← Core rate-limiting and payload validation middleware
+  webhooks/stripe.ts       ← Bulletproofed webhook verification logic + security integration
+  public.ts                ← Consolidated handler for public routing and SEO meta injection
 ```
 
 ---
@@ -66,24 +68,19 @@ The platform is now in an **Optimized & Hardened** state. We have shifted from c
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `api/public.ts` | 2026-05-02 | Growth: Consolidated Node.js serverless handler for OG Image rendering & Meta Tag injection |
-| `index.html` | 2026-05-02 | Branding: Updated favicon links with cache busting and apple-touch-icon |
-| `vercel.json` | 2026-05-02 | Infrastructure: Rewrote `/card/:slug` to `api/public.ts` for meta tag injection |
-| `public/favicon.ico` | 2026-05-02 | Branding: Added hard fallback for aggressive browser favicon caching |
-| `vite.config.ts` | 2026-04-11 | Performance: manualChunks and circularity fixes |
+| `src/components/PolicyPage.tsx` | 2026-06-07 | Privacy: Synced frontend with June 7, 2026 policy, added rich JSX layout, dynamic contact emails |
+| `.npmrc` | 2026-06-07 | Build: Bypassed peer dependency conflicts to resolve Vercel deployment build failures |
+| `api/_utils/security.ts` | 2026-06-07 | Security: Added request rate limit checking and payload schema verification |
+| `api/*.ts` | 2026-06-07 | Security: Hardened all backend entry points with rate limiting and payload checks |
+| `privacy_policy.md` | 2026-06-07 | Privacy: Updated text to June 7, 2026 version |
 
 ---
 
 ## ▶️ HOW TO RESUME
 
 1. **Verify Build Health:** `npm run build`
-2. **Test Restricted Slugs:** Log in as a Starter user and verify the "Public Card URL" field is locked and shows a random alphanumeric ID.
-3. **Trigger Webhook:** Use Stripe CLI (or a real test transaction) to verify the new signature verification logic.
-
-### Suggested Next Session Starting Point
-
-- **Google Wallet Credentials**: The primary remaining infrastructure item. Obtain the Service Account JSON and Issuer ID to finalize the Android pass flow.
-- **Enhanced Analytics**: Now that the bundle is optimized, we could expand the Charts in `Dashboard.tsx` with deeper user engagement metrics.
+2. **Review Deployment:** Confirm Vercel builds successfully with the new `.npmrc` configuration.
+3. **Verify Security Headers:** Ensure API endpoints return appropriate responses when rate-limited or sent invalid payloads.
 
 ---
 
@@ -93,3 +90,4 @@ The platform is now in an **Optimized & Hardened** state. We have shifted from c
 - **Consistency** — `PricingCards` is one component used in both `/pricing` and the wizard
 - **Minimal friction** — Clerk handles auth, `localStorage` bridges the pre/post-auth gap
 - **Vercel Hobby constraints** — Stay under 12 serverless functions; consolidate where possible
+
