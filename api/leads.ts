@@ -6,6 +6,7 @@ import { eq, desc, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { verifyToken } from '@clerk/backend';
 import { Resend } from 'resend';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -30,6 +31,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
+
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res, { maxBytes: 50 * 1024 })) return; // 50KB limit for leads payload
 
     // POST: Submit a Lead (Public)
     if (req.method === 'POST') {

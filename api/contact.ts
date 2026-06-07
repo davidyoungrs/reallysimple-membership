@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from '../src/db/index.js';
 import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 import { Resend } from 'resend';
 
@@ -17,6 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
+
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res, { maxBytes: 50 * 1024 })) return; // 50KB limit for contact payload
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });

@@ -4,8 +4,12 @@ import { eq, sql, inArray } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import { sendPassPush } from './_utils/apns.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res)) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

@@ -6,6 +6,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPassPush } from '../_utils/apns.js';
 import { sendRenewalNotice, sendPaymentFailedNotice } from '../_utils/billing_emails.js';
 import { createClerkClient } from '@clerk/backend';
+import { checkRateLimit, validatePayload } from '../_utils/security.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {} as any);
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -61,6 +62,9 @@ const getPriceMap = () => {
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res, { maxBytes: 1 * 1024 * 1024, sanitizeBody: false })) return;
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

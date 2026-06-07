@@ -4,8 +4,12 @@ import { inArray, eq } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res)) return;
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

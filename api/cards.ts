@@ -2,7 +2,7 @@ import { db } from '../src/db/index.js';
 import { businessCards, cardViews, cardClicks, users } from '../src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
-import { secureEndpoint } from './_utils/security.js';
+import { secureEndpoint, validatePayload } from './_utils/security.js';
 import { sanitize } from '../src/utils/sanitization.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -20,6 +20,7 @@ const RESERVED_SLUGS = [
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Security Headers (CORS, etc.)
     if (!secureEndpoint(req, res)) return;
+    if (!validatePayload(req, res, { maxBytes: 2 * 1024 * 1024 })) return;
 
     const { method } = req;
     const query = req.query;

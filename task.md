@@ -152,9 +152,9 @@
 - [x] Create `api/passes.ts` (Consolidate Apple/Google wallet generation) <!-- id: 383 -->
 - [x] Create `api/public.ts` (Consolidate system-status) <!-- id: 384 -->
 - [x] API Consolidation (Serverless Limit Fix - Phase 2)
-  - [x] Create `api/billing.ts` (Consolidate checkout & portal)
-  - [x] Merge `api/me.ts` into `api/user.ts` (Consolidate profile & features)
-  - [x] Merge `api/admin/push-test.ts` into `api/admin/index.ts`
+  - [x] Modify `api/_utils/security.ts` to support standard and auth rate limits
+  - [/] Add `checkRateLimit` to `api/user.ts` (the auth/login route)
+  - [ ] Add `checkRateLimit` to `api/admin/index.ts`
   - [x] Frontend: Update all API fetch calls <!-- id: 385 -->
   - [x] Delete old API files <!-- id: 386 -->
   - [x] Verify all flows <!-- id: 387 -->

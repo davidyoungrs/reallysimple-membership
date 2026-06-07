@@ -4,6 +4,7 @@ import { eq, or } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import Stripe from 'stripe';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 let stripeInstance: Stripe | null = null;
 
@@ -20,6 +21,9 @@ function getStripe() {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res)) return;
+
     // --- SPECIAL PUBLIC ACTION: Get Exchange Rates (GET or POST) ---
     const action = req.query.action || req.body?.action;
     

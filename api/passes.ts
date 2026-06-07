@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 // export const config = {
 //     runtime: 'edge', // Only if appropriate. Usually Node is safer for file ops.
@@ -15,6 +16,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 const CERT_DIR = path.join(process.cwd(), 'certs');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res)) return;
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

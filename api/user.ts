@@ -4,10 +4,14 @@ import { eq, or, sql } from 'drizzle-orm';
 import { verifyToken, createClerkClient } from '@clerk/backend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendWelcomeEmail } from './_utils/onboarding.js';
+import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (!checkRateLimit(req, res)) return;
+    if (!validatePayload(req, res)) return;
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

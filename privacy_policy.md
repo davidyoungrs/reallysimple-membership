@@ -1,50 +1,62 @@
 # Privacy Policy
 
-**Last Updated:** February 16, 2026
+**Last Updated:** June 7, 2026
 
-Really Simple Apps (“we,” “us,” or “our”) is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, share, and safeguard your information when you use our website, reallysimple.apps, and our digital card product, Really Simple Cards.
+Really Simple Apps (“we,” “us,” or “our”) is committed to protecting your personal information and your right to privacy.
 
-## 2. Who we are and contact details
+**1. What Information We Collect**
 
-Really Simple Apps is the data controller responsible for deciding how and why your personal information is used. For any privacy-related questions or concerns, you may contact us at support@reallysimple.apps.
+We may collect and process the following personal data:
 
-## 3. Information we collect
+- Your name
+- Contact details (phone number, email address)
 
-We collect personal information that you voluntarily provide when interacting with our website, such as when creating an account or building your Really Simple Cards profile. This includes your name, phone number, email address, title, company name, social media handles, bio, and profile photo.
+**2. How We Use Your Information**
 
-We also collect technical and usage data indirectly, such as information about your browsing activity through cookies and similar tracking technologies. This helps us provide analytics about card performance (views, clicks, etc.). Our services are not intended for children, and we do not knowingly collect information about minors.
+We use your data to:
 
-## 4. Legal basis for processing your information
+- Contact you regarding the services and solutions we offer.
+- Maintain internal records.
+- Comply with legal or regulatory obligations.
 
-We process your personal information using one or more of the following legal bases:
-- **Consent:** e.g., for marketing communications.
-- **Contractual Necessity:** e.g., to provide the services you signed up for.
-- **Legal Obligations:** e.g., tax or reporting requirements.
-- **Legitimate Interests:** e.g., improving our services or preventing fraud.
+**3. Legal Basis for Processing**
 
-## 5. How we share your information
+We process your personal data under the following lawful bases:
 
-We only share your personal information when necessary:
-- **Public Profiles:** Information you add to your card is intended to be shared publicly.
-- **Service Providers:** We use third-party tools like Clerk for authentication and Supabase for our database.
-- **Legal Requirements:** We may disclose information if required by law or law enforcement.
+- Contract (to provide services you have requested)
+- Legitimate interests (to manage our business effectively)
+- Legal obligations (where applicable)
 
-We do not sell your personal information to third parties.
+**4. Data Sharing**
 
-## 6. Cookies and tracking technologies
+We do not sell or rent your personal data. We may share your data with:
 
-We use cookies to maintain your session, remember preferences, and understand site performance. You can control cookies through your browser settings.
+- Service providers (e.g., booking systems) who process data on our behalf.
 
-## 7. Your data protection rights
+**5. Data Retention**
 
-Depending on your location (e.g., UK, EEA), you have rights under GDPR, including:
-- Access and correction of your data.
-- Erasure of your information.
-- Data portability.
-- Withdrawal of consent.
+We retain your data only as long as necessary to fulfil the purposes we collected it for, including legal, accounting, or reporting requirements.
 
-To exercise your rights, email support@reallysimple.apps.
+**6. Data Security**
 
-## 8. US Residents (California and Nevada)
+We take appropriate technical and organisational measures to protect your personal data from unauthorised access, loss, or misuse.
 
-California residents (CCPA) and Nevada residents have specific rights regarding access to and deletion of their personal information. Really Simple Apps does not sell personal information as defined under Nevada law.
+**7. Your Rights**
+
+Under UK GDPR, you have the right to:
+
+- Access your personal data.
+- Request correction of inaccurate data
+- Request deletion of your data
+- Object to or restrict processing.
+- Withdraw consent at any time (where applicable)
+
+**8. Contact Us**
+
+If you have any questions about this privacy notice or your data, please contact:
+
+info@reallysimpleapps.com
+
+**9. Complaints**
+
+You have the right to lodge a complaint with the Information Commissioner’s Office (ICO) if you believe your data has been handled improperly.
