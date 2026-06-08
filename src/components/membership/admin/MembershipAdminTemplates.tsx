@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Loader2, Plus, Edit2, Layers, Check, X, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Edit2, Layers, X, ShieldAlert } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminTemplates() {

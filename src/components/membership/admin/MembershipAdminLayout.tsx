@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation, Outlet, Navigate } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Shield, Users, Layers, PlusCircle, LayoutDashboard, LogOut, ChevronLeft, Loader2 } from 'lucide-react';
+import { Shield, Users, Layers, PlusCircle, LayoutDashboard, ChevronLeft, Loader2 } from 'lucide-react';
 
 export function MembershipAdminLayout() {
   const { clubSlug } = useParams<{ clubSlug: string }>();

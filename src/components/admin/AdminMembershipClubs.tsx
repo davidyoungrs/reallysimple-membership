@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Plus, Trash2, Edit2, Shield, Settings, ExternalLink, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AdminMembershipClubs() {

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { MembershipCardPreview } from './MembershipCardPreview.jsx';
 import { MembershipStripDesigner } from './MembershipStripDesigner.jsx';
-import { type ClubBrandingConfig, type MembershipCardConfig } from '../../types/membershipTypes.js';
+import { type MembershipCardConfig } from '../../types/membershipTypes.js';
 import { type StripConfig } from '../../types.js';
-import { Loader2, Upload, Sparkles, CreditCard, ChevronRight, Check } from 'lucide-react';
+import { Loader2, Upload, Sparkles, CreditCard, Check } from 'lucide-react';
 
 export function MembershipCardCreator() {
   const { getToken } = useAuth();
@@ -96,14 +96,7 @@ export function MembershipCardCreator() {
     }
   }, [selectedTemplate]);
 
-  // Handler for custom branding styling
-  const branding = selectedClub?.brandingConfig as ClubBrandingConfig || {
-    primaryColor: '#3b82f6',
-    secondaryColor: '#1d4ed8',
-    textColor: '#1f2937',
-    backgroundColor: '#f3f4f6',
-    fontFamily: 'Inter',
-  };
+
 
   // Upload image to R2
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

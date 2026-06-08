@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { useOutletContext, Link, useParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { Users, Award, ShieldAlert, PlusCircle, FileSpreadsheet, Loader2, ArrowRight } from 'lucide-react';
-import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminDashboard() {
   const { clubSlug } = useParams<{ clubSlug: string }>();
-  const { club, branding } = useOutletContext<{ club: any; branding: ClubBrandingConfig }>();
+  const { club } = useOutletContext<{ club: any }>();
   const { getToken } = useAuth();
 
   const [stats, setStats] = useState({ total: 0, active: 0, expired: 0, revoked: 0 });

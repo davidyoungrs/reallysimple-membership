@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Trash2, Edit, Award, ShieldAlert, FileSpreadsheet, Plus, Download, X, Check, Upload } from 'lucide-react';
-import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
+import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload } from 'lucide-react';
 
 export function MembershipAdminMembers() {
-  const { club, branding } = useOutletContext<{ club: any; branding: ClubBrandingConfig }>();
+  const { club } = useOutletContext<{ club: any }>();
   const { getToken } = useAuth();
   const [searchParams] = useSearchParams();
 
@@ -17,7 +16,6 @@ export function MembershipAdminMembers() {
 
   // CSV Import States
   const [showImportView, setShowImportView] = useState(searchParams.get('import') === 'true');
-  const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvPreview, setCsvPreview] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
@@ -184,7 +182,6 @@ export function MembershipAdminMembers() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setCsvFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
@@ -258,7 +255,6 @@ export function MembershipAdminMembers() {
   };
 
   const handleResetImport = () => {
-    setCsvFile(null);
     setCsvPreview([]);
     setImportResults(null);
   };
