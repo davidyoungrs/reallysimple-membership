@@ -71,7 +71,7 @@ function App() {
         <ClubThemeProvider>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
-            <Route path="/" element={<Navigate to="/admin/memberships" replace />} />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
 
             {/* Auth Routes */}
             <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
