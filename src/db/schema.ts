@@ -103,3 +103,60 @@ export const walletPushRegistrations = pgTable('wallet_push_registrations', {
 }, (table) => ({
     uniqueRegistration: unique('unique_registration').on(table.deviceLibraryIdentifier, table.serialNumber)
 }));
+
+export const clubs = pgTable('clubs', {
+    id: serial('id').primaryKey(),
+    uid: uuid('uid').defaultRandom().notNull().unique(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull().unique(),
+    logoUrl: text('logo_url'),
+    brandingConfig: jsonb('branding_config').notNull(), // ClubBrandingConfig
+    membershipNumberFormat: text('membership_number_format').default('{NUMBER}').notNull(), // e.g. "CLUB-{NUMBER}"
+    createdBy: text('created_by'), // Clerk ID
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const membershipTemplates = pgTable('membership_templates', {
+    id: serial('id').primaryKey(),
+    uid: uuid('uid').defaultRandom().notNull().unique(),
+    clubId: integer('club_id').references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
+    name: text('name').notNull(), // e.g. "Gold Member 2025"
+    membershipType: text('membership_type').notNull(), // e.g. "Gold"
+    cardConfig: jsonb('card_config').notNull(), // MembershipCardConfig
+    durationMonths: integer('duration_months').default(12).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    createdBy: text('created_by'), // Clerk ID
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const memberships = pgTable('memberships', {
+    id: serial('id').primaryKey(),
+    uid: uuid('uid').defaultRandom().notNull().unique(),
+    templateId: integer('template_id').references(() => membershipTemplates.id, { onDelete: 'cascade' }).notNull(),
+    clubId: integer('club_id').references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
+    memberName: text('member_name').notNull(),
+    memberEmail: text('member_email').notNull(),
+    memberPhoto: text('member_photo'), // S3/R2 URL
+    membershipNumber: text('membership_number').notNull(),
+    membershipType: text('membership_type').notNull(),
+    stripImageUrl: text('strip_image_url'), // generated strip image URL (or R2 upload)
+    cardConfig: jsonb('card_config').notNull(), // Snapshot of card config at creation
+    slug: text('slug').notNull().unique(), // e.g. "club-slug-001"
+    status: text('status').default('active').notNull(), // 'active', 'expired', 'revoked'
+    issuedAt: timestamp('issued_at').defaultNow().notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+    issuedBy: text('issued_by'), // Clerk ID of admin
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const clubAdmins = pgTable('club_admins', {
+    id: serial('id').primaryKey(),
+    clubId: integer('club_id').references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
+    clerkId: text('clerk_id').notNull(), // Clerk user ID
+    role: text('role').default('admin').notNull(), // 'admin' or 'super_admin'
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+

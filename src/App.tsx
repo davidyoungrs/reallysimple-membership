@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { TierProvider } from './contexts/TierContext';
+import { ClubThemeProvider } from './contexts/ClubThemeContext.js';
 
 // Lazy Load Pages
 const WordPressHome = lazy(() => import('./components/WordPressHome').then(module => ({ default: module.WordPressHome })));
@@ -26,6 +27,13 @@ const Pricing = lazy(() => import('./components/Pricing').then(module => ({ defa
 const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
 const OnboardingCallback = lazy(() => import('./components/OnboardingCallback').then(module => ({ default: module.OnboardingCallback })));
 const UserGuide = lazy(() => import('./components/UserGuide').then(module => ({ default: module.UserGuide })));
+const MembershipCardCreator = lazy(() => import('./components/membership/MembershipCardCreator').then(module => ({ default: module.MembershipCardCreator })));
+const MembershipPublicPage = lazy(() => import('./components/membership/MembershipPublicPage').then(module => ({ default: module.MembershipPublicPage })));
+const MembershipAdminLayout = lazy(() => import('./components/membership/admin/MembershipAdminLayout').then(module => ({ default: module.MembershipAdminLayout })));
+const MembershipAdminDashboard = lazy(() => import('./components/membership/admin/MembershipAdminDashboard').then(module => ({ default: module.MembershipAdminDashboard })));
+const MembershipAdminMembers = lazy(() => import('./components/membership/admin/MembershipAdminMembers').then(module => ({ default: module.MembershipAdminMembers })));
+const MembershipAdminTemplates = lazy(() => import('./components/membership/admin/MembershipAdminTemplates').then(module => ({ default: module.MembershipAdminTemplates })));
+const AdminMembershipClubs = lazy(() => import('./components/admin/AdminMembershipClubs').then(module => ({ default: module.AdminMembershipClubs })));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -75,8 +83,9 @@ function App() {
   return (
     <BrowserRouter>
       <TierProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
+        <ClubThemeProvider>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/create" element={<OnboardingWizard />} />
             <Route path="/onboarding-callback" element={<OnboardingCallback />} />
@@ -127,6 +136,24 @@ function App() {
               }
             />
 
+            {/* Membership Routes */}
+            <Route
+              path="/membership-cards"
+              element={
+                <>
+                  <SignedIn>
+                    <RequireVerifiedEmail>
+                      <MembershipCardCreator />
+                    </RequireVerifiedEmail>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            />
+            <Route path="/membership/:slug" element={<MembershipPublicPage />} />
+
             {/* Policy Routes - must come after all static routes */}
             <Route path="/:type" element={<PolicyPage />} />
 
@@ -169,18 +196,42 @@ function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="cards" element={<AdminCards />} />
+              <Route path="memberships" element={<AdminMembershipClubs />} />
               <Route path="security" element={<AdminSecurity />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="simulator" element={<SubscriptionSimulator />} />
+            </Route>
+
+            {/* Club Admin Routes */}
+            <Route
+              path="/membership-admin/:clubSlug"
+              element={
+                <>
+                  <SignedIn>
+                    <RequireVerifiedEmail>
+                      <MembershipAdminLayout />
+                    </RequireVerifiedEmail>
+                  </SignedIn>
+                  <SignedOut>
+                    <RedirectToSignIn />
+                  </SignedOut>
+                </>
+              }
+            >
+              <Route index element={<MembershipAdminDashboard />} />
+              <Route path="members" element={<MembershipAdminMembers />} />
+              <Route path="templates" element={<MembershipAdminTemplates />} />
+              <Route path="create" element={<MembershipCardCreator />} />
             </Route>
 
             {/* Redirect unknown routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </TierProvider>
-    </BrowserRouter>
-  );
+      </ClubThemeProvider>
+    </TierProvider>
+  </BrowserRouter>
+);
 }
 
 export default App;

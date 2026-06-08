@@ -28,6 +28,9 @@
     "functions": {
         "api/passes.ts": {
             "includeFiles": "certs/model.pass/**"
+        },
+        "api/membership-passes.ts": {
+            "includeFiles": "certs/model.pass/**"
         }
     }
 }

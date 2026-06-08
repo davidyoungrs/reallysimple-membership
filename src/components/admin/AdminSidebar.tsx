@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, CreditCard, Settings, ShieldAlert, LogOut, Play } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Settings, ShieldAlert, LogOut, Play, Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 
@@ -12,6 +12,7 @@ export function AdminSidebar() {
         { icon: LayoutDashboard, label: 'Overview', path: '/admin' },
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: CreditCard, label: 'Cards', path: '/admin/cards' },
+        { icon: Shield, label: 'Memberships', path: '/admin/memberships' },
         { icon: ShieldAlert, label: 'Security', path: '/admin/security' },
         { icon: Play, label: 'Simulator', path: '/admin/simulator' },
         { icon: Settings, label: 'Settings', path: '/admin/settings' },

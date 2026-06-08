@@ -3,7 +3,7 @@ import { db } from '../../src/db/index.js';
 import { users } from '../../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_onboarding_to_not_fail_init');
 
 export async function sendWelcomeEmail(clerkUserId: string, email: string) {
     const apiKey = process.env.RESEND_API_KEY;

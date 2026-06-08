@@ -8,7 +8,7 @@ import { verifyToken } from '@clerk/backend';
 import { Resend } from 'resend';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_leads_to_not_fail_init');
 
 // Validation Schema
 const leadSchema = z.object({

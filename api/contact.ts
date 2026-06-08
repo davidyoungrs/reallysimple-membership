@@ -6,7 +6,7 @@ import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_contact_to_not_fail_init');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS

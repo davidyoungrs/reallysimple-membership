@@ -22,6 +22,13 @@
       "when": 1771455615356,
       "tag": "0002_public_silver_fox",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780951869400,
+      "tag": "0003_nostalgic_masque",
+      "breakpoints": true
     }
   ]
 }
