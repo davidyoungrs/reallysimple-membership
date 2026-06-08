@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, CreditCard, Settings, ShieldAlert, LogOut, Play, Shield } from 'lucide-react';
+import { Settings, ShieldAlert, LogOut, Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 
@@ -9,12 +9,8 @@ export function AdminSidebar() {
     const isActive = (path: string) => location.pathname === path;
 
     const navItems = [
-        { icon: LayoutDashboard, label: 'Overview', path: '/admin' },
-        { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: CreditCard, label: 'Cards', path: '/admin/cards' },
-        { icon: Shield, label: 'Memberships', path: '/admin/memberships' },
+        { icon: Shield, label: 'Membership Clubs', path: '/admin/memberships' },
         { icon: ShieldAlert, label: 'Security', path: '/admin/security' },
-        { icon: Play, label: 'Simulator', path: '/admin/simulator' },
         { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];
 
@@ -22,8 +18,8 @@ export function AdminSidebar() {
         <div className="w-64 bg-slate-900 h-screen fixed left-0 top-0 text-white flex flex-col">
             <div className="p-6 border-b border-slate-800">
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                    <span className="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center text-sm">SA</span>
-                    Super Admin
+                    <span className="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center text-sm">MB</span>
+                    Club Pass Admin
                 </h2>
             </div>
 

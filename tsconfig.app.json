@@ -25,7 +25,8 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@clerk/clerk-react": ["./src/components/MockClerk.tsx"]
     }
   },
   "include": ["src"]

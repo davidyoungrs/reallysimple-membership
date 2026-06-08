@@ -1,6 +1,5 @@
 // import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { LandingPage } from './components/LandingPage';
 import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn, SignUp, useUser } from '@clerk/clerk-react';
 import { LoadingSpinner } from './components/LoadingSpinner';
@@ -8,25 +7,11 @@ import { TierProvider } from './contexts/TierContext';
 import { ClubThemeProvider } from './contexts/ClubThemeContext.js';
 
 // Lazy Load Pages
-const WordPressHome = lazy(() => import('./components/WordPressHome').then(module => ({ default: module.WordPressHome })));
-const CardBuilder = lazy(() => import('./components/CardBuilder').then(module => ({ default: module.CardBuilder })));
-const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
-const PublicCard = lazy(() => import('./components/PublicCard').then(module => ({ default: module.PublicCard })));
 const PolicyPage = lazy(() => import('./components/PolicyPage').then(module => ({ default: module.PolicyPage })));
 const RequireVerifiedEmail = lazy(() => import('./components/RequireVerifiedEmail').then(module => ({ default: module.RequireVerifiedEmail })));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(module => ({ default: module.AdminLayout })));
-const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
-const AdminUsers = lazy(() => import('./components/admin/AdminUsers').then(module => ({ default: module.AdminUsers })));
-const AdminCards = lazy(() => import('./components/admin/AdminCards').then(module => ({ default: module.AdminCards })));
 const AdminSecurity = lazy(() => import('./components/admin/AdminSecurity').then(module => ({ default: module.AdminSecurity })));
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(module => ({ default: module.AdminSettings })));
-const SubscriptionSimulator = lazy(() => import('./components/admin/SubscriptionSimulator').then(module => ({ default: module.SubscriptionSimulator })));
-const Licenses = lazy(() => import('./components/Licenses').then(module => ({ default: module.Licenses })));
-const LapsedSubscription = lazy(() => import('./components/LapsedSubscription'));
-const Pricing = lazy(() => import('./components/Pricing').then(module => ({ default: module.Pricing })));
-const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(module => ({ default: module.OnboardingWizard })));
-const OnboardingCallback = lazy(() => import('./components/OnboardingCallback').then(module => ({ default: module.OnboardingCallback })));
-const UserGuide = lazy(() => import('./components/UserGuide').then(module => ({ default: module.UserGuide })));
 const MembershipCardCreator = lazy(() => import('./components/membership/MembershipCardCreator').then(module => ({ default: module.MembershipCardCreator })));
 const MembershipPublicPage = lazy(() => import('./components/membership/MembershipPublicPage').then(module => ({ default: module.MembershipPublicPage })));
 const MembershipAdminLayout = lazy(() => import('./components/membership/admin/MembershipAdminLayout').then(module => ({ default: module.MembershipAdminLayout })));
@@ -86,12 +71,7 @@ function App() {
         <ClubThemeProvider>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/create" element={<OnboardingWizard />} />
-            <Route path="/onboarding-callback" element={<OnboardingCallback />} />
-            <Route path="/wordpress-home" element={<WordPressHome />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/userguide" element={<UserGuide />} />
+            <Route path="/" element={<Navigate to="/admin/memberships" replace />} />
 
             {/* Auth Routes */}
             <Route path="/sign-in/*" element={<div className="flex justify-center items-center min-h-screen bg-gray-50"><SignIn routing="path" path="/sign-in" /></div>} />
@@ -109,30 +89,6 @@ function App() {
                 ) : (
                   <div className="flex justify-center items-center min-h-screen bg-gray-50"><SignUp routing="path" path="/sign-up" /></div>
                 )
-              }
-            />
-
-            {/* Public Card Route */}
-            <Route path="/card/:slug" element={<PublicCard />} />
-
-            {/* Landing/Static Routes */}
-            <Route path="/lapsed" element={<LapsedSubscription />} />
-            <Route path="/licenses" element={<Licenses />} />
-
-            {/* Admin Editor Route (Concierge Mode) */}
-            <Route
-              path="/editor"
-              element={
-                <>
-                  <SignedIn>
-                    <RequireVerifiedEmail>
-                      <CardBuilder />
-                    </RequireVerifiedEmail>
-                  </SignedIn>
-                  <SignedOut>
-                    <RedirectToSignIn />
-                  </SignedOut>
-                </>
               }
             />
 
@@ -157,49 +113,11 @@ function App() {
             {/* Policy Routes - must come after all static routes */}
             <Route path="/:type" element={<PolicyPage />} />
 
-            {/* Protected App Route */}
-            <Route
-              path="/app"
-              element={
-                <>
-                  <SignedIn>
-                    <RequireVerifiedEmail>
-                      <CardBuilder />
-                    </RequireVerifiedEmail>
-                  </SignedIn>
-                  <SignedOut>
-                    <RedirectToSignIn />
-                  </SignedOut>
-                </>
-              }
-            />
-
-            {/* Protected Dashboard Route */}
-            <Route
-              path="/dashboard"
-              element={
-                <>
-                  <SignedIn>
-                    <RequireVerifiedEmail>
-                      <Dashboard />
-                    </RequireVerifiedEmail>
-                  </SignedIn>
-                  <SignedOut>
-                    <RedirectToSignIn />
-                  </SignedOut>
-                </>
-              }
-            />
-
             {/* Super Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="cards" element={<AdminCards />} />
-              <Route path="memberships" element={<AdminMembershipClubs />} />
+              <Route index element={<AdminMembershipClubs />} />
               <Route path="security" element={<AdminSecurity />} />
               <Route path="settings" element={<AdminSettings />} />
-              <Route path="simulator" element={<SubscriptionSimulator />} />
             </Route>
 
             {/* Club Admin Routes */}
