@@ -28,8 +28,12 @@ export default defineConfig({
 
               // Handle dynamic routes
               let filename = apiPath;
+              let pathOverride: string | null = null;
               if (apiPath.startsWith('get-card-by-slug/')) {
                 filename = 'get-card-by-slug';
+              } else if (apiPath.startsWith('v1/')) {
+                filename = 'apple-webhook';
+                pathOverride = apiPath.replace('v1/', '');
               }
 
               const filePath = path.join(process.cwd(), 'api', `${filename}.ts`);
@@ -37,6 +41,9 @@ export default defineConfig({
               if (fs.existsSync(filePath)) {
                 // Query parsing
                 (req as any).query = Object.fromEntries(url.searchParams);
+                if (pathOverride !== null) {
+                  (req as any).query.path = pathOverride;
+                }
                 // Body parsing for JSON
                 if (req.method === 'POST' || req.method === 'PUT') {
                   const buffers = [];
