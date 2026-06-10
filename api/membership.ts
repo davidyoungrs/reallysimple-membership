@@ -2,6 +2,7 @@ import { db } from '../src/db/index.js';
 import { clubs, membershipTemplates, memberships, clubAdmins, users, walletPushRegistrations } from '../src/db/schema.js';
 import { eq, and, or, sql, desc, inArray } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 export function normalizeR2Url(url: string | null | undefined): string | null {
@@ -74,10 +75,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return await handleGetPublicClub(req, res);
     }
 
-    // --- 2. PROTECTED ENDPOINTS (BYPASSED CLERK AUTH) ---
-    const authenticatedUserId = 'usr_admin';
-    const authenticatedUserEmail = 'admin@reallysimpleapps.com';
-    const isSuperUser = true;
+    // --- 2. PROTECTED ENDPOINTS (AUTHENTICATION REQUIRED) ---
+    let authenticatedUserId = 'usr_admin';
+    let authenticatedUserEmail = 'admin@reallysimpleapps.com';
+    let isSuperUser = true;
+
+    const authBypass = process.env.CLERK_BYPASS_AUTH === 'true';
+
+    if (!authBypass) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+        }
+        const token = authHeader.split(' ')[1];
+        try {
+            const verifiedToken = await verifyToken(token, {
+                secretKey: process.env.CLERK_SECRET_KEY,
+            });
+            authenticatedUserId = verifiedToken.sub;
+
+            // Fetch Clerk user details to get email and admin status
+            const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+            const clerkUser = await clerk.users.getUser(authenticatedUserId);
+            authenticatedUserEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
+            isSuperUser = clerkUser.publicMetadata?.role === 'admin';
+        } catch (err) {
+            console.error('[Clerk-Auth-Membership] Verification failed:', err);
+            return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        }
+    }
 
     // Helper: Check if user is admin of a specific club
     const checkIsClubAdmin = async (clubId: number): Promise<boolean> => {
