@@ -58,8 +58,8 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
         if (cardData.avatarUrl) {
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = cardData.avatarUrl;
             img.onload = () => setProfileImage(img);
+            img.src = cardData.avatarUrl;
         }
     }, [cardData.avatarUrl]);
 
@@ -474,7 +474,12 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
                                     textConfig,
                                     photoConfig
                                 };
-                                onSave(canvasRef.current.toDataURL('image/png'), config);
+                                try {
+                                    onSave(canvasRef.current.toDataURL('image/png'), config);
+                                } catch (err) {
+                                    console.error('Failed to export canvas in StripDesigner (SecurityError/Tainted canvas):', err);
+                                    alert("Could not save the strip image containing external photos due to security restrictions. Try saving without photos or using uploaded local files.");
+                                }
                             }
                         }}
                         className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2"

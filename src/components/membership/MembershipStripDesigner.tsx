@@ -60,9 +60,11 @@ export function MembershipStripDesigner({
   useEffect(() => {
     if (memberPhoto) {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = memberPhoto;
+      if (memberPhoto.startsWith('http://') || memberPhoto.startsWith('https://')) {
+        img.crossOrigin = 'anonymous';
+      }
       img.onload = () => setProfileImage(img);
+      img.src = memberPhoto;
     } else {
       setProfileImage(null);
     }
@@ -148,9 +150,44 @@ export function MembershipStripDesigner({
       ctx.shadowOffsetY = 2;
 
       const nameXVal = width * ((config.textConfig.nameX || 50) / 100);
-      const nameYVal = height * ((config.textConfig.nameY || 50) / 100) + 24; // vertically centered offset
+      const nameYVal = height * ((config.textConfig.nameY || 50) / 100) + 16;
 
-      ctx.fillText(memberName || 'Member Name', nameXVal, nameYVal);
+      // Calculate dynamic maxWidth to prevent text overflow
+      let maxWidth = width * 0.65;
+      if (config.textConfig.align === 'center') {
+          maxWidth = width - 100;
+      } else if (config.textConfig.align === 'left') {
+          maxWidth = width - nameXVal - 50;
+      } else if (config.textConfig.align === 'right') {
+          maxWidth = nameXVal - 50;
+      }
+
+      const lineHeight = 80;
+      const textVal = memberName || 'Member Name';
+      const words = textVal.split(' ');
+      let line = '';
+      const lines = [];
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+
+      const totalHeight = lines.length * lineHeight;
+      const startY = nameYVal - totalHeight / 2 + lineHeight / 2;
+
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i].trim(), nameXVal, startY + (i * lineHeight));
+      }
+
       ctx.restore();
     }
   };
@@ -178,7 +215,12 @@ export function MembershipStripDesigner({
   const handleSave = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    onSave(canvas.toDataURL('image/png'), config);
+    try {
+      onSave(canvas.toDataURL('image/png'), config);
+    } catch (err) {
+      console.error('Failed to export canvas in MembershipStripDesigner (SecurityError/Tainted canvas):', err);
+      alert("Could not save the strip image containing external photos due to security restrictions. Try saving without photos or using uploaded local files.");
+    }
   };
 
   return (
@@ -255,7 +297,7 @@ export function MembershipStripDesigner({
                         type="text"
                         value={config.bgColor}
                         onChange={(e) => setConfig(prev => ({ ...prev, bgColor: e.target.value }))}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none text-gray-900 bg-white"
                       />
                     </div>
                   </div>
@@ -354,7 +396,7 @@ export function MembershipStripDesigner({
                             ...prev,
                             photoConfig: { ...prev.photoConfig, x: Number(e.target.value) }
                           }))}
-                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -366,7 +408,7 @@ export function MembershipStripDesigner({
                             ...prev,
                             photoConfig: { ...prev.photoConfig, scale: Number(e.target.value) }
                           }))}
-                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
                         />
                       </div>
                       <div className="col-span-2">
@@ -377,7 +419,7 @@ export function MembershipStripDesigner({
                             ...prev,
                             photoConfig: { ...prev.photoConfig, border: e.target.value as any }
                           }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900"
                         >
                           <option value="none">None</option>
                           <option value="thin">Thin White</option>
@@ -414,7 +456,7 @@ export function MembershipStripDesigner({
                               ...prev,
                               textConfig: { ...prev.textConfig, nameX: Number(e.target.value) }
                             }))}
-                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
                           />
                         </div>
                         <div>
@@ -426,7 +468,7 @@ export function MembershipStripDesigner({
                               ...prev,
                               textConfig: { ...prev.textConfig, nameY: Number(e.target.value) }
                             }))}
-                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
                           />
                         </div>
                       </div>
@@ -439,7 +481,7 @@ export function MembershipStripDesigner({
                               ...prev,
                               textConfig: { ...prev.textConfig, align: e.target.value as any }
                             }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900"
                           >
                             <option value="left">Left</option>
                             <option value="center">Center</option>

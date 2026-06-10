@@ -15,6 +15,33 @@ import { checkRateLimit, validatePayload } from './_utils/security.js';
 // Use process.cwd() to locate certs in Vercel environment
 const CERT_DIR = path.join(process.cwd(), 'certs');
 
+function cleanColorToRgb(color: string | undefined | null, defaultColor: string): string {
+    if (!color) return defaultColor;
+    const trimmed = color.trim();
+    if (trimmed.startsWith('rgb(')) return trimmed;
+    if (trimmed.startsWith('rgba(')) {
+        const match = trimmed.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+        if (match) {
+            return `rgb(${match[1]},${match[2]},${match[3]})`;
+        }
+    }
+    
+    let hex = trimmed.replace(/^#/, '');
+    if (hex.length === 3) {
+        hex = hex.split('').map(char => char + char).join('');
+    }
+    if (hex.length === 6) {
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+            return `rgb(${r},${g},${b})`;
+        }
+    }
+    
+    return defaultColor;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!checkRateLimit(req, res)) return;
     if (!validatePayload(req, res)) return;
@@ -101,7 +128,7 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Model.pass not found' });
         }
 
-        const host = req.headers.host || 'reallysimple-new.vercel.app';
+        const host = req.headers.host || 'reallysimple-membership.vercel.app';
         const protocol = host.includes('localhost') ? 'http' : 'https';
 
         const pass = await PKPass.from(
@@ -115,9 +142,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                 organizationName: data.company || 'Contact Tree',
                 passTypeIdentifier: passTypeId,
                 teamIdentifier: teamId,
-                backgroundColor: data.wallet?.backgroundColor || 'rgb(255,255,255)',
-                foregroundColor: data.wallet?.foregroundColor || 'rgb(0,0,0)',
-                labelColor: data.wallet?.labelColor || 'rgb(0,0,0)',
+                backgroundColor: cleanColorToRgb(data.wallet?.backgroundColor, 'rgb(255,255,255)'),
+                foregroundColor: cleanColorToRgb(data.wallet?.foregroundColor, 'rgb(0,0,0)'),
+                labelColor: cleanColorToRgb(data.wallet?.labelColor, 'rgb(0,0,0)'),
                 voided: effectiveTier === 'starter'
             }
         );
@@ -132,6 +159,24 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         const addImage = async (url: string | undefined, name: string) => {
             if (!url) return;
             try {
+                if (url.startsWith('/api/public') || url.includes('/api/public?')) {
+                    const urlObj = new URL(url, 'http://localhost');
+                    const key = urlObj.searchParams.get('key');
+                    if (key) {
+                        const { getFromR2 } = await import('../src/utils/storage.js');
+                        const s3Response = await getFromR2(key);
+                        if (s3Response.Body) {
+                            const buffer = Buffer.from(await s3Response.Body.transformToByteArray());
+                            pass.addBuffer(name, buffer);
+                            if (name === 'logo.png') {
+                                pass.addBuffer('logo@2x.png', buffer);
+                                pass.addBuffer('logo@3x.png', buffer);
+                            }
+                            return;
+                        }
+                    }
+                }
+
                 if (url.startsWith('/')) {
                     const publicPath = path.join(process.cwd(), 'public', url);
                     if (fs.existsSync(publicPath)) {
@@ -320,7 +365,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         const objectId = `${GOOGLE_ISSUER_ID}.${slug.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`; // Stable ID for auto-syncing
 
         // Force Production URL for Google to reach images
-        const baseUrl = 'https://reallysimple-new.vercel.app';
+        const baseUrl = 'https://reallysimple-membership.vercel.app';
 
         const toAbsoluteUrl = (url: string) => {
             if (!url || url.startsWith('data:')) return '';

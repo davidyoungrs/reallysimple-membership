@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload } from 'lucide-react';
 
@@ -7,6 +7,7 @@ export function MembershipAdminMembers() {
   const { club } = useOutletContext<{ club: any }>();
   const { getToken } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Directory states
   const [members, setMembers] = useState<any[]>([]);
@@ -21,14 +22,6 @@ export function MembershipAdminMembers() {
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResults, setImportResults] = useState<any[] | null>(null);
-
-  // Edit / Manual Settings states
-  const [editingMember, setEditingMember] = useState<any | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editStatus, setEditStatus] = useState<'active' | 'expired' | 'revoked'>('active');
-  const [editExpiresAt, setEditExpiresAt] = useState('');
-  const [savingEdit, setSavingEdit] = useState(false);
 
   const fetchMembers = async () => {
     if (!club) return;
@@ -133,48 +126,9 @@ export function MembershipAdminMembers() {
     }
   };
 
-  // Action: Edit Modal Open
+  // Action: Edit Member - Send back to issuance creator page preloaded with their data
   const handleOpenEdit = (member: any) => {
-    setEditingMember(member);
-    setEditName(member.memberName);
-    setEditEmail(member.memberEmail);
-    setEditStatus(member.status);
-    setEditExpiresAt(new Date(member.expiresAt).toISOString().split('T')[0]);
-  };
-
-  // Action: Save Edit
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingMember) return;
-
-    try {
-      setSavingEdit(true);
-      const token = await getToken();
-      
-      const res = await fetch('/api/membership?resource=memberships', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          id: editingMember.id,
-          memberName: editName,
-          memberEmail: editEmail,
-          status: editStatus,
-          expiresAt: new Date(editExpiresAt).toISOString()
-        })
-      });
-
-      if (res.ok) {
-        setEditingMember(null);
-        fetchMembers();
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSavingEdit(false);
-    }
+    navigate(`/membership-admin/${club.slug}/create?edit=${member.id}`);
   };
 
   // CSV Parsing
@@ -541,85 +495,7 @@ export function MembershipAdminMembers() {
         </div>
       )}
 
-      {/* EDIT MEMBER POPUP MODAL */}
-      {editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col text-left">
-            <div className="p-6 border-b border-slate-850 flex justify-between items-center shrink-0">
-              <h2 className="text-base font-bold text-white">Edit Membership</h2>
-              <button onClick={() => setEditingMember(null)} className="p-1.5 hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-200">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Member Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Membership Status</label>
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
-                >
-                  <option value="active">Active</option>
-                  <option value="expired">Expired</option>
-                  <option value="revoked">Revoked</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Expiration Date</label>
-                <input
-                  type="date"
-                  required
-                  value={editExpiresAt}
-                  onChange={(e) => setEditExpiresAt(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setEditingMember(null)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800 text-xs font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingEdit}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {savingEdit && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

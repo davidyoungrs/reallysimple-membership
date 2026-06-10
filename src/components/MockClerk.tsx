@@ -40,12 +40,14 @@ export function useUser() {
   };
 }
 
+const mockGetToken = async () => 'dummy-token';
+
 export function useAuth() {
   return {
     isLoaded: true,
     isSignedIn: true,
     userId: 'usr_admin',
-    getToken: async () => 'dummy-token',
+    getToken: mockGetToken,
   };
 }
 

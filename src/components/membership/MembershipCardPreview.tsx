@@ -84,7 +84,7 @@ export function MembershipCardPreview({
 
           {/* Strip Image Area */}
           {showStrip ? (
-            <div className="h-[120px] w-full relative bg-gray-100 flex items-center justify-center overflow-hidden">
+            <div className="w-full aspect-[1125/369] relative bg-gray-100 flex items-center justify-center overflow-hidden">
               {stripImageUrl ? (
                 <img
                   src={stripImageUrl}
@@ -184,7 +184,7 @@ export function MembershipCardPreview({
           <div className="bg-white p-4 flex items-center justify-center border-t border-gray-100 mt-auto">
             <div className="w-24 h-24 border border-gray-100 flex items-center justify-center p-2 rounded-lg bg-white">
               <QRCodeSVG
-                value={`https://reallysimple-new.vercel.app/membership/${membershipNumber}`}
+                value={`https://reallysimple-membership.vercel.app/membership/${membershipNumber}`}
                 size={80}
                 level="M"
               />

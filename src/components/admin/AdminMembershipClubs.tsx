@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AdminMembershipClubs() {
@@ -29,6 +29,62 @@ export function AdminMembershipClubs() {
   
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+  const [showLogoUrlInput, setShowLogoUrlInput] = useState(false);
+
+  const handleLogoUploadFile = async (file: File) => {
+    try {
+      setUploadingLogo(true);
+      setError(null);
+      const token = await getToken();
+
+      const uploadRes = await fetch(`/api/membership?action=upload&filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type,
+          Authorization: `Bearer ${token}`
+        },
+        body: file
+      });
+
+      const { publicUrl } = await uploadRes.json();
+      if (!publicUrl) throw new Error('Logo upload failed');
+
+      setLogoUrl(publicUrl);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Logo upload failed');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleLogoUploadFile(file);
+    }
+  };
+
+  const handleLogoDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingLogo(true);
+  };
+
+  const handleLogoDragLeave = () => {
+    setIsDraggingLogo(false);
+  };
+
+  const handleLogoDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingLogo(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      await handleLogoUploadFile(file);
+    }
+  };
 
   const fetchClubs = async () => {
     try {
@@ -328,15 +384,101 @@ export function AdminMembershipClubs() {
                       className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Logo URL (Icon / Shield)</label>
-                    <input
-                      type="text"
-                      placeholder="https://example.com/logo.png"
-                      value={logoUrl}
-                      onChange={(e) => setLogoUrl(e.target.value)}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm"
-                    />
+                  <div className="col-span-2 space-y-2">
+                    <label className="block text-xs font-semibold text-slate-700">Club Logo</label>
+                    
+                    {/* Drag and Drop Zone / Preview */}
+                    <div
+                      onDragOver={handleLogoDragOver}
+                      onDragLeave={handleLogoDragLeave}
+                      onDrop={handleLogoDrop}
+                      className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center transition-all ${
+                        isDraggingLogo
+                          ? 'border-blue-500 bg-blue-50/50'
+                          : logoUrl
+                          ? 'border-slate-200 bg-slate-50/20'
+                          : 'border-slate-300 hover:border-slate-400 bg-slate-550/50'
+                      }`}
+                    >
+                      {uploadingLogo ? (
+                        <div className="flex flex-col items-center justify-center py-4">
+                          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                          <span className="text-xs text-slate-500 font-medium">Uploading logo...</span>
+                        </div>
+                      ) : logoUrl ? (
+                        <div className="flex items-center gap-4 w-full px-2">
+                          <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-2 flex items-center justify-center shrink-0 shadow-sm">
+                            <img src={logoUrl} alt="Club Logo Preview" className="w-full h-full object-contain rounded" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-slate-700 truncate">{logoUrl.split('/').pop()}</p>
+                            <p className="text-[10px] text-slate-400">Successfully uploaded</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleLogoUpload}
+                              className="hidden"
+                              id="logo-changer"
+                            />
+                            <label
+                              htmlFor="logo-changer"
+                              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm"
+                            >
+                              Change
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => setLogoUrl('')}
+                              className="px-3 py-1.5 bg-red-50 border border-red-100 rounded-lg text-[10px] font-bold text-red-600 hover:bg-red-100/70"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-4 text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="logo-uploader"
+                          />
+                          <label
+                            htmlFor="logo-uploader"
+                            className="cursor-pointer flex flex-col items-center"
+                          >
+                            <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                            <p className="text-xs font-bold text-slate-700">Drag & drop logo here, or <span className="text-blue-600 hover:underline">browse</span></p>
+                            <p className="text-[10px] text-slate-400 mt-1">Supports PNG, JPG, GIF, WEBP up to 2MB</p>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Toggle URL Input */}
+                    <div className="flex justify-between items-center px-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowLogoUrlInput(!showLogoUrlInput)}
+                        className="text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        {showLogoUrlInput ? 'Hide Logo URL input' : 'Or paste a logo URL instead'}
+                      </button>
+                    </div>
+
+                    {/* Logo URL Input (optional/toggled) */}
+                    {showLogoUrlInput && (
+                      <input
+                        type="text"
+                        placeholder="https://example.com/logo.png"
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm transition-all focus:ring-2 focus:ring-blue-500 outline-none animate-in slide-in-from-top-1 duration-200"
+                      />
+                    )}
                   </div>
                   <div className="col-span-2">
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Membership ID Format</label>

@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -28,4 +28,22 @@ export async function generateUploadUrl(key: string, contentType: string) {
 
   // URL expires in 1 hour
   return await getSignedUrl(S3, command, { expiresIn: 3600 });
+}
+
+export async function uploadToR2(key: string, body: Buffer, contentType: string) {
+  const command = new PutObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+  });
+  return await S3.send(command);
+}
+
+export async function getFromR2(key: string) {
+  const command = new GetObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+  });
+  return await S3.send(command);
 }

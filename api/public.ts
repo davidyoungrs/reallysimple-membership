@@ -6,7 +6,26 @@ import React from 'react';
 import { ImageResponse } from '@vercel/og';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
+export function normalizeR2Url(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.includes('.r2.dev/')) {
+        const parts = url.split('.r2.dev/');
+        if (parts.length > 1) {
+            return `/api/public?resource=asset&key=${parts[1]}`;
+        }
+    }
+    return url;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (!checkRateLimit(req, res)) return;
     if (!validatePayload(req, res)) return;
 
@@ -22,6 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return await handleOgImage(req, res);
     } else if (resource === 'render-card') {
         return await handleRenderCard(req, res);
+    } else if (resource === 'asset') {
+        return await handleGetAsset(req, res);
     } else {
         return res.status(400).json({ error: 'Invalid resource' });
     }
@@ -71,7 +92,7 @@ async function handleOgImage(req: VercelRequest, res: VercelResponse) {
         const gradientColor = cardData.gradientColor || '#000000';
         const textColor = cardData.textColor || '#ffffff';
         
-        let avatarUrl = cardData.avatarUrl;
+        let avatarUrl = normalizeR2Url(cardData.avatarUrl);
         if (avatarUrl && !avatarUrl.startsWith('http')) {
             const host = req.headers.host || 'reallysimpleapps.com';
             const proto = host.includes('localhost') ? 'http' : 'https';
@@ -205,5 +226,33 @@ async function handleRenderCard(req: VercelRequest, res: VercelResponse) {
     } catch (e: any) {
         console.error('Render error:', e);
         return res.status(500).send('Error rendering card');
+    }
+}
+
+async function handleGetAsset(req: VercelRequest, res: VercelResponse) {
+    try {
+        const key = req.query.key as string;
+        if (!key) return res.status(400).send('Missing key');
+
+        const { getFromR2 } = await import('../src/utils/storage.js');
+        const s3Response = await getFromR2(key);
+
+        if (!s3Response.Body) {
+            return res.status(404).send('Asset body not found');
+        }
+
+        if (s3Response.ContentType) {
+            res.setHeader('Content-Type', s3Response.ContentType);
+        } else {
+            res.setHeader('Content-Type', 'image/png');
+        }
+
+        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+
+        const buffer = Buffer.from(await s3Response.Body.transformToByteArray());
+        return res.send(buffer);
+    } catch (error: any) {
+        console.error('Failed to fetch asset:', error);
+        return res.status(500).send('Failed to fetch asset');
     }
 }

@@ -74,6 +74,22 @@ export default defineConfig({
                   };
                 }
 
+                if (!(res as any).send) {
+                  (res as any).send = (body: any) => {
+                    if (Buffer.isBuffer(body)) {
+                      res.end(body);
+                    } else if (typeof body === 'object') {
+                      if (!res.getHeader('Content-Type')) {
+                        res.setHeader('Content-Type', 'application/json');
+                      }
+                      res.end(JSON.stringify(body));
+                    } else {
+                      res.end(body);
+                    }
+                    return res;
+                  };
+                }
+
                 // Invalidate cache to allow hot reloading of API files
                 const mod = await server.ssrLoadModule(filePath);
 

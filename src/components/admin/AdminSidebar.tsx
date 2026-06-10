@@ -9,7 +9,7 @@ export function AdminSidebar() {
     const isActive = (path: string) => location.pathname === path;
 
     const navItems = [
-        { icon: Shield, label: 'Membership Clubs', path: '/admin/memberships' },
+        { icon: Shield, label: 'Membership Clubs', path: '/admin' },
         { icon: ShieldAlert, label: 'Security', path: '/admin/security' },
         { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];

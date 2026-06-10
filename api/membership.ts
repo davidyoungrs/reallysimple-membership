@@ -1,8 +1,57 @@
 import { db } from '../src/db/index.js';
-import { clubs, membershipTemplates, memberships, clubAdmins, users } from '../src/db/schema.js';
-import { eq, and, or, sql, desc } from 'drizzle-orm';
+import { clubs, membershipTemplates, memberships, clubAdmins, users, walletPushRegistrations } from '../src/db/schema.js';
+import { eq, and, or, sql, desc, inArray } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
+
+export function normalizeR2Url(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.includes('.r2.dev/')) {
+        const parts = url.split('.r2.dev/');
+        if (parts.length > 1) {
+            return `/api/public?resource=asset&key=${parts[1]}`;
+        }
+    }
+    return url;
+}
+
+export async function syncMembershipWallet(membershipUid: string) {
+    try {
+        const devices = await db.select({
+            id: walletPushRegistrations.id,
+            pushToken: walletPushRegistrations.pushToken,
+            passType: walletPushRegistrations.passTypeIdentifier
+        })
+            .from(walletPushRegistrations)
+            .where(eq(walletPushRegistrations.serialNumber, membershipUid));
+
+        if (devices.length === 0) {
+            console.log(`[APNs-Membership] No devices registered for membership UID ${membershipUid}`);
+            return;
+        }
+
+        const registrationIds = devices.map(d => d.id);
+        if (registrationIds.length > 0) {
+            await db.update(walletPushRegistrations)
+                .set({ updatedAt: new Date() })
+                .where(inArray(walletPushRegistrations.id, registrationIds));
+        }
+
+        const { sendPassPush } = await import('./_utils/apns.js');
+        let successCount = 0;
+        for (const device of devices) {
+            try {
+                await sendPassPush(device.pushToken, device.passType);
+                successCount++;
+            } catch (pushErr) {
+                console.error(`[APNs-Membership] Failed push to ${device.pushToken.substring(0, 8)}:`, pushErr);
+            }
+        }
+        console.log(`[APNs-Membership] Pushed updates to ${successCount}/${devices.length} devices for membership UID ${membershipUid}`);
+    } catch (err) {
+        console.error('[APNs-Membership] Sync error:', err);
+    }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!checkRateLimit(req, res)) return;
@@ -51,9 +100,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const key = `memberships/${Date.now()}_${filename.replace(/\s+/g, '_')}`;
             const { generateUploadUrl } = await import('../src/utils/storage.js');
             const uploadUrl = await generateUploadUrl(key, contentType);
-            const publicUrl = `https://pub-${process.env.R2_ACCOUNT_ID}.r2.dev/${key}`;
+            const publicUrl = `/api/public?resource=asset&key=${key}`;
 
             return res.status(200).json({ uploadUrl, publicUrl, key });
+        }
+
+        // D. PROXY UPLOAD TO R2 (POST /api/membership?action=upload)
+        if (action === 'upload') {
+            const filename = (query.filename as string) || req.body?.filename;
+            const contentType = (query.contentType as string) || req.body?.contentType || req.headers['content-type'];
+            if (!filename || !contentType) {
+                return res.status(400).json({ error: 'Missing filename or contentType' });
+            }
+
+            const key = `memberships/${Date.now()}_${filename.replace(/\s+/g, '_')}`;
+            const publicUrl = `/api/public?resource=asset&key=${key}`;
+
+            let buffer: Buffer;
+            if ((req as any).__rawBody) {
+                buffer = (req as any).__rawBody;
+            } else if (req.body instanceof Buffer) {
+                buffer = req.body;
+            } else if (typeof req.body === 'string') {
+                buffer = Buffer.from(req.body, 'binary');
+            } else {
+                const buffers = [];
+                for await (const chunk of req) {
+                    buffers.push(chunk);
+                }
+                buffer = Buffer.concat(buffers);
+            }
+
+            const { uploadToR2 } = await import('../src/utils/storage.js');
+            await uploadToR2(key, buffer, contentType);
+
+            return res.status(200).json({ success: true, publicUrl });
         }
 
         // --- ROUTE BY RESOURCE ---
@@ -107,7 +188,15 @@ async function handleGetPublicMembership(req: VercelRequest, res: VercelResponse
         return res.status(404).json({ error: 'Membership not found' });
     }
 
-    return res.status(200).json({ success: true, membership: records[0] });
+    const row = records[0];
+    const membership = {
+        ...row,
+        memberPhoto: normalizeR2Url(row.memberPhoto),
+        stripImageUrl: normalizeR2Url(row.stripImageUrl),
+        clubLogoUrl: normalizeR2Url(row.clubLogoUrl),
+    };
+
+    return res.status(200).json({ success: true, membership });
 }
 
 async function handleGetPublicClub(req: VercelRequest, res: VercelResponse) {
@@ -129,7 +218,12 @@ async function handleGetPublicClub(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Club not found' });
     }
 
-    return res.status(200).json({ success: true, club: records[0] });
+    const club = {
+        ...records[0],
+        logoUrl: normalizeR2Url(records[0].logoUrl)
+    };
+
+    return res.status(200).json({ success: true, club });
 }
 
 // ==========================================
@@ -154,7 +248,10 @@ async function handleClubs(
             const records = await db.select().from(clubs).where(whereClause).limit(1);
             if (records.length === 0) return res.status(404).json({ error: 'Club not found' });
 
-            const club = records[0];
+            const club = {
+                ...records[0],
+                logoUrl: normalizeR2Url(records[0].logoUrl)
+            };
             const hasAccess = await checkIsClubAdmin(club.id);
             if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
@@ -168,7 +265,11 @@ async function handleClubs(
         if (isSuperUser) {
             // Super User gets everything
             const allClubs = await db.select().from(clubs).orderBy(desc(clubs.createdAt));
-            return res.status(200).json({ success: true, clubs: allClubs });
+            const normalizedClubs = allClubs.map(c => ({
+                ...c,
+                logoUrl: normalizeR2Url(c.logoUrl)
+            }));
+            return res.status(200).json({ success: true, clubs: normalizedClubs });
         } else {
             // Club Admins get only their clubs
             const myClubs = await db.select({
@@ -186,7 +287,12 @@ async function handleClubs(
             .where(eq(clubAdmins.clerkId, userId))
             .orderBy(desc(clubs.createdAt));
 
-            return res.status(200).json({ success: true, clubs: myClubs });
+            const normalizedClubs = myClubs.map(c => ({
+                ...c,
+                logoUrl: normalizeR2Url(c.logoUrl)
+            }));
+
+            return res.status(200).json({ success: true, clubs: normalizedClubs });
         }
     }
 
@@ -406,7 +512,11 @@ async function handleMemberships(
             const records = await db.select().from(memberships).where(eq(memberships.id, id)).limit(1);
             if (records.length === 0) return res.status(404).json({ error: 'Membership not found' });
 
-            const membership = records[0];
+            const membership = {
+                ...records[0],
+                memberPhoto: normalizeR2Url(records[0].memberPhoto),
+                stripImageUrl: normalizeR2Url(records[0].stripImageUrl),
+            };
             const hasAccess = await checkIsClubAdmin(membership.clubId);
             if (!hasAccess && membership.memberEmail !== authenticatedUserEmail) {
                 return res.status(403).json({ error: 'Forbidden: Access denied' });
@@ -420,7 +530,12 @@ async function handleMemberships(
             if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
             const records = await db.select().from(memberships).where(eq(memberships.clubId, clubId)).orderBy(desc(memberships.createdAt));
-            return res.status(200).json({ success: true, memberships: records });
+            const normalizedRecords = records.map(r => ({
+                ...r,
+                memberPhoto: normalizeR2Url(r.memberPhoto),
+                stripImageUrl: normalizeR2Url(r.stripImageUrl),
+            }));
+            return res.status(200).json({ success: true, memberships: normalizedRecords });
         }
 
         // If no clubId or id is provided, let's list memberships belonging to this user
@@ -435,7 +550,17 @@ async function handleMemberships(
             .where(eq(memberships.memberEmail, authenticatedUserEmail))
             .orderBy(desc(memberships.createdAt));
 
-            return res.status(200).json({ success: true, memberships: myMemberships });
+            const normalizedMemberships = myMemberships.map(m => ({
+                ...m,
+                membership: {
+                    ...m.membership,
+                    memberPhoto: normalizeR2Url(m.membership.memberPhoto),
+                    stripImageUrl: normalizeR2Url(m.membership.stripImageUrl),
+                },
+                clubLogoUrl: normalizeR2Url(m.clubLogoUrl)
+            }));
+
+            return res.status(200).json({ success: true, memberships: normalizedMemberships });
         }
 
         return res.status(400).json({ error: 'Missing parameters' });
@@ -481,17 +606,30 @@ async function handleMemberships(
 
                     // Auto-generate membership number if not provided
                     let finalNumber = membershipNumber;
-                    if (!finalNumber) {
-                        const countRecords = await tx.select({ count: sql<number>`count(*)` }).from(memberships).where(eq(memberships.clubId, parsedClubId));
-                        const currentCount = Number(countRecords[0]?.count || 0) + index;
-                        finalNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount).padStart(3, '0'));
-                        index++;
-                    }
-
-                    // Auto-generate slug if not provided
                     let finalSlug = slug;
-                    if (!finalSlug) {
-                        finalSlug = `${club.slug}-${finalNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                    if (!finalNumber) {
+                        let isUnique = false;
+                        let counterOffset = index;
+                        const countRecords = await tx.select({ count: sql<number>`count(*)` }).from(memberships).where(eq(memberships.clubId, parsedClubId));
+                        const currentCount = Number(countRecords[0]?.count || 0);
+
+                        while (!isUnique) {
+                            const candidateNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount + counterOffset).padStart(3, '0'));
+                            const candidateSlug = slug || `${club.slug}-${candidateNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                            const collision = await tx.select().from(memberships).where(eq(memberships.slug, candidateSlug)).limit(1);
+                            if (collision.length === 0) {
+                                finalNumber = candidateNumber;
+                                finalSlug = candidateSlug;
+                                isUnique = true;
+                            } else {
+                                counterOffset++;
+                            }
+                        }
+                        index = counterOffset + 1;
+                    } else {
+                        if (!finalSlug) {
+                            finalSlug = `${club.slug}-${finalNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                        }
                     }
 
                     // Check slug collision
@@ -552,16 +690,29 @@ async function handleMemberships(
 
         // Generate membership number if not provided
         let finalNumber = membershipNumber;
-        if (!finalNumber) {
-            const countRecords = await db.select({ count: sql<number>`count(*)` }).from(memberships).where(eq(memberships.clubId, club.id));
-            const currentCount = Number(countRecords[0]?.count || 0) + 1;
-            finalNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount).padStart(3, '0'));
-        }
-
-        // Generate slug if not provided
         let finalSlug = slug;
-        if (!finalSlug) {
-            finalSlug = `${club.slug}-${finalNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+        if (!finalNumber) {
+            let isUnique = false;
+            let counterOffset = 1;
+            const countRecords = await db.select({ count: sql<number>`count(*)` }).from(memberships).where(eq(memberships.clubId, club.id));
+            const currentCount = Number(countRecords[0]?.count || 0);
+
+            while (!isUnique) {
+                const candidateNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount + counterOffset).padStart(3, '0'));
+                const candidateSlug = slug || `${club.slug}-${candidateNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                const collision = await db.select().from(memberships).where(eq(memberships.slug, candidateSlug)).limit(1);
+                if (collision.length === 0) {
+                    finalNumber = candidateNumber;
+                    finalSlug = candidateSlug;
+                    isUnique = true;
+                } else {
+                    counterOffset++;
+                }
+            }
+        } else {
+            if (!finalSlug) {
+                finalSlug = `${club.slug}-${finalNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+            }
         }
 
         // Verify slug uniqueness
@@ -624,6 +775,8 @@ async function handleMemberships(
                 .where(eq(memberships.id, membershipId))
                 .returning();
 
+            await syncMembershipWallet(existingMembership.uid);
+
             return res.status(200).json({ success: true, membership: updatedMembership });
         }
 
@@ -652,6 +805,8 @@ async function handleMemberships(
             .where(eq(memberships.id, membershipId))
             .returning();
 
+        await syncMembershipWallet(existingMembership.uid);
+
         return res.status(200).json({ success: true, membership: updatedMembership });
     }
 
@@ -671,6 +826,8 @@ async function handleMemberships(
             .set({ status: 'revoked', updatedAt: new Date() })
             .where(eq(memberships.id, id))
             .returning();
+
+        await syncMembershipWallet(existingMembership.uid);
 
         return res.status(200).json({ success: true, membership: revokedMembership, message: 'Membership status set to revoked' });
     }

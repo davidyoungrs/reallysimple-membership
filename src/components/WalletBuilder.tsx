@@ -78,11 +78,11 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
         try {
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = wallet.logoUrl;
             
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
                 img.onerror = reject;
+                img.src = wallet.logoUrl!;
             });
 
             const canvas = document.createElement('canvas');

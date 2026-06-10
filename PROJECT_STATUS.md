@@ -1,9 +1,10 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
+
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-07 (Session 20) | `6f671eb` |
+| 2026-06-09 (Session 21) | `local-dev` |
 
-> Repo: https://github.com/davidyoungrs/reallysimple-new
+> Repo: <https://github.com/davidyoungrs/reallysimple-new>
 > Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
 > Live URL: Deployed via Vercel on `main` branch
 
@@ -13,13 +14,24 @@
 
 The platform is now in an **Optimized, Hardened, and Secure** state. We have completed the following key tasks:
 
-1. **API Security Hardening**: Implemented rate limiting and JSON payload validation middleware (`api/_utils/security.ts`) and integrated them across all key serverless functions to protect against abuse.
-2. **Privacy Policy Synchronization**: Synced the frontend [PolicyPage.tsx](file:///Users/davidyoung/contact-tree/src/components/PolicyPage.tsx) with the new June 7, 2026 version of [privacy_policy.md](file:///Users/davidyoung/contact-tree/privacy_policy.md). Re-structured the component to support rich formats (e.g. bulleted lists) and dynamically render policy-specific emails (`info@reallysimpleapps.com` vs `support@reallysimple.apps`).
-3. **Vercel Build Stability**: Resolved a deployment-blocking peer dependency conflict between Vite 8 and Tailwind CSS Vite plugin by creating a root [.npmrc](file:///Users/davidyoung/contact-tree/.npmrc) file that enforces `legacy-peer-deps=true`.
+1. **API Security Hardening**: Implemented rate limiting and JSON payload validation middleware (`api/_utils/security.ts`) and integrated them across all key serverless functions to protect against abuse. Added a development bypass for rate limiting to prevent local lockout during page reloads.
+2. **Database Transactions**: Migrated database driver connection from `neon-http` to WebSocket-based `neon-serverless` Pool (`src/db/index.ts`) to enable full support for SQL transactions (which are required for creating and editing clubs and templates).
+3. **CSP & Upload Support**: Updated CSP meta tags in `index.html` to allow connection to Cloudflare R2 storage bucket URLs and to load images/avatars from Unsplash (`images.unsplash.com`).
+4. **Vite Mock Clerk Infinite Loop Fix**: Resolved an infinite re-render loop in frontend pages by stabilizing the `getToken` reference returned by the mocked Clerk hook (`src/components/MockClerk.tsx`).
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Local Dev & Database Stability (Session 21)
+
+- [x] **Clerk Mock Stable Reference**: Fixed infinite request rendering loops on admin pages by memoizing `getToken` in [MockClerk.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/MockClerk.tsx).
+- [x] **Neon DB Transaction Support**: Switched to `@neondatabase/serverless`'s `Pool` in [index.ts](file:///Volumes/Untitled/contact-tree-membership/src/db/index.ts) to enable transaction block execution (`db.transaction`).
+- [x] **CSP Configuration**: Opened up Content Security Policy in [index.html](file:///Volumes/Untitled/contact-tree-membership/index.html) to allow Cloudflare R2 uploads and Unsplash image rendering.
+- [x] **Rate Limit Bypass for Dev**: Enabled automatic bypass for security rate limits under development environment (`NODE_ENV === 'development'`) in [security.ts](file:///Volumes/Untitled/contact-tree-membership/api/_utils/security.ts).
+- [x] **Sidebar Route Fix**: Updated route path in [AdminSidebar.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/admin/AdminSidebar.tsx) to map `/admin` directly without redirect lag.
+- [x] **Server-Side Upload Proxy**: Added `/api/membership?action=upload` proxy to upload files (such as member avatars and generated card strips) to R2 directly from the backend to circumvent client-side CORS Preflight (403) limitations.
+- [x] **Club Logo Drag & Drop Zone**: Created a premium drag-and-drop file uploader zone with optional URL text input toggle in [AdminMembershipClubs.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/admin/AdminMembershipClubs.tsx) for easy club logo branding setups.
 
 ### Privacy & Build Stability (Session 20)
 
@@ -32,14 +44,14 @@ The platform is now in an **Optimized, Hardened, and Secure** state. We have com
 
 - [x] **Security Middleware**: Implemented rate-limiting and request payload validation in `api/_utils/security.ts`.
 - [x] **Endpoint Integration**: Integrated security checks into all key backend API entry points:
-  * User onboarding and management (`api/user.ts`)
-  * Billing and billing actions (`api/billing.ts`)
-  * Apple Wallet pass generation (`api/passes.ts`)
-  * Cards endpoint (`api/cards.ts`)
-  * Leads collection (`api/leads.ts`)
-  * Public routes (`api/public.ts`)
-  * Webhook receivers (`api/apple-webhook.ts`, `api/webhooks/stripe.ts`)
-  * Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`, `api/wallet-sync.ts`)
+  - User onboarding and management (`api/user.ts`)
+  - Billing and billing actions (`api/billing.ts`)
+  - Apple Wallet pass generation (`api/passes.ts`)
+  - Cards endpoint (`api/cards.ts`)
+  - Leads collection (`api/leads.ts`)
+  - Public routes (`api/public.ts`)
+  - Webhook receivers (`api/apple-webhook.ts`, `api/webhooks/stripe.ts`)
+  - Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`, `api/wallet-sync.ts`)
 
 ### Growth & SEO (Session 19)
 
@@ -90,4 +102,3 @@ The platform is now in an **Optimized, Hardened, and Secure** state. We have com
 - **Consistency** — `PricingCards` is one component used in both `/pricing` and the wizard
 - **Minimal friction** — Clerk handles auth, `localStorage` bridges the pre/post-auth gap
 - **Vercel Hobby constraints** — Stay under 12 serverless functions; consolidate where possible
-

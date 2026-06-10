@@ -35,6 +35,11 @@ const AUTH_WINDOW_SIZE_MS = 15 * 60 * 1000; // 15 minutes
 const AUTH_MAX_REQUESTS = 5; // 5 attempts per 15 mins per IP
 
 export function checkRateLimit(req: VercelRequest, res: VercelResponse): boolean {
+    // Bypass rate limiting in local development to prevent blocking tests and hot-reloads
+    if (process.env.NODE_ENV === 'development') {
+        return true;
+    }
+
     const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
     const now = Date.now();
     
@@ -83,7 +88,12 @@ export function checkRateLimit(req: VercelRequest, res: VercelResponse): boolean
  */
 export function sanitizeInput<T>(obj: T): T {
     if (typeof obj === 'string') {
-        if (obj.startsWith('http://') || obj.startsWith('https://') || obj.startsWith('data:image')) {
+        if (
+            obj.startsWith('http://') || 
+            obj.startsWith('https://') || 
+            obj.startsWith('data:image') || 
+            obj.startsWith('/')
+        ) {
             return obj;
         }
         return sanitize(obj) as any;
