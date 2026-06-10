@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
                 cleaned = cleaned.substring(1, cleaned.length - 1);
             }
-            cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
+            cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\r/g, '').trim();
             if (cleaned.includes('-----BEGIN CERTIFICATE-----')) {
                 cleaned = cleaned.substring(cleaned.indexOf('-----BEGIN CERTIFICATE-----'));
             } else if (cleaned.includes('-----BEGIN PRIVATE KEY-----')) {
