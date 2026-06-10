@@ -15,6 +15,9 @@ export function MembershipAdminMembers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  // Status change
+  const [changingStatusId, setChangingStatusId] = useState<number | null>(null);
+
   // Sharing States
   const [activeShareMember, setActiveShareMember] = useState<any | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -128,6 +131,32 @@ export function MembershipAdminMembers() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // Action: Change Status inline
+  const handleStatusChange = async (member: any, newStatus: string) => {
+    if (newStatus === member.status) return;
+    setChangingStatusId(member.id);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/membership?resource=memberships', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: member.id, status: newStatus })
+      });
+      if (res.ok) {
+        fetchMembers();
+      } else {
+        console.error('Status change failed', await res.text());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChangingStatusId(null);
     }
   };
 
@@ -315,15 +344,22 @@ export function MembershipAdminMembers() {
                         {new Date(member.expiresAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                          member.status === 'active'
-                            ? 'bg-emerald-950/45 border-emerald-500/30 text-emerald-400'
-                            : member.status === 'expired'
-                            ? 'bg-amber-950/45 border-amber-500/30 text-amber-500'
-                            : 'bg-red-950/45 border-red-500/30 text-red-500'
-                        }`}>
-                          {member.status}
-                        </span>
+                        <select
+                          value={member.status}
+                          disabled={changingStatusId === member.id}
+                          onChange={(e) => handleStatusChange(member, e.target.value)}
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border outline-none cursor-pointer transition-all disabled:opacity-50 ${
+                            member.status === 'active'
+                              ? 'bg-emerald-950/45 border-emerald-500/30 text-emerald-400 focus:ring-1 focus:ring-emerald-500'
+                              : member.status === 'expired'
+                              ? 'bg-amber-950/45 border-amber-500/30 text-amber-500 focus:ring-1 focus:ring-amber-500'
+                              : 'bg-red-950/45 border-red-500/30 text-red-500 focus:ring-1 focus:ring-red-500'
+                          }`}
+                        >
+                          <option value="active">Active</option>
+                          <option value="expired">Expired</option>
+                          <option value="revoked">Revoked</option>
+                        </select>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-1">
