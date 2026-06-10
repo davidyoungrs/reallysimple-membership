@@ -10,6 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
+        const crypto = await import('crypto');
         const getCertDebug = (name: string) => {
             let val = process.env[name];
             if (!val) return { status: 'missing' };
@@ -19,10 +20,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 cleaned = cleaned.substring(1, cleaned.length - 1);
             }
             cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
+            if (cleaned.includes('-----BEGIN CERTIFICATE-----')) {
+                cleaned = cleaned.substring(cleaned.indexOf('-----BEGIN CERTIFICATE-----'));
+            } else if (cleaned.includes('-----BEGIN PRIVATE KEY-----')) {
+                cleaned = cleaned.substring(cleaned.indexOf('-----BEGIN PRIVATE KEY-----'));
+            }
+            
+            const hash = crypto.createHash('sha256').update(cleaned).digest('hex');
             return {
                 status: 'present',
                 rawLength,
                 cleanedLength: cleaned.length,
+                hash,
                 start: cleaned.substring(0, 30),
                 end: cleaned.substring(cleaned.length - 30)
             };
