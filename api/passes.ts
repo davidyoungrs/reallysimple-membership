@@ -5,6 +5,7 @@ import { PKPass } from 'passkit-generator';
 import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
@@ -14,6 +15,66 @@ import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 // Use process.cwd() to locate certs in Vercel environment
 const CERT_DIR = path.join(process.cwd(), 'certs');
+
+/**
+ * Reads a certificate/key from an environment variable or local file.
+ * Handles:
+ *  - Stripping macOS Keychain "Bag Attributes" headers
+ *  - Unescaping \\n sequences stored in env vars
+ *  - Converting PKCS#8 private keys (-----BEGIN PRIVATE KEY-----) to PKCS#1
+ *    RSA format (-----BEGIN RSA PRIVATE KEY-----) that node-forge can parse
+ */
+function getCertContent(envVar: string, fileName: string): string | null {
+    let raw: string | null = null;
+
+    const envVal = process.env[envVar];
+    if (envVal) {
+        let val = envVal.trim();
+        // Strip surrounding quotes that some secret managers add
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+        }
+        // Unescape literal \n sequences (env vars can't contain real newlines in some providers)
+        val = val.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
+        raw = val;
+    } else {
+        const localPath = path.join(CERT_DIR, fileName);
+        if (fs.existsSync(localPath)) {
+            raw = fs.readFileSync(localPath, 'utf8');
+        }
+    }
+
+    if (!raw) return null;
+
+    // Strip any "Bag Attributes" / "Key Attributes" headers that macOS Keychain
+    // exports prepend to the PEM block. We need only the PEM block itself.
+    const certMatch = raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/);
+    if (certMatch) return certMatch[0];
+
+    // For private keys: convert PKCS#8 to PKCS#1 because node-forge's
+    // decryptRsaPrivateKey() cannot parse unencrypted PKCS#8 keys.
+    const pkcs8Match = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/);
+    if (pkcs8Match) {
+        try {
+            const privKey = crypto.createPrivateKey({ key: pkcs8Match[0], format: 'pem', type: 'pkcs8' });
+            return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
+        } catch (e) {
+            console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
+            return pkcs8Match[0]; // fall back and let the library fail with its own error
+        }
+    }
+
+    // Already PKCS#1 RSA key or some other format – just strip bag attributes
+    const rsaKeyMatch = raw.match(/-----BEGIN RSA PRIVATE KEY-----[\s\S]+?-----END RSA PRIVATE KEY-----/);
+    if (rsaKeyMatch) return rsaKeyMatch[0];
+
+    const encKeyMatch = raw.match(/-----BEGIN ENCRYPTED PRIVATE KEY-----[\s\S]+?-----END ENCRYPTED PRIVATE KEY-----/);
+    if (encKeyMatch) return encKeyMatch[0];
+
+    // No known block found — return as-is (may still work or produce a clear error)
+    console.warn(`[PassGen] getCertContent(${envVar}): no recognisable PEM block found, returning raw value`);
+    return raw;
+}
 
 function cleanColorToRgb(color: string | undefined | null, defaultColor: string): string {
     if (!color) return defaultColor;
@@ -117,27 +178,17 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Server configuration error: Missing Apple IDs' });
         }
 
-        const getCertContent = (envVar: string, fileName: string) => {
-            let val = process.env[envVar];
-            if (val) {
-                val = val.trim();
-                if (val.startsWith('"') && val.endsWith('"')) {
-                    val = val.substring(1, val.length - 1);
-                } else if (val.startsWith("'") && val.endsWith("'")) {
-                    val = val.substring(1, val.length - 1);
-                }
-                return val.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
-            }
-            const localPath = path.join(CERT_DIR, fileName);
-            if (fs.existsSync(localPath)) return fs.readFileSync(localPath, 'utf8');
-            return null;
-        };
-
         const certs = {
             wwdr: getCertContent('WALLET_WWDR_CERT', 'wwdr.pem'),
             signerCert: getCertContent('WALLET_SIGNER_CERT', 'signerCert.pem'),
             signerKey: getCertContent('WALLET_SIGNER_KEY', 'signerKey.pem'),
         };
+
+        console.log('[PassGen] cert types:', {
+            wwdr: certs.wwdr?.substring(0, 27),
+            signerCert: certs.signerCert?.substring(0, 27),
+            signerKey: certs.signerKey?.substring(0, 30),
+        });
 
         if (!certs.wwdr || !certs.signerCert || !certs.signerKey) {
             return res.status(500).json({ error: 'Missing certificates' });
@@ -545,27 +596,17 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             return res.status(500).json({ error: 'Server configuration error: Missing Apple IDs' });
         }
 
-        const getCertContent = (envVar: string, fileName: string) => {
-            let val = process.env[envVar];
-            if (val) {
-                val = val.trim();
-                if (val.startsWith('"') && val.endsWith('"')) {
-                    val = val.substring(1, val.length - 1);
-                } else if (val.startsWith("'") && val.endsWith("'")) {
-                    val = val.substring(1, val.length - 1);
-                }
-                return val.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
-            }
-            const localPath = path.join(CERT_DIR, fileName);
-            if (fs.existsSync(localPath)) return fs.readFileSync(localPath, 'utf8');
-            return null;
-        };
-
         const certs = {
             wwdr: getCertContent('WALLET_WWDR_CERT', 'wwdr.pem'),
             signerCert: getCertContent('WALLET_SIGNER_CERT', 'signerCert.pem'),
             signerKey: getCertContent('WALLET_SIGNER_KEY', 'signerKey.pem'),
         };
+
+        console.log('[PassGen-Membership] cert types:', {
+            wwdr: certs.wwdr?.substring(0, 27),
+            signerCert: certs.signerCert?.substring(0, 27),
+            signerKey: certs.signerKey?.substring(0, 30),
+        });
 
         if (!certs.wwdr || !certs.signerCert || !certs.signerKey) {
             return res.status(500).json({ error: 'Missing certificates' });

@@ -3,46 +3,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
-import crypto from 'crypto';
 
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_contact_to_not_fail_init');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (req.method === 'GET') {
-        const getCertDebug = (name: string) => {
-            let val = process.env[name];
-            if (!val) return { status: 'missing' };
-            const rawLength = val.length;
-            let cleaned = val.trim();
-            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-                cleaned = cleaned.substring(1, cleaned.length - 1);
-            }
-            cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\r/g, '').trim();
-            if (cleaned.includes('-----BEGIN CERTIFICATE-----')) {
-                cleaned = cleaned.substring(cleaned.indexOf('-----BEGIN CERTIFICATE-----'));
-            } else if (cleaned.includes('-----BEGIN PRIVATE KEY-----')) {
-                cleaned = cleaned.substring(cleaned.indexOf('-----BEGIN PRIVATE KEY-----'));
-            }
-            
-            const hash = crypto.createHash('sha256').update(cleaned).digest('hex');
-            return {
-                status: 'present',
-                rawLength,
-                cleanedLength: cleaned.length,
-                hash,
-                start: cleaned.substring(0, 30),
-                end: cleaned.substring(cleaned.length - 30)
-            };
-        };
-
-        return res.status(200).json({
-            wwdr: getCertDebug('WALLET_WWDR_CERT'),
-            signerCert: getCertDebug('WALLET_SIGNER_CERT'),
-            signerKey: getCertDebug('WALLET_SIGNER_KEY')
-        });
-    }
 
     // CORS
     res.setHeader('Access-Control-Allow-Credentials', 'true');
