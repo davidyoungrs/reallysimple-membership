@@ -38,3 +38,7 @@ debug_pass_content_v2/
 # Local data & environment dumps
 reallysimple-new.vercel.app-*.json
 scratch/
+
+# macOS metadata files
+._*
+.DS_Store
