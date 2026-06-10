@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
+import crypto from 'crypto';
 
 import { Resend } from 'resend';
 
@@ -10,7 +11,6 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
-        const crypto = await import('crypto');
         const getCertDebug = (name: string) => {
             let val = process.env[name];
             if (!val) return { status: 'missing' };
