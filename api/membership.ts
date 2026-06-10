@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
 import { clubs, membershipTemplates, memberships, clubAdmins, users, walletPushRegistrations } from '../src/db/schema.js';
-import { eq, and, or, sql, desc, inArray } from 'drizzle-orm';
+import { eq, and, or, sql, desc, inArray, lt } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
@@ -554,6 +554,34 @@ async function handleMemberships(
         if (clubId) {
             const hasAccess = await checkIsClubAdmin(clubId);
             if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
+
+            // Auto-expire: any 'active' membership whose expiresAt is in the past
+            // should be flipped to 'expired' before we return the list.
+            const now = new Date();
+            const expiredRows = await db.select({ id: memberships.id, uid: memberships.uid })
+                .from(memberships)
+                .where(and(
+                    eq(memberships.clubId, clubId),
+                    eq(memberships.status, 'active'),
+                    lt(memberships.expiresAt, now)
+                ));
+
+            if (expiredRows.length > 0) {
+                await db.update(memberships)
+                    .set({ status: 'expired', updatedAt: now })
+                    .where(and(
+                        eq(memberships.clubId, clubId),
+                        eq(memberships.status, 'active'),
+                        lt(memberships.expiresAt, now)
+                    ));
+                // Push wallet updates for newly-expired passes
+                for (const row of expiredRows) {
+                    syncMembershipWallet(row.uid).catch(err =>
+                        console.error(`[AutoExpire] wallet sync failed for ${row.uid}:`, err)
+                    );
+                }
+                console.log(`[AutoExpire] Marked ${expiredRows.length} memberships as expired for club ${clubId}`);
+            }
 
             const records = await db.select().from(memberships).where(eq(memberships.clubId, clubId)).orderBy(desc(memberships.createdAt));
             const normalizedRecords = records.map(r => ({
