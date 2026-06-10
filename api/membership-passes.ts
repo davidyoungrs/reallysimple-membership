@@ -139,8 +139,8 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             (pass as any).setExpirationDate(new Date(membership.expiresAt));
         }
 
-        // Set Pass Layout Type to generic (membership layout recommended by Apple)
-        pass.type = 'generic';
+        // Set Pass Layout Type to storeCard to support strip images (membership layout)
+        pass.type = 'storeCard';
 
         // Add Logo and Strip images
         const addImage = async (url: string | undefined, name: string) => {
