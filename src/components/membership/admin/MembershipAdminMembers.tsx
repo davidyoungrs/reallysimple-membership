@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
-import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload } from 'lucide-react';
+import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload, Share2, Mail, Copy } from 'lucide-react';
 
 export function MembershipAdminMembers() {
   const { club } = useOutletContext<{ club: any }>();
@@ -14,6 +14,11 @@ export function MembershipAdminMembers() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Sharing States
+  const [activeShareMember, setActiveShareMember] = useState<any | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
 
   // CSV Import States
   const [showImportView, setShowImportView] = useState(searchParams.get('import') === 'true');
@@ -344,6 +349,13 @@ export function MembershipAdminMembers() {
                           >
                             Renew
                           </button>
+                          <button
+                            onClick={() => setActiveShareMember(member)}
+                            className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"
+                            title="Share Card"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -495,7 +507,99 @@ export function MembershipAdminMembers() {
         </div>
       )}
 
+      {/* Share Membership Card Modal */}
+      {activeShareMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 text-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col text-left">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+              <div>
+                <h3 className="font-extrabold text-base text-white uppercase tracking-wider">Share Membership Card</h3>
+                <p className="text-xs text-slate-400 mt-1">Send to {activeShareMember.memberName}</p>
+              </div>
+              <button 
+                onClick={() => setActiveShareMember(null)} 
+                className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Message Preview */}
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Message Preview
+                </label>
+                <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl text-xs font-mono text-slate-300 leading-relaxed max-h-[160px] overflow-y-auto whitespace-pre-wrap select-all">
+                  {`Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView and Verify online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`}
+                </div>
+              </div>
+
+              {/* Action Buttons Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    const subject = encodeURIComponent(`Your ${club.name} Membership Card`);
+                    const body = encodeURIComponent(
+                      `Hi ${activeShareMember.memberName},\n\nYour membership card for ${club.name} is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`
+                    );
+                    window.open(`mailto:${activeShareMember.memberEmail}?subject=${subject}&body=${body}`, '_self');
+                  }}
+                  className="col-span-2 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all text-xs border border-blue-500/30"
+                >
+                  <Mail className="w-4 h-4" />
+                  Send via Email
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(`${window.location.origin}/membership/${activeShareMember.slug}`);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-750 text-white rounded-xl font-bold transition-all text-xs border border-slate-700"
+                >
+                  {copiedLink ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  {copiedLink ? 'Link Copied!' : 'Copy Portal Link'}
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const textMsg = `Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Apple Wallet:\n${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n\nSave to Google Wallet:\n${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`;
+                      await navigator.clipboard.writeText(textMsg);
+                      setCopiedMessage(true);
+                      setTimeout(() => setCopiedMessage(false), 2000);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-750 text-white rounded-xl font-bold transition-all text-xs border border-slate-700"
+                >
+                  {copiedMessage ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  {copiedMessage ? 'Message Copied!' : 'Copy Message Text'}
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end shrink-0">
+              <button
+                onClick={() => setActiveShareMember(null)}
+                className="px-5 py-2.5 rounded-xl border border-slate-850 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-xs font-bold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
