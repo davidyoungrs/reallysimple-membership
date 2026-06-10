@@ -10,13 +10,16 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
+        const val = process.env.DATABASE_URL;
         return res.status(200).json({
             keys: Object.keys(process.env).sort(),
             node_env: process.env.NODE_ENV,
             vercel_env: process.env.VERCEL_ENV,
-            hasDatabaseUrl: !!process.env.DATABASE_URL,
-            databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
-            databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) : null
+            hasDatabaseUrl: !!val,
+            databaseUrlType: typeof val,
+            databaseUrlLength: val ? val.length : 0,
+            databaseUrlExactValue: val === "" ? "EMPTY_STRING" : (val === undefined ? "UNDEFINED" : (val === null ? "NULL" : "OTHER_VALUE")),
+            databaseUrlChars: val ? val.split('').map(c => c.charCodeAt(0)) : []
         });
     }
 
