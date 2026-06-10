@@ -118,7 +118,16 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         }
 
         const getCertContent = (envVar: string, fileName: string) => {
-            if (process.env[envVar]) return process.env[envVar]!.replace(/\\n/g, '\n');
+            let val = process.env[envVar];
+            if (val) {
+                val = val.trim();
+                if (val.startsWith('"') && val.endsWith('"')) {
+                    val = val.substring(1, val.length - 1);
+                } else if (val.startsWith("'") && val.endsWith("'")) {
+                    val = val.substring(1, val.length - 1);
+                }
+                return val.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
+            }
             const localPath = path.join(CERT_DIR, fileName);
             if (fs.existsSync(localPath)) return fs.readFileSync(localPath, 'utf8');
             return null;
@@ -537,7 +546,16 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         }
 
         const getCertContent = (envVar: string, fileName: string) => {
-            if (process.env[envVar]) return process.env[envVar]!.replace(/\\n/g, '\n');
+            let val = process.env[envVar];
+            if (val) {
+                val = val.trim();
+                if (val.startsWith('"') && val.endsWith('"')) {
+                    val = val.substring(1, val.length - 1);
+                } else if (val.startsWith("'") && val.endsWith("'")) {
+                    val = val.substring(1, val.length - 1);
+                }
+                return val.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
+            }
             const localPath = path.join(CERT_DIR, fileName);
             if (fs.existsSync(localPath)) return fs.readFileSync(localPath, 'utf8');
             return null;
