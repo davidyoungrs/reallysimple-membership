@@ -35,7 +35,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   photoConfig: {
     show: true,
     position: 'left',
-    x: 22,
+    x: 26,
     y: 50,
     scale: 100,
     border: 'thin',
@@ -52,7 +52,19 @@ export function MembershipStripDesigner({
 }: MembershipStripDesignerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  const [config, setConfig] = useState<StripConfig>(initialStripConfig || DEFAULT_STRIP_CONFIG);
+  const [config, setConfig] = useState<StripConfig>(() => {
+    let initial = initialStripConfig || DEFAULT_STRIP_CONFIG;
+    if (initial.photoConfig && initial.photoConfig.x === 22) {
+      initial = {
+        ...initial,
+        photoConfig: {
+          ...initial.photoConfig,
+          x: 26
+        }
+      };
+    }
+    return initial;
+  });
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [profileImage, setProfileImage] = useState<HTMLImageElement | null>(null);
 

@@ -67,7 +67,20 @@ export function MembershipCardCreator() {
           setMemberPhoto(m.memberPhoto || '');
           setMembershipNumber(m.membershipNumber);
           setSlug(m.slug);
-          setCardConfig(m.cardConfig);
+          let config = m.cardConfig;
+          if (config?.stripConfig?.photoConfig && config.stripConfig.photoConfig.x === 22) {
+            config = {
+              ...config,
+              stripConfig: {
+                ...config.stripConfig,
+                photoConfig: {
+                  ...config.stripConfig.photoConfig,
+                  x: 26
+                }
+              }
+            };
+          }
+          setCardConfig(config);
           setStripImageUrl(m.stripImageUrl || '');
           setStatus(m.status);
           setExpiresAt(new Date(m.expiresAt).toISOString().split('T')[0]);
@@ -154,7 +167,20 @@ export function MembershipCardCreator() {
   // Load template config when template changes
   useEffect(() => {
     if (selectedTemplate && !editId) {
-      setCardConfig(selectedTemplate.cardConfig);
+      let config = selectedTemplate.cardConfig;
+      if (config?.stripConfig?.photoConfig && config.stripConfig.photoConfig.x === 22) {
+        config = {
+          ...config,
+          stripConfig: {
+            ...config.stripConfig,
+            photoConfig: {
+              ...config.stripConfig.photoConfig,
+              x: 26
+            }
+          }
+        };
+      }
+      setCardConfig(config);
       setStripImageUrl('');
     }
   }, [selectedTemplate, editId]);
@@ -293,7 +319,7 @@ export function MembershipCardCreator() {
           }
           img.onload = () => {
             const size = 280 * ((configToUse.photoConfig.scale || 100) / 100);
-            const posX = width * ((configToUse.photoConfig.x || 22) / 100) - size / 2;
+            const posX = width * ((configToUse.photoConfig.x || 26) / 100) - size / 2;
             const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
 
             ctx.save();

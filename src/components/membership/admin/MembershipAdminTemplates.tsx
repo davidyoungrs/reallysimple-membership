@@ -124,36 +124,48 @@ export function MembershipAdminTemplates() {
         showClubLogo,
         showClubName,
         fontFamily,
-        stripConfig: editingTemplate?.cardConfig?.stripConfig || {
-          bgType: 'color',
-          bgColor: walletBgColor,
-          bgGradient: [],
-          bgFilters: { grayscale: 0, sepia: 0, opacity: 100 },
-          textConfig: {
-            showName: showMemberName,
-            nameColor: walletFgColor,
-            nameX: 40,
-            nameY: 50,
-            showTitle: false,
-            titleColor: walletFgColor,
-            titleX: 50,
-            titleY: 70,
-            showTagline: false,
-            tagline: '',
-            taglineColor: walletFgColor,
-            taglineX: 50,
-            taglineY: 85,
-            align: 'left',
-          },
-          photoConfig: {
-            show: showMemberPhoto,
-            position: 'left',
-            x: 22,
-            y: 50,
-            scale: 100,
-            border: 'thin',
-          },
-        }
+        stripConfig: (() => {
+          let sConfig = editingTemplate?.cardConfig?.stripConfig || {
+            bgType: 'color',
+            bgColor: walletBgColor,
+            bgGradient: [],
+            bgFilters: { grayscale: 0, sepia: 0, opacity: 100 },
+            textConfig: {
+              showName: showMemberName,
+              nameColor: walletFgColor,
+              nameX: 40,
+              nameY: 50,
+              showTitle: false,
+              titleColor: walletFgColor,
+              titleX: 50,
+              titleY: 70,
+              showTagline: false,
+              tagline: '',
+              taglineColor: walletFgColor,
+              taglineX: 50,
+              taglineY: 85,
+              align: 'left',
+            },
+            photoConfig: {
+              show: showMemberPhoto,
+              position: 'left',
+              x: 26,
+              y: 50,
+              scale: 100,
+              border: 'thin',
+            },
+          };
+          if (sConfig.photoConfig && sConfig.photoConfig.x === 22) {
+            sConfig = {
+              ...sConfig,
+              photoConfig: {
+                ...sConfig.photoConfig,
+                x: 26
+              }
+            };
+          }
+          return sConfig;
+        })()
       };
 
       const payload = {
