@@ -51,7 +51,7 @@ The platform is now in an **Optimized, Hardened, and Secure** state. We have com
   - Leads collection (`api/leads.ts`)
   - Public routes (`api/public.ts`)
   - Webhook receivers (`api/apple-webhook.ts`, `api/webhooks/stripe.ts`)
-  - Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`, `api/wallet-sync.ts`)
+  - Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`)
 
 ### Growth & SEO (Session 19)
 

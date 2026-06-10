@@ -481,8 +481,8 @@ export function MembershipCardCreator() {
       
       const host = window.location.origin;
       setGeneratedPasses({
-        appleUrl: `${host}/api/membership-passes?type=apple&slug=${result.membership.slug}`,
-        googleUrl: `${host}/api/membership-passes?type=google&slug=${result.membership.slug}`
+        appleUrl: `${host}/api/passes?resource=membership&type=apple&slug=${result.membership.slug}`,
+        googleUrl: `${host}/api/passes?resource=membership&type=google&slug=${result.membership.slug}`
       });
 
     } catch (err: any) {

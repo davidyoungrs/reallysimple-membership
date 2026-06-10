@@ -533,7 +533,7 @@ export function MembershipAdminMembers() {
                   Message Preview
                 </label>
                 <div className="bg-slate-950 border border-slate-850 p-4 rounded-2xl text-xs font-mono text-slate-300 leading-relaxed max-h-[160px] overflow-y-auto whitespace-pre-wrap select-all">
-                  {`Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView and Verify online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`}
+                  {`Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView and Verify online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/passes?resource=membership&type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/passes?resource=membership&type=google&slug=${activeShareMember.slug}`}
                 </div>
               </div>
 
@@ -543,7 +543,7 @@ export function MembershipAdminMembers() {
                   onClick={() => {
                     const subject = encodeURIComponent(`Your ${club.name} Membership Card`);
                     const body = encodeURIComponent(
-                      `Hi ${activeShareMember.memberName},\n\nYour membership card for ${club.name} is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`
+                      `Hi ${activeShareMember.memberName},\n\nYour membership card for ${club.name} is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Wallet:\n- Apple Wallet (iOS): ${window.location.origin}/api/passes?resource=membership&type=apple&slug=${activeShareMember.slug}\n- Google Wallet (Android): ${window.location.origin}/api/passes?resource=membership&type=google&slug=${activeShareMember.slug}`
                     );
                     window.open(`mailto:${activeShareMember.memberEmail}?subject=${subject}&body=${body}`, '_self');
                   }}
@@ -572,7 +572,7 @@ export function MembershipAdminMembers() {
                 <button
                   onClick={async () => {
                     try {
-                      const textMsg = `Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Apple Wallet:\n${window.location.origin}/api/membership-passes?type=apple&slug=${activeShareMember.slug}\n\nSave to Google Wallet:\n${window.location.origin}/api/membership-passes?type=google&slug=${activeShareMember.slug}`;
+                      const textMsg = `Hi ${activeShareMember.memberName}, your ${club.name} membership card is ready!\n\nView online:\n${window.location.origin}/membership/${activeShareMember.slug}\n\nAdd to Apple Wallet:\n${window.location.origin}/api/passes?resource=membership&type=apple&slug=${activeShareMember.slug}\n\nSave to Google Wallet:\n${window.location.origin}/api/passes?resource=membership&type=google&slug=${activeShareMember.slug}`;
                       await navigator.clipboard.writeText(textMsg);
                       setCopiedMessage(true);
                       setTimeout(() => setCopiedMessage(false), 2000);

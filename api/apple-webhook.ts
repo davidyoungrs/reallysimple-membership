@@ -2,8 +2,7 @@ import { db } from '../src/db/index.js';
 import { walletPushRegistrations, businessCards, memberships } from '../src/db/schema.js';
 import { eq, and, gte } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { handleApplePass } from './passes.js';
-import { handleAppleMembershipPass } from './membership-passes.js';
+import { handleApplePass, handleAppleMembershipPass } from './passes.js';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
 // Apple passes all requests to /api/v1/... which we rewrite to /api/apple-webhook?path=...

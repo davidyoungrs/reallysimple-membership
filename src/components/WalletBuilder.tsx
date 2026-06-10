@@ -47,7 +47,7 @@ export function WalletBuilder({ data, onChange, isConcierge = false }: WalletBui
         setIsPushing(true);
         try {
             const token = await getToken();
-            const res = await fetch('/api/wallet-sync', {
+            const res = await fetch('/api/cards?action=sync', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

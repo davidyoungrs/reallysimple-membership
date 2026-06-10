@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
-import { businessCards, cardViews, cardClicks, users } from '../src/db/schema.js';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { businessCards, cardViews, cardClicks, users, walletPushRegistrations } from '../src/db/schema.js';
+import { eq, desc, sql, and, inArray } from 'drizzle-orm';
 import { verifyToken } from '@clerk/backend';
 import { secureEndpoint, validatePayload } from './_utils/security.js';
 import { sanitize } from '../src/utils/sanitization.js';
@@ -81,8 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return await handleListCards(req, res, targetUserId);
         }
 
-        // E. SAVE CARD (POST /api/cards)
+        // E. SAVE CARD (POST /api/cards) or SYNC WALLET (POST /api/cards?action=sync)
         if (method === 'POST') {
+            if (query.action === 'sync' || req.body?.action === 'sync') {
+                return await handleWalletSync(req, res, authenticatedUserId);
+            }
             return await handleSaveCard(req, res, authenticatedUserId, isAdmin);
         }
 
@@ -385,4 +388,62 @@ async function handleDeleteCard(req: VercelRequest, res: VercelResponse, authent
     await db.delete(businessCards).where(whereClause);
 
     return res.status(200).json({ success: true, message: 'Card deleted successfully' });
+}
+
+async function handleWalletSync(req: VercelRequest, res: VercelResponse, userId: string) {
+    try {
+        const { cardId } = req.body || {};
+
+        let cardFilter = eq(businessCards.userId, userId);
+        if (cardId) {
+            const targetCard = await db.select({ id: businessCards.id }).from(businessCards).where(eq(businessCards.id, cardId)).limit(1);
+            if (!targetCard.length) return res.status(404).json({ error: 'Card not found' });
+            cardFilter = sql`${businessCards.id} = ${cardId} AND ${businessCards.userId} = ${userId}`;
+        }
+
+        const devices = await db.select({
+            id: walletPushRegistrations.id,
+            pushToken: walletPushRegistrations.pushToken,
+            passType: walletPushRegistrations.passTypeIdentifier
+        })
+            .from(walletPushRegistrations)
+            .innerJoin(businessCards, sql`${walletPushRegistrations.serialNumber} = ${businessCards.uid}::text`)
+            .where(cardFilter);
+
+        if (devices.length === 0) {
+            return res.status(200).json({ success: true, message: 'No devices strictly registered to this card.', count: 0 });
+        }
+
+        const registrationIds = devices.map(d => d.id);
+        if (registrationIds.length > 0) {
+            await db.update(walletPushRegistrations)
+                .set({ updatedAt: new Date() })
+                .where(inArray(walletPushRegistrations.id, registrationIds));
+        }
+
+        const { sendPassPush } = await import('./_utils/apns.js');
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const device of devices) {
+            try {
+                await sendPassPush(device.pushToken, device.passType);
+                successCount++;
+            } catch (pushErr) {
+                console.error(`[Push] Failed to send push to ${device.pushToken.substring(0, 8)}:`, pushErr);
+                failCount++;
+            }
+        }
+
+        return res.status(200).json({ 
+            success: true, 
+            message: `Update pushed to ${successCount} devices.`,
+            count: successCount,
+            failures: failCount 
+        });
+
+    } catch (error: any) {
+        console.error('Wallet Sync error:', error);
+        return res.status(500).json({ error: 'Failed to synchronize wallet devices', details: error.message });
+    }
 }

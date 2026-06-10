@@ -209,3 +209,16 @@
 - [x] Create `api/og.tsx` (Edge Function) for generating OG images
 - [x] Create `api/render-card.ts` (Edge Function) for injecting meta tags
 - [x] Update `vercel.json` routing rules for `/card/:slug`
+
+## Phase 16: API Consolidation for Vercel Hobby Plan
+- [x] Merge `api/wallet-sync.ts` into `api/cards.ts` under `action=sync`
+- [x] Delete `api/wallet-sync.ts`
+- [x] Merge `api/membership-passes.ts` into `api/passes.ts` under `resource=membership`
+- [x] Delete `api/membership-passes.ts`
+- [x] Update imports in `api/apple-webhook.ts`
+- [x] Update frontend references in `WalletBuilder.tsx`
+- [x] Update frontend references in `MembershipCardCreator.tsx`
+- [x] Update frontend references in `MembershipAdminMembers.tsx`
+- [x] Verify local webhook routing in `vite.config.ts` matches new routes
+- [x] Compile verification via `npm run build`
+
