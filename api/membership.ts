@@ -595,7 +595,24 @@ async function handleMemberships(
     if (method === 'POST') {
         const action = query.action as string;
 
-        // A. BULK INSERTION
+        // A. MANUAL PUSH UPDATE
+        if (action === 'push') {
+            const { id } = body;
+            if (!id) return res.status(400).json({ error: 'Missing membership ID' });
+
+            const records = await db.select().from(memberships).where(eq(memberships.id, Number(id))).limit(1);
+            if (records.length === 0) return res.status(404).json({ error: 'Membership not found' });
+            const membership = records[0];
+
+            const hasAccess = await checkIsClubAdmin(membership.clubId);
+            if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
+
+            await syncMembershipWallet(membership.uid);
+
+            return res.status(200).json({ success: true, message: 'Push notification triggered successfully' });
+        }
+
+        // B. BULK INSERTION
         if (action === 'bulk') {
             const { clubId, templateId, data: csvData } = body;
             if (!clubId || !templateId || !Array.isArray(csvData)) {

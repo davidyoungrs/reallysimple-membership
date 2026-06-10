@@ -5,7 +5,7 @@ import { MembershipCardPreview } from './MembershipCardPreview.jsx';
 import { MembershipStripDesigner } from './MembershipStripDesigner.jsx';
 import { type MembershipCardConfig } from '../../types/membershipTypes.js';
 import { type StripConfig } from '../../types.js';
-import { Loader2, Upload, Sparkles, CreditCard, Check } from 'lucide-react';
+import { Loader2, Upload, Sparkles, CreditCard, Check, Bell } from 'lucide-react';
 
 export function MembershipCardCreator() {
   const { getToken } = useAuth();
@@ -509,6 +509,38 @@ export function MembershipCardCreator() {
     }
   };
 
+  const [pushingUpdate, setPushingUpdate] = useState(false);
+
+  const handlePushUpdate = async () => {
+    if (!editId) return;
+    try {
+      setPushingUpdate(true);
+      const token = await getToken();
+      const res = await fetch(`/api/membership?resource=memberships&action=push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: Number(editId) })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setFeedback({
+          type: 'success',
+          message: 'Update notification pushed successfully to all installed wallet passes!'
+        });
+      } else {
+        throw new Error(result.error || 'Failed to push update notification');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to push update notification' });
+    } finally {
+      setPushingUpdate(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -760,6 +792,22 @@ export function MembershipCardCreator() {
                   <CreditCard className="w-4 h-4 text-white" />
                   Save to Google Pay
                 </button>
+
+                {editId && (
+                  <button
+                    type="button"
+                    onClick={handlePushUpdate}
+                    disabled={pushingUpdate}
+                    className="sm:col-span-2 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all text-xs border border-blue-500/30"
+                  >
+                    {pushingUpdate ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Bell className="w-4 h-4" />
+                    )}
+                    {pushingUpdate ? 'Pushing Update...' : 'Push Update to Installed Cards'}
+                  </button>
+                )}
               </div>
             </div>
           )}
