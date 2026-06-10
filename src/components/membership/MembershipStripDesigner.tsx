@@ -19,7 +19,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   textConfig: {
     showName: true,
     nameColor: '#ffffff',
-    nameX: 40,
+    nameX: 48,
     nameY: 50,
     showTitle: false,
     titleColor: '#ffffff',
@@ -35,9 +35,9 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   photoConfig: {
     show: true,
     position: 'left',
-    x: 26,
+    x: 32,
     y: 50,
-    scale: 100,
+    scale: 90,
     border: 'thin',
   },
 };
@@ -54,16 +54,31 @@ export function MembershipStripDesigner({
   
   const [config, setConfig] = useState<StripConfig>(() => {
     let initial = initialStripConfig || DEFAULT_STRIP_CONFIG;
-    if (initial.photoConfig && initial.photoConfig.x === 22) {
-      initial = {
-        ...initial,
-        photoConfig: {
-          ...initial.photoConfig,
-          x: 26
-        }
-      };
+    let s = { ...initial };
+    let needsUpdate = false;
+
+    if (s.photoConfig) {
+      if (s.photoConfig.x === 22 || s.photoConfig.x === 26) {
+        s.photoConfig = {
+          ...s.photoConfig,
+          x: 32,
+          scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
+        };
+        needsUpdate = true;
+      }
     }
-    return initial;
+
+    if (s.textConfig) {
+      if (s.textConfig.nameX === 40) {
+        s.textConfig = {
+          ...s.textConfig,
+          nameX: 48
+        };
+        needsUpdate = true;
+      }
+    }
+
+    return needsUpdate ? s : initial;
   });
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [profileImage, setProfileImage] = useState<HTMLImageElement | null>(null);

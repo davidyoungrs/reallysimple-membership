@@ -133,7 +133,7 @@ export function MembershipAdminTemplates() {
             textConfig: {
               showName: showMemberName,
               nameColor: walletFgColor,
-              nameX: 40,
+              nameX: 48,
               nameY: 50,
               showTitle: false,
               titleColor: walletFgColor,
@@ -149,18 +149,28 @@ export function MembershipAdminTemplates() {
             photoConfig: {
               show: showMemberPhoto,
               position: 'left',
-              x: 26,
+              x: 32,
               y: 50,
-              scale: 100,
+              scale: 90,
               border: 'thin',
             },
           };
-          if (sConfig.photoConfig && sConfig.photoConfig.x === 22) {
+          if (sConfig.photoConfig && (sConfig.photoConfig.x === 22 || sConfig.photoConfig.x === 26)) {
             sConfig = {
               ...sConfig,
               photoConfig: {
                 ...sConfig.photoConfig,
-                x: 26
+                x: 32,
+                scale: sConfig.photoConfig.scale === 100 ? 90 : sConfig.photoConfig.scale
+              }
+            };
+          }
+          if (sConfig.textConfig && sConfig.textConfig.nameX === 40) {
+            sConfig = {
+              ...sConfig,
+              textConfig: {
+                ...sConfig.textConfig,
+                nameX: 48
               }
             };
           }

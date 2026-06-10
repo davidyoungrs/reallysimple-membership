@@ -68,17 +68,27 @@ export function MembershipCardCreator() {
           setMembershipNumber(m.membershipNumber);
           setSlug(m.slug);
           let config = m.cardConfig;
-          if (config?.stripConfig?.photoConfig && config.stripConfig.photoConfig.x === 22) {
-            config = {
-              ...config,
-              stripConfig: {
-                ...config.stripConfig,
-                photoConfig: {
-                  ...config.stripConfig.photoConfig,
-                  x: 26
-                }
-              }
-            };
+          if (config?.stripConfig) {
+            let s = { ...config.stripConfig };
+            let needsUpdate = false;
+            if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26)) {
+              s.photoConfig = {
+                ...s.photoConfig,
+                x: 32,
+                scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
+              };
+              needsUpdate = true;
+            }
+            if (s.textConfig && s.textConfig.nameX === 40) {
+              s.textConfig = {
+                ...s.textConfig,
+                nameX: 48
+              };
+              needsUpdate = true;
+            }
+            if (needsUpdate) {
+              config = { ...config, stripConfig: s };
+            }
           }
           setCardConfig(config);
           setStripImageUrl(m.stripImageUrl || '');
@@ -168,17 +178,27 @@ export function MembershipCardCreator() {
   useEffect(() => {
     if (selectedTemplate && !editId) {
       let config = selectedTemplate.cardConfig;
-      if (config?.stripConfig?.photoConfig && config.stripConfig.photoConfig.x === 22) {
-        config = {
-          ...config,
-          stripConfig: {
-            ...config.stripConfig,
-            photoConfig: {
-              ...config.stripConfig.photoConfig,
-              x: 26
-            }
-          }
-        };
+      if (config?.stripConfig) {
+        let s = { ...config.stripConfig };
+        let needsUpdate = false;
+        if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26)) {
+          s.photoConfig = {
+            ...s.photoConfig,
+            x: 32,
+            scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
+          };
+          needsUpdate = true;
+        }
+        if (s.textConfig && s.textConfig.nameX === 40) {
+          s.textConfig = {
+            ...s.textConfig,
+            nameX: 48
+          };
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          config = { ...config, stripConfig: s };
+        }
       }
       setCardConfig(config);
       setStripImageUrl('');
@@ -257,7 +277,7 @@ export function MembershipCardCreator() {
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
 
-            const x = width * ((configToUse.textConfig.nameX || 40) / 100);
+            const x = width * ((configToUse.textConfig.nameX || 48) / 100);
             const y = height * ((configToUse.textConfig.nameY || 50) / 100) + 16;
 
             // Calculate dynamic maxWidth to prevent text overflow
@@ -318,8 +338,8 @@ export function MembershipCardCreator() {
             img.crossOrigin = 'anonymous';
           }
           img.onload = () => {
-            const size = 280 * ((configToUse.photoConfig.scale || 100) / 100);
-            const posX = width * ((configToUse.photoConfig.x || 26) / 100) - size / 2;
+            const size = 280 * ((configToUse.photoConfig.scale || 90) / 100);
+            const posX = width * ((configToUse.photoConfig.x || 32) / 100) - size / 2;
             const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
 
             ctx.save();
