@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from '../src/db/index.js';
-import { leads } from '../src/db/schema.js';
+// import { db } from '../src/db/index.js';
+// import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
@@ -9,6 +9,17 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_for_contact_to_not_fail_init');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (req.method === 'GET') {
+        return res.status(200).json({
+            keys: Object.keys(process.env).sort(),
+            node_env: process.env.NODE_ENV,
+            vercel_env: process.env.VERCEL_ENV,
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
+            databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
+            databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) : null
+        });
+    }
+
     // CORS
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
