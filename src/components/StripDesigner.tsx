@@ -25,7 +25,7 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     const [textConfig, setTextConfig] = useState(savedConfig?.textConfig || {
         showName: initialWalletData.showNameFields !== false,
         nameColor: initialWalletData.foregroundColor || '#000000',
-        nameX: 50,
+        nameX: 40,
         nameY: 40,
 
         showTitle: initialWalletData.showRole !== false,
@@ -45,7 +45,7 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     const [photoConfig, setPhotoConfig] = useState(savedConfig?.photoConfig || {
         show: true,
         position: 'left' as 'left' | 'right',
-        x: 10,
+        x: 22,
         y: 50,
         scale: 100,
         border: 'none' as 'none' | 'thin' | 'thick',

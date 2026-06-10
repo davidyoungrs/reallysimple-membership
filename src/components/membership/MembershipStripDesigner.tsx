@@ -19,7 +19,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   textConfig: {
     showName: true,
     nameColor: '#ffffff',
-    nameX: 50,
+    nameX: 40,
     nameY: 50,
     showTitle: false,
     titleColor: '#ffffff',
@@ -35,7 +35,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   photoConfig: {
     show: true,
     position: 'left',
-    x: 15,
+    x: 22,
     y: 50,
     scale: 100,
     border: 'thin',

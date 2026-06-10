@@ -132,7 +132,7 @@ export function MembershipAdminTemplates() {
           textConfig: {
             showName: showMemberName,
             nameColor: walletFgColor,
-            nameX: 50,
+            nameX: 40,
             nameY: 50,
             showTitle: false,
             titleColor: walletFgColor,
@@ -148,7 +148,7 @@ export function MembershipAdminTemplates() {
           photoConfig: {
             show: showMemberPhoto,
             position: 'left',
-            x: 15,
+            x: 22,
             y: 50,
             scale: 100,
             border: 'thin',

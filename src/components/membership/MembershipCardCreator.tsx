@@ -231,7 +231,7 @@ export function MembershipCardCreator() {
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
 
-            const x = width * ((configToUse.textConfig.nameX || 50) / 100);
+            const x = width * ((configToUse.textConfig.nameX || 40) / 100);
             const y = height * ((configToUse.textConfig.nameY || 50) / 100) + 16;
 
             // Calculate dynamic maxWidth to prevent text overflow
@@ -293,7 +293,7 @@ export function MembershipCardCreator() {
           }
           img.onload = () => {
             const size = 280 * ((configToUse.photoConfig.scale || 100) / 100);
-            const posX = width * ((configToUse.photoConfig.x || 15) / 100) - size / 2;
+            const posX = width * ((configToUse.photoConfig.x || 22) / 100) - size / 2;
             const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
 
             ctx.save();
