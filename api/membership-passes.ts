@@ -110,7 +110,8 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         }
 
         const host = req.headers.host || 'reallysimple-membership.vercel.app';
-        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const isHttps = !host.includes('localhost') && !host.includes('127.0.0.1');
+        const protocol = isHttps ? 'https' : 'http';
 
         const isVoided = membership.status === 'expired' || membership.status === 'revoked';
 
@@ -118,8 +119,10 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             { model: modelPath, certificates: certs as any },
             {
                 serialNumber: membership.uid,
-                webServiceURL: `${protocol}://${host}/api`,
-                authenticationToken: Buffer.from(membership.uid).toString('base64'),
+                ...(isHttps ? {
+                    webServiceURL: `https://${host}/api`,
+                    authenticationToken: Buffer.from(membership.uid).toString('base64'),
+                } : {}),
                 description: isVoided ? `${club.name} Membership - Inactive` : `${club.name} Membership Card`,
                 logoText: isVoided ? 'INACTIVE' : (cardConfig.showClubName === false ? ' ' : club.name),
                 organizationName: club.name,

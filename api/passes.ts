@@ -128,15 +128,17 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Model.pass not found' });
         }
 
-        const host = req.headers.host || 'reallysimple-membership.vercel.app';
-        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const isHttps = !host.includes('localhost') && !host.includes('127.0.0.1');
+        const protocol = isHttps ? 'https' : 'http';
 
         const pass = await PKPass.from(
             { model: modelPath, certificates: certs as any },
             {
                 serialNumber: card.uid,
-                webServiceURL: `${protocol}://${host}/api`, // Apple appends /v1/passes or /v1/devices automatically
-                authenticationToken: Buffer.from(card.uid).toString('base64'),
+                ...(isHttps ? {
+                    webServiceURL: `https://${host}/api`,
+                    authenticationToken: Buffer.from(card.uid).toString('base64'),
+                } : {}),
                 description: effectiveTier === 'starter' ? 'Digital Card - Subscription Lapsed' : 'Digital Business Card',
                 logoText: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : (data.wallet?.showLogoText === false ? ' ' : (data.wallet?.logoText || data.company || 'Digital Card')),
                 organizationName: data.company || 'Contact Tree',
