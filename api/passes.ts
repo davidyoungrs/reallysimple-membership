@@ -808,21 +808,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
 
     } catch (error: any) {
         console.error('Apple Pass Generation Error:', error);
-        return res.status(500).json({
-            error: 'Failed to generate Apple Wallet pass',
-            details: error.message,
-            debug: {
-                CERT_DIR,
-                wwdr_len: certs.wwdr?.length || 0,
-                signerCert_len: certs.signerCert?.length || 0,
-                signerKey_len: certs.signerKey?.length || 0,
-                wwdr_exists: fs.existsSync(path.join(CERT_DIR, 'wwdr.pem')),
-                signerCert_exists: fs.existsSync(path.join(CERT_DIR, 'signerCert.pem')),
-                signerKey_exists: fs.existsSync(path.join(CERT_DIR, 'signerKey.pem')),
-                cwd: process.cwd(),
-                dirname: __dirname,
-            }
-        });
+        return res.status(500).json({ error: 'Failed to generate Apple Wallet pass', details: error.message });
     }
 }
 
