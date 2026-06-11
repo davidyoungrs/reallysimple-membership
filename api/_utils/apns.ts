@@ -37,16 +37,27 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
         }
     }
 
-    const keyId = process.env.APPLE_APNS_KEY_ID;
-    const teamId = process.env.APPLE_TEAM_ID;
+    let keyId = process.env.APPLE_APNS_KEY_ID?.trim();
+    if (keyId) {
+        if ((keyId.startsWith('"') && keyId.endsWith('"')) || (keyId.startsWith("'") && keyId.endsWith("'"))) {
+            keyId = keyId.slice(1, -1);
+        }
+    }
+
+    let teamId = process.env.APPLE_TEAM_ID?.trim();
+    if (teamId) {
+        if ((teamId.startsWith('"') && teamId.endsWith('"')) || (teamId.startsWith("'") && teamId.endsWith("'"))) {
+            teamId = teamId.slice(1, -1);
+        }
+    }
 
     if (!authKey || !keyId || !teamId) {
         throw new Error('Missing APNs configuration (Key, Key ID, or Team ID)');
     }
 
     console.log('[APNs-Debug] authKey length:', authKey.length);
-    console.log('[APNs-Debug] authKey head:', authKey.substring(0, 30));
-    console.log('[APNs-Debug] authKey tail:', authKey.substring(authKey.length - 30));
+    console.log('[APNs-Debug] keyId:', keyId);
+    console.log('[APNs-Debug] teamId:', teamId);
 
     const options = {
         token: {
