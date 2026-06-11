@@ -22,6 +22,10 @@ export async function sendPassPush(pushToken: string, passTypeIdentifier: string
         throw new Error('Missing APNs configuration (Key, Key ID, or Team ID)');
     }
 
+    console.log('[APNs-Debug] authKey length:', authKey.length);
+    console.log('[APNs-Debug] authKey head:', authKey.substring(0, 30));
+    console.log('[APNs-Debug] authKey tail:', authKey.substring(authKey.length - 30));
+
     const options = {
         token: {
             key: authKey, // Can be a string containing your key
