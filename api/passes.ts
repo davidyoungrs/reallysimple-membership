@@ -4,17 +4,22 @@ import { eq } from 'drizzle-orm';
 import { PKPass } from 'passkit-generator';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
+// Polyfill __dirname in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Locate certs folder
+const CERT_DIR = path.join(__dirname, '..', 'certs');
+
 // export const config = {
 //     runtime: 'edge', // Only if appropriate. Usually Node is safer for file ops.
 // };
-
-// Use process.cwd() to locate certs in Vercel environment
-const CERT_DIR = path.join(__dirname, '..', 'certs');
 
 /**
  * Reads a certificate/key from an environment variable or local file.
