@@ -32,10 +32,18 @@ const CERT_DIR = path.join(__dirname, 'certs');
 function getCertContent(envVar: string, fileName: string): string | null {
     let raw: string | null = null;
 
-    const localPath = path.join(CERT_DIR, fileName);
-    if (fs.existsSync(localPath)) {
-        raw = fs.readFileSync(localPath, 'utf8');
-    } else {
+    try {
+        if (fileName === 'wwdr.pem') {
+            raw = fs.readFileSync(path.join(__dirname, 'certs/wwdr.pem'), 'utf8');
+        } else if (fileName === 'signerCert.pem') {
+            raw = fs.readFileSync(path.join(__dirname, 'certs/signerCert.pem'), 'utf8');
+        } else if (fileName === 'signerKey.pem') {
+            raw = fs.readFileSync(path.join(__dirname, 'certs/signerKey.pem'), 'utf8');
+        } else if (fileName === 'wwdrKey.pem') {
+            raw = fs.readFileSync(path.join(__dirname, 'certs/wwdrKey.pem'), 'utf8');
+        }
+    } catch (e) {
+        // Fallback to environment variable
         const envVal = process.env[envVar];
         if (envVal) {
             let val = envVal.trim();
@@ -205,7 +213,7 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Missing certificates' });
         }
 
-        const modelPath = path.join(CERT_DIR, 'model.pass');
+        const modelPath = path.join(__dirname, 'certs/model.pass');
         if (!fs.existsSync(modelPath)) {
             console.error(`[PassGen] model.pass not found at: ${modelPath}`);
             return res.status(500).json({ error: 'Model.pass not found' });
@@ -630,7 +638,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             return res.status(500).json({ error: 'Missing certificates' });
         }
 
-        const modelPath = path.join(CERT_DIR, 'model.pass');
+        const modelPath = path.join(__dirname, 'certs/model.pass');
         if (!fs.existsSync(modelPath)) {
             console.error(`[PassGen-Membership] model.pass not found at: ${modelPath}`);
             return res.status(500).json({ error: 'Model.pass not found' });
