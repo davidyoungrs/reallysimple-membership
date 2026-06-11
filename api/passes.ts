@@ -577,6 +577,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
 }
 
 export async function handleAppleMembershipPass(req: VercelRequest, res: VercelResponse, slug: string) {
+    let certs: any = null;
     try {
         console.log(`[PassGen-Membership] Generating Apple Pass for slug: ${slug}`);
 
@@ -608,7 +609,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             console.error('[PassGen-Membership] failed to read certs dir:', err);
         }
 
-        const certs = {
+        certs = {
             wwdr: getCertContent('WALLET_WWDR_CERT', 'wwdr.pem'),
             signerCert: getCertContent('WALLET_SIGNER_CERT', 'signerCert.pem'),
             signerKey: getCertContent('WALLET_SIGNER_KEY', 'signerKey.pem'),
