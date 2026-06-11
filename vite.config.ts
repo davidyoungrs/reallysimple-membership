@@ -128,7 +128,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@clerk/clerk-react": path.resolve(__dirname, "./src/components/MockClerk.tsx"),
+      ...(process.env.VITE_USE_MOCK_CLERK === 'true'
+        ? { "@clerk/clerk-react": path.resolve(__dirname, "./src/components/MockClerk.tsx") }
+        : {}),
     },
   },
   build: {
