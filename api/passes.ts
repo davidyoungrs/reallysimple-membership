@@ -383,6 +383,7 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
 
         res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
         res.setHeader('Content-Disposition', `attachment; filename=${slug}.pkpass`);
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 
         // To ensure Apple Wallet accepts this pass, the `last-modified` header MUST be >= the tag 
         // returned in the registrations endpoint. Since tier changes don't update `card.updatedAt`, 
@@ -801,6 +802,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
 
         res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
         res.setHeader('Content-Disposition', `attachment; filename=membership_${membership.membershipNumber}.pkpass`);
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 
         const lastUpdatedStr = new Date(membership.updatedAt || new Date()).toISOString().split('.')[0] + 'Z';
         res.setHeader('last-modified', lastUpdatedStr);
