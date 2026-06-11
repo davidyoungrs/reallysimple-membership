@@ -14,7 +14,7 @@ import { checkRateLimit, validatePayload } from './_utils/security.js';
 // };
 
 // Use process.cwd() to locate certs in Vercel environment
-const CERT_DIR = path.join(process.cwd(), 'certs');
+const CERT_DIR = path.join(__dirname, '..', 'certs');
 
 /**
  * Reads a certificate/key from an environment variable or local file.
@@ -200,7 +200,7 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Missing certificates' });
         }
 
-        const modelPath = path.join(process.cwd(), 'certs', 'model.pass');
+        const modelPath = path.join(CERT_DIR, 'model.pass');
         if (!fs.existsSync(modelPath)) {
             console.error(`[PassGen] model.pass not found at: ${modelPath}`);
             return res.status(500).json({ error: 'Model.pass not found' });
@@ -624,7 +624,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             return res.status(500).json({ error: 'Missing certificates' });
         }
 
-        const modelPath = path.join(process.cwd(), 'certs', 'model.pass');
+        const modelPath = path.join(CERT_DIR, 'model.pass');
         if (!fs.existsSync(modelPath)) {
             console.error(`[PassGen-Membership] model.pass not found at: ${modelPath}`);
             return res.status(500).json({ error: 'Model.pass not found' });
