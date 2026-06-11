@@ -8,7 +8,13 @@ import apn from '@parse/node-apn';
  * @param passTypeIdentifier The pass type identifier (topic)
  */
 export async function sendPassPush(pushToken: string, passTypeIdentifier: string) {
-    const authKey = process.env.APPLE_APNS_AUTH_KEY?.replace(/\\n/g, '\n');
+    let authKey = process.env.APPLE_APNS_AUTH_KEY?.trim();
+    if (authKey) {
+        if ((authKey.startsWith('"') && authKey.endsWith('"')) || (authKey.startsWith("'") && authKey.endsWith("'"))) {
+            authKey = authKey.slice(1, -1);
+        }
+        authKey = authKey.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
+    }
     const keyId = process.env.APPLE_APNS_KEY_ID;
     const teamId = process.env.APPLE_TEAM_ID;
 
