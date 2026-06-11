@@ -1,7 +1,10 @@
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 
 export function AdminUnauthorized() {
+    const { signOut } = useClerk();
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-gray-100">
@@ -15,12 +18,13 @@ export function AdminUnauthorized() {
                 </p>
 
                 <div className="space-y-3">
-                    <Link
-                        to="/dashboard"
-                        className="block w-full py-3 px-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                    <button
+                        onClick={() => signOut()}
+                        className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors cursor-pointer"
                     >
-                        Return to Dashboard
-                    </Link>
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
                     <Link
                         to="/"
                         className="block w-full py-3 px-4 bg-white text-gray-700 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors"
