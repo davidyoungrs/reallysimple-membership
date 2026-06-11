@@ -27,20 +27,20 @@ const CERT_DIR = path.join(process.cwd(), 'certs');
 function getCertContent(envVar: string, fileName: string): string | null {
     let raw: string | null = null;
 
-    const envVal = process.env[envVar];
-    if (envVal) {
-        let val = envVal.trim();
-        // Strip surrounding quotes that some secret managers add
-        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-            val = val.slice(1, -1);
-        }
-        // Unescape literal \n sequences (env vars can't contain real newlines in some providers)
-        val = val.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
-        raw = val;
+    const localPath = path.join(CERT_DIR, fileName);
+    if (fs.existsSync(localPath)) {
+        raw = fs.readFileSync(localPath, 'utf8');
     } else {
-        const localPath = path.join(CERT_DIR, fileName);
-        if (fs.existsSync(localPath)) {
-            raw = fs.readFileSync(localPath, 'utf8');
+        const envVal = process.env[envVar];
+        if (envVal) {
+            let val = envVal.trim();
+            // Strip surrounding quotes that some secret managers add
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1);
+            }
+            // Unescape literal \n sequences (env vars can't contain real newlines in some providers)
+            val = val.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
+            raw = val;
         }
     }
 
