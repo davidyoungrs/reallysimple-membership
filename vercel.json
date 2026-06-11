@@ -27,7 +27,7 @@
     ],
     "functions": {
         "api/passes.ts": {
-            "includeFiles": "certs/model.pass/**"
+            "includeFiles": "certs/**"
         }
     }
 }
