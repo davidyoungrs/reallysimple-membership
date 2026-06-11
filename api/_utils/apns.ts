@@ -1,20 +1,42 @@
 import apn from '@parse/node-apn';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Sends a push notification to a device via Apple Push Notification service (APNs).
- * Requires APPLE_APNS_AUTH_KEY, APPLE_APNS_KEY_ID, and APPLE_TEAM_ID in environment variables.
+ * Requires APPLE_APNS_AUTH_KEY (or api/certs/apns.p8), APPLE_APNS_KEY_ID, and APPLE_TEAM_ID in environment variables.
  * 
  * @param pushToken The device's push token
  * @param passTypeIdentifier The pass type identifier (topic)
  */
 export async function sendPassPush(pushToken: string, passTypeIdentifier: string) {
-    let authKey = process.env.APPLE_APNS_AUTH_KEY?.trim();
-    if (authKey) {
-        if ((authKey.startsWith('"') && authKey.endsWith('"')) || (authKey.startsWith("'") && authKey.endsWith("'"))) {
-            authKey = authKey.slice(1, -1);
+    let authKey = '';
+    
+    try {
+        const p8Path = path.join(__dirname, '../certs/apns.p8');
+        if (fs.existsSync(p8Path)) {
+            authKey = fs.readFileSync(p8Path, 'utf8').trim();
+            console.log('[APNs-Debug] Loaded authKey from static apns.p8 file');
         }
-        authKey = authKey.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
+    } catch (err) {
+        console.warn('[APNs-Debug] Failed to read static apns.p8 file, falling back to environment variable:', err);
     }
+
+    if (!authKey) {
+        let envKey = process.env.APPLE_APNS_AUTH_KEY?.trim();
+        if (envKey) {
+            if ((envKey.startsWith('"') && envKey.endsWith('"')) || (envKey.startsWith("'") && envKey.endsWith("'"))) {
+                envKey = envKey.slice(1, -1);
+            }
+            authKey = envKey.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '').trim();
+            console.log('[APNs-Debug] Loaded authKey from environment variable');
+        }
+    }
+
     const keyId = process.env.APPLE_APNS_KEY_ID;
     const teamId = process.env.APPLE_TEAM_ID;
 
