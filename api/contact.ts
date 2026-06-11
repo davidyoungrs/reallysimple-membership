@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-// import { db } from '../src/db/index.js';
-// import { leads } from '../src/db/schema.js';
+import { db } from '../src/db/index.js';
+import { leads } from '../src/db/schema.js';
 import { sanitize } from '../src/utils/sanitization.js';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 

@@ -1,4 +1,5 @@
 import { sanitize } from '../../src/utils/sanitization.js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 /**
  * Basic CSRF Protection: Checks Origin and Referer headers.
