@@ -178,6 +178,12 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Server configuration error: Missing Apple IDs' });
         }
 
+        try {
+            console.log('[PassGen] files in certs:', fs.readdirSync(CERT_DIR));
+        } catch (err) {
+            console.error('[PassGen] failed to read certs dir:', err);
+        }
+
         const certs = {
             wwdr: getCertContent('WALLET_WWDR_CERT', 'wwdr.pem'),
             signerCert: getCertContent('WALLET_SIGNER_CERT', 'signerCert.pem'),
@@ -594,6 +600,12 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         if (!teamId || !passTypeId) {
             console.error('[PassGen-Membership] Missing APPLE_TEAM_ID or APPLE_PASS_TYPE_ID');
             return res.status(500).json({ error: 'Server configuration error: Missing Apple IDs' });
+        }
+
+        try {
+            console.log('[PassGen-Membership] files in certs:', fs.readdirSync(CERT_DIR));
+        } catch (err) {
+            console.error('[PassGen-Membership] failed to read certs dir:', err);
         }
 
         const certs = {
