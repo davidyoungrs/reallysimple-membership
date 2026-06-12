@@ -71,10 +71,10 @@ export function MembershipCardCreator() {
           if (config?.stripConfig) {
             let s = { ...config.stripConfig };
             let needsUpdate = false;
-            if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26)) {
+            if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26 || s.photoConfig.x === 32)) {
               s.photoConfig = {
                 ...s.photoConfig,
-                x: 32,
+                x: 23,
                 scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
               };
               needsUpdate = true;
@@ -181,10 +181,10 @@ export function MembershipCardCreator() {
       if (config?.stripConfig) {
         let s = { ...config.stripConfig };
         let needsUpdate = false;
-        if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26)) {
+        if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26 || s.photoConfig.x === 32)) {
           s.photoConfig = {
             ...s.photoConfig,
-            x: 32,
+            x: 23,
             scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
           };
           needsUpdate = true;
@@ -339,7 +339,7 @@ export function MembershipCardCreator() {
           }
           img.onload = () => {
             const size = 280 * ((configToUse.photoConfig.scale || 90) / 100);
-            const posX = width * ((configToUse.photoConfig.x || 32) / 100) - size / 2;
+            const posX = width * ((configToUse.photoConfig.x || 23) / 100) - size / 2;
             const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
 
             ctx.save();

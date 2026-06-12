@@ -35,7 +35,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   photoConfig: {
     show: true,
     position: 'left',
-    x: 32,
+    x: 23,
     y: 50,
     scale: 90,
     border: 'thin',
@@ -58,10 +58,10 @@ export function MembershipStripDesigner({
     let needsUpdate = false;
 
     if (s.photoConfig) {
-      if (s.photoConfig.x === 22 || s.photoConfig.x === 26) {
+      if (s.photoConfig.x === 22 || s.photoConfig.x === 26 || s.photoConfig.x === 32) {
         s.photoConfig = {
           ...s.photoConfig,
-          x: 32,
+          x: 23,
           scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
         };
         needsUpdate = true;

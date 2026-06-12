@@ -149,18 +149,18 @@ export function MembershipAdminTemplates() {
             photoConfig: {
               show: showMemberPhoto,
               position: 'left',
-              x: 32,
+              x: 23,
               y: 50,
               scale: 90,
               border: 'thin',
             },
           };
-          if (sConfig.photoConfig && (sConfig.photoConfig.x === 22 || sConfig.photoConfig.x === 26)) {
+          if (sConfig.photoConfig && (sConfig.photoConfig.x === 22 || sConfig.photoConfig.x === 26 || sConfig.photoConfig.x === 32)) {
             sConfig = {
               ...sConfig,
               photoConfig: {
                 ...sConfig.photoConfig,
-                x: 32,
+                x: 23,
                 scale: sConfig.photoConfig.scale === 100 ? 90 : sConfig.photoConfig.scale
               }
             };
