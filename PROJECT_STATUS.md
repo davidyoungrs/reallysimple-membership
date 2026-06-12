@@ -1,27 +1,32 @@
-# 📋 PROJECT STATUS — Really Simple Apps (reallysimple-new)
+# 📋 PROJECT STATUS — Really Simple Apps (reallysimple-membership)
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-09 (Session 21) | `local-dev` |
+| 2026-06-11 (Session 22) | `main` |
 
-> Repo: <https://github.com/davidyoungrs/reallysimple-new>
-> Local Dev: `npm run dev -- --port 5173` (from `/Users/davidyoung/contact-tree`)
+> Repo: <https://github.com/davidyoungrs/reallysimple-membership>
+> Local Dev: `npm run dev -- --port 5173`
 > Live URL: Deployed via Vercel on `main` branch
 
 ---
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is now in an **Optimized, Hardened, and Secure** state. We have completed the following key tasks:
+The platform is now in a **Production-Ready & Fully Verified** state. We have completed the following key tasks:
 
-1. **API Security Hardening**: Implemented rate limiting and JSON payload validation middleware (`api/_utils/security.ts`) and integrated them across all key serverless functions to protect against abuse. Added a development bypass for rate limiting to prevent local lockout during page reloads.
-2. **Database Transactions**: Migrated database driver connection from `neon-http` to WebSocket-based `neon-serverless` Pool (`src/db/index.ts`) to enable full support for SQL transactions (which are required for creating and editing clubs and templates).
-3. **CSP & Upload Support**: Updated CSP meta tags in `index.html` to allow connection to Cloudflare R2 storage bucket URLs and to load images/avatars from Unsplash (`images.unsplash.com`).
-4. **Vite Mock Clerk Infinite Loop Fix**: Resolved an infinite re-render loop in frontend pages by stabilizing the `getToken` reference returned by the mocked Clerk hook (`src/components/MockClerk.tsx`).
+1. **Production Clerk Authentication**: Switched from Mock Clerk to real Clerk in production. Corrected sign-out / back button loops on the unauthorized screen so users are not trapped.
+2. **Apple Wallet Pass Generation**: Fixed Vercel `500` serverless bundle failures by co-locating certificate assets (`wwdr.pem`, `signerCert.pem`, etc.) inside the `api/certs/` folder, statically referencing them using static literals with `__dirname` for Vercel NFT trace compatibility. Fixed ASN.1 parsing crashes.
+3. **APNs Push Notifications**: Resolved JWT token signature errors by committing a static `certs/apns.p8` private key file. Cleaned up and stripped potential enclosing quotes from `APPLE_APNS_KEY_ID` and `APPLE_TEAM_ID` environment variables. verified that Wallet updates deliver successfully to devices.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Clerk Production Auth & Wallet Updates (Session 22)
+
+- [x] **Real Clerk Auth Toggle**: Deployed Clerk production settings and conditional mocked clerk resolution for offline development.
+- [x] **Apple Wallet Pass Generation 500 Fix**: Relocated certificates to `api/certs` and resolved Vercel serverless bundling static reference path issues.
+- [x] **APNs Push Update Fix**: Created static `apns.p8` private key file configuration and sanitized environmental keys from quote wrappers, successfully enabling push notifications.
 
 ### Local Dev & Database Stability (Session 21)
 
