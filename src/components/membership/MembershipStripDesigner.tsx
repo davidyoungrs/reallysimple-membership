@@ -19,7 +19,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   textConfig: {
     showName: true,
     nameColor: '#ffffff',
-    nameX: 48,
+    nameX: 38,
     nameY: 50,
     showTitle: false,
     titleColor: '#ffffff',
@@ -69,10 +69,10 @@ export function MembershipStripDesigner({
     }
 
     if (s.textConfig) {
-      if (s.textConfig.nameX === 40) {
+      if (s.textConfig.nameX === 40 || s.textConfig.nameX === 48) {
         s.textConfig = {
           ...s.textConfig,
-          nameX: 48
+          nameX: 38
         };
         needsUpdate = true;
       }

@@ -79,10 +79,10 @@ export function MembershipCardCreator() {
               };
               needsUpdate = true;
             }
-            if (s.textConfig && s.textConfig.nameX === 40) {
+            if (s.textConfig && (s.textConfig.nameX === 40 || s.textConfig.nameX === 48)) {
               s.textConfig = {
                 ...s.textConfig,
-                nameX: 48
+                nameX: 38
               };
               needsUpdate = true;
             }
@@ -189,10 +189,10 @@ export function MembershipCardCreator() {
           };
           needsUpdate = true;
         }
-        if (s.textConfig && s.textConfig.nameX === 40) {
+        if (s.textConfig && (s.textConfig.nameX === 40 || s.textConfig.nameX === 48)) {
           s.textConfig = {
             ...s.textConfig,
-            nameX: 48
+            nameX: 38
           };
           needsUpdate = true;
         }

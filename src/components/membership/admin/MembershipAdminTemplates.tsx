@@ -133,7 +133,7 @@ export function MembershipAdminTemplates() {
             textConfig: {
               showName: showMemberName,
               nameColor: walletFgColor,
-              nameX: 48,
+              nameX: 38,
               nameY: 50,
               showTitle: false,
               titleColor: walletFgColor,
@@ -165,12 +165,12 @@ export function MembershipAdminTemplates() {
               }
             };
           }
-          if (sConfig.textConfig && sConfig.textConfig.nameX === 40) {
+          if (sConfig.textConfig && (sConfig.textConfig.nameX === 40 || sConfig.textConfig.nameX === 48)) {
             sConfig = {
               ...sConfig,
               textConfig: {
                 ...sConfig.textConfig,
-                nameX: 48
+                nameX: 38
               }
             };
           }
