@@ -19,7 +19,7 @@ const DEFAULT_STRIP_CONFIG: StripConfig = {
   textConfig: {
     showName: true,
     nameColor: '#ffffff',
-    nameX: 38,
+    nameX: 40,
     nameY: 50,
     showTitle: false,
     titleColor: '#ffffff',
@@ -69,10 +69,10 @@ export function MembershipStripDesigner({
     }
 
     if (s.textConfig) {
-      if (s.textConfig.nameX === 40 || s.textConfig.nameX === 48) {
+      if (s.textConfig.nameX === 38 || s.textConfig.nameX === 48) {
         s.textConfig = {
           ...s.textConfig,
-          nameX: 38
+          nameX: 40
         };
         needsUpdate = true;
       }
@@ -176,7 +176,7 @@ export function MembershipStripDesigner({
       ctx.shadowOffsetX = 2;
       ctx.shadowOffsetY = 2;
 
-      const nameXVal = width * ((config.textConfig.nameX || 50) / 100);
+      const nameXVal = width * ((config.textConfig.nameX || 40) / 100);
       const nameYVal = height * ((config.textConfig.nameY || 50) / 100) + 16;
 
       // Calculate dynamic maxWidth to prevent text overflow

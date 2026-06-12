@@ -79,10 +79,10 @@ export function MembershipCardCreator() {
               };
               needsUpdate = true;
             }
-            if (s.textConfig && (s.textConfig.nameX === 40 || s.textConfig.nameX === 48)) {
+            if (s.textConfig && (s.textConfig.nameX === 38 || s.textConfig.nameX === 48)) {
               s.textConfig = {
                 ...s.textConfig,
-                nameX: 38
+                nameX: 40
               };
               needsUpdate = true;
             }
@@ -189,10 +189,10 @@ export function MembershipCardCreator() {
           };
           needsUpdate = true;
         }
-        if (s.textConfig && (s.textConfig.nameX === 40 || s.textConfig.nameX === 48)) {
+        if (s.textConfig && (s.textConfig.nameX === 38 || s.textConfig.nameX === 48)) {
           s.textConfig = {
             ...s.textConfig,
-            nameX: 38
+            nameX: 40
           };
           needsUpdate = true;
         }
@@ -277,7 +277,7 @@ export function MembershipCardCreator() {
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
 
-            const x = width * ((configToUse.textConfig.nameX || 48) / 100);
+            const x = width * ((configToUse.textConfig.nameX || 40) / 100);
             const y = height * ((configToUse.textConfig.nameY || 50) / 100) + 16;
 
             // Calculate dynamic maxWidth to prevent text overflow
