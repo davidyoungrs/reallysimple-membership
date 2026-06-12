@@ -264,6 +264,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                             if (name === 'logo.png') {
                                 pass.addBuffer('logo@2x.png', buffer);
                                 pass.addBuffer('logo@3x.png', buffer);
+                            } else if (name === 'strip.png') {
+                                pass.addBuffer('strip@2x.png', buffer);
+                                pass.addBuffer('strip@3x.png', buffer);
                             }
                             return;
                         }
@@ -279,6 +282,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                         if (name === 'logo.png') {
                             pass.addBuffer('logo@2x.png', buffer);
                             pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
                     }
                 } else if (url.startsWith('data:image')) {
@@ -288,6 +294,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                     if (name === 'logo.png') {
                         pass.addBuffer('logo@2x.png', buffer);
                         pass.addBuffer('logo@3x.png', buffer);
+                    } else if (name === 'strip.png') {
+                        pass.addBuffer('strip@2x.png', buffer);
+                        pass.addBuffer('strip@3x.png', buffer);
                     }
                 } else if (url.startsWith('http')) {
                     const response = await fetch(url);
@@ -299,6 +308,9 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
                         if (name === 'logo.png') {
                             pass.addBuffer('logo@2x.png', buffer);
                             pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
                     }
                 }
@@ -692,6 +704,9 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                             if (name === 'logo.png') {
                                 pass.addBuffer('logo@2x.png', buffer);
                                 pass.addBuffer('logo@3x.png', buffer);
+                            } else if (name === 'strip.png') {
+                                pass.addBuffer('strip@2x.png', buffer);
+                                pass.addBuffer('strip@3x.png', buffer);
                             }
                             return;
                         }
@@ -706,6 +721,9 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                         if (name === 'logo.png') {
                             pass.addBuffer('logo@2x.png', buffer);
                             pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
                     }
                 } else if (url.startsWith('data:image')) {
@@ -714,6 +732,9 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                     if (name === 'logo.png') {
                         pass.addBuffer('logo@2x.png', buffer);
                         pass.addBuffer('logo@3x.png', buffer);
+                    } else if (name === 'strip.png') {
+                        pass.addBuffer('strip@2x.png', buffer);
+                        pass.addBuffer('strip@3x.png', buffer);
                     }
                 } else if (url.startsWith('http')) {
                     const response = await fetch(url);
@@ -724,6 +745,9 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                         if (name === 'logo.png') {
                             pass.addBuffer('logo@2x.png', buffer);
                             pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
                     }
                 }
