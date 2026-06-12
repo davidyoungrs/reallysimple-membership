@@ -38,3 +38,29 @@ To build this exact production-ready platform from scratch using a senior full-s
 * **Time-to-Market**: Reduced from **2 months** of traditional calendar development to **a few days** of interactive sessions.
 * **Cost Efficiency**: A conventional project of this scope (priced at an average senior contractor rate of **$100/hr**) is valued at **$32,000 to $41,000**. The AI developer built it at a tiny fraction of that cost.
 * **Debugging Velocity**: Complex troubleshooting loops—such as aligning APNs token cryptographics, correcting retina image cache scaling, and configuring Vite bundler aliases—were completed in **2–3 minutes** per iteration rather than days of developer sprint cycles.
+
+---
+
+## 💰 TYPICAL MARKET PRICING & COST ESTIMATES
+
+If you were to contract out this development to human engineers, the typical market pricing models would break down as follows:
+
+### 1. Senior Full-Stack Contractor (UK/US/EU)
+* **Hourly Rate**: $100 – $150 / hr
+* **Estimated Cost**: **$32,000 – $61,500**
+* *Best comparison for the level of architectural design, security hardening, and low-level cryptographic (Apple/Google Wallet) code implemented here.*
+
+### 2. Boutique Software Development Agency (Flat Fee)
+* **Project Pricing**: **$45,000 – $75,000**
+* *Agencies package design, product management, QA testing, and backend development into a fixed-scope milestone fee, usually charging a 20-30% premium over direct contractors.*
+
+### 3. Mid-Level Freelancer
+* **Hourly Rate**: $50 – $80 / hr
+* **Estimated Cost**: **$16,000 – $32,800**
+* *More affordable, but carries higher risk for custom integrations (such as APNs and R2 storage proxies) which often require senior-level debugging.*
+
+### 4. Offshore Development Team
+* **Hourly Rate**: $35 – $60 / hr
+* **Estimated Cost**: **$11,200 – $24,600**
+* *Lower upfront cost, but generally results in longer timelines (12–16 weeks instead of 8–10) due to communication overhead and time zone offsets.*
+
