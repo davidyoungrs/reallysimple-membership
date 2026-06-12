@@ -781,6 +781,13 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                     value: new Date(membership.expiresAt).toLocaleDateString(),
                 });
             }
+
+            pass.backFields.push({
+                key: 'powered-by',
+                label: ' ',
+                value: 'Powered by Really Simple',
+                attributedValue: '<a href="https://reallysimpleapps.com">Powered by Really Simple</a>'
+            } as any);
         } else {
             pass.primaryFields.push({ key: 'status', label: 'STATUS', value: 'INACTIVE' });
             pass.backFields.push({
