@@ -68,7 +68,7 @@ If you were to contract out this development to human engineers, the typical mar
 
 ## ☁️ CLOUD INFRASTRUCTURE MONTHLY CHARGES ESTIMATE
 
-This section estimates the monthly hosting and database charges based on user tiers (1,000, 2,500, and 5,000 users), assuming each user performs **3 database requests per day**.
+This section estimates the monthly hosting and database charges based on user tiers (1,000, 2,500, 5,000, 10,000, and 50,000 users), assuming each user performs **3 database requests per day**.
 
 ### 1. Request & Storage Scope Metrics
 
@@ -76,10 +76,14 @@ This section estimates the monthly hosting and database charges based on user ti
   * 1,000 Users = ~650 MB
   * 2,500 Users = ~1.6 GB
   * 5,000 Users = ~3.25 GB
+  * 10,000 Users = ~6.5 GB
+  * 50,000 Users = ~32.5 GB
 * **Database Requests (Neon Postgres)**:
   * **1,000 Users**: 3,000 requests/day = **90,000 requests/month**
   * **2,500 Users**: 7,500 requests/day = **225,000 requests/month**
   * **5,000 Users**: 15,000 requests/day = **450,000 requests/month**
+  * **10,000 Users**: 30,000 requests/day = **900,000 requests/month**
+  * **50,000 Users**: 150,000 requests/day = **4.5 million requests/month**
 
 ---
 
@@ -89,32 +93,45 @@ This section estimates the monthly hosting and database charges based on user ti
    * **Storage**: First 10 GB is **Free** (thereafter $0.015/GB).
    * **Class A Operations (Writes)**: First 1 million/month is **Free** (thereafter $4.50/million).
    * **Class B Operations (Reads)**: First 10 million/month is **Free** (thereafter $0.36/million).
-   * *Status: Remaining on the 100% Free Tier for all scenarios.*
 2. **Neon Serverless Postgres (Database)**:
    * **Free Tier**: 0.5 GB storage, 190 Active Compute Hours (auto-sleeps when inactive).
-   * **Launch Tier ($19/mo)**: 10 GB storage, 190 active compute hours included, scalable. If database receives requests throughout the day, it stays active. A dedicated production node costs **$19/month** to guarantee 24/7 uptime without sleep delays.
+   * **Launch Tier ($19/mo)**: 10 GB storage, 190 active compute hours included, scalable. If database receives requests throughout the day, it stays active. A dedicated production node costs **$19/month** to guarantee 24/7 uptime without sleep delays. Excess compute scales at $15/CU.
 3. **Vercel (Serverless Hosting)**:
-   * **Pro Plan ($20/mo)**: Includes 1 million serverless function executions and 1 TB bandwidth.
+   * **Pro Plan ($20/mo)**: Includes 1 million serverless function executions and 1 TB bandwidth (thereafter $2.00 per 100k executions).
+
+---
 
 ### 3. Cost Breakdown by Scale
 
 #### Tier A: 1,000 Users (90k requests/month)
-* **Cloudflare R2**: **$0.00** (under 10GB storage / 10M reads)
-* **Neon DB**: **$0.00** (can run on Neon's free tier if database auto-suspends between requests, but recommended **$19.00/mo** Launch plan for production uptime)
-* **Vercel Hosting**: **$20.00/mo** (Pro plan, fits within 1M execution limit)
+* **Cloudflare R2**: **$0.00**
+* **Neon DB**: **$0.00 – $19.00/mo**
+* **Vercel Hosting**: **$20.00/mo**
 * **Total Estimated Cost**: **$20.00 – $39.00 / month**
 
 #### Tier B: 2,500 Users (225k requests/month)
 * **Cloudflare R2**: **$0.00**
-* **Neon DB**: **$19.00/mo** (Launch plan, guarantees CPU headroom for concurrent requests)
-* **Vercel Hosting**: **$20.00/mo** (Pro plan)
+* **Neon DB**: **$19.00/mo** (Launch plan)
+* **Vercel Hosting**: **$20.00/mo**
 * **Total Estimated Cost**: **$39.00 / month**
 
 #### Tier C: 5,000 Users (450k requests/month)
 * **Cloudflare R2**: **$0.00**
-* **Neon DB**: **$19.00/mo** (Launch plan, remains under 10GB data storage limit)
-* **Vercel Hosting**: **$20.00/mo** (Pro plan)
+* **Neon DB**: **$19.00/mo** (Launch plan)
+* **Vercel Hosting**: **$20.00/mo**
 * **Total Estimated Cost**: **$39.00 / month**
 
+#### Tier D: 10,000 Users (900k requests/month)
+* **Cloudflare R2**: **$0.00** (under 10GB storage / 10M reads limits)
+* **Neon DB**: **$19.00 – $25.00/mo** (Neon Launch plan + minor compute scale hours)
+* **Vercel Hosting**: **$20.00/mo** (remains within 1M Pro plan execution limit)
+* **Total Estimated Cost**: **$39.00 – $45.00 / month**
+
+#### Tier E: 50,000 Users (4.5 million requests/month)
+* **Cloudflare R2**: **$0.34/mo** (32.5 GB storage — 22.5 GB excess @ $0.015/GB; Class B reads remain free)
+* **Neon DB**: **$45.00/mo** (Launch plan + ~1.75 CU scale for continuous 24/7 concurrency)
+* **Vercel Hosting**: **$90.00/mo** (Pro plan base + 3.5M excess executions @ $2.00 per 100k)
+* **Total Estimated Cost**: **~$135.34 / month**
+
 > [!NOTE]
-> Even at 5,000 users making daily calls, your cloud infrastructure will cost under **$40/month** due to the generous free tiers of Cloudflare R2 and Neon's serverless pay-as-you-go billing model.
+> Scaling to 50,000 users increases serverless executions and database compute requirements, but your total infrastructure hosting costs remain extremely cost-effective at less than **$140/month**.
