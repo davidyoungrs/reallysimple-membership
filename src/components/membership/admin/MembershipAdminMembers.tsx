@@ -43,6 +43,8 @@ export function MembershipAdminMembers() {
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResults, setImportResults] = useState<any[] | null>(null);
+  const [autoGenerateBadges, setAutoGenerateBadges] = useState(true);
+  const [badgeUploadProgress, setBadgeUploadProgress] = useState<string | null>(null);
 
   useEffect(() => {
     if (club && members.length === 0 && !loadingMembers) {
@@ -152,6 +154,98 @@ export function MembershipAdminMembers() {
     navigate(`/membership-admin/${club.slug}/create?edit=${member.id}`);
   };
 
+  // Helper: validate a single row
+  const validateRow = (row: any) => {
+    const errors: any = {};
+    if (!row.name || !row.name.trim()) {
+      errors.name = 'Name is required';
+    }
+    const emailTrim = (row.email || '').trim();
+    if (!emailTrim) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      errors.email = 'Invalid email format';
+    }
+    const sinceTrim = String(row.memberSince || '').trim();
+    if (sinceTrim && !/^\d{4}$/.test(sinceTrim)) {
+      errors.memberSince = 'Must be a 4-digit year (e.g. 2026)';
+    }
+    return {
+      errors,
+      isValid: Object.keys(errors).length === 0
+    };
+  };
+
+  // Helper: generate initials PNG badge via canvas
+  const generateInitialsBadgePng = (name: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve('');
+
+      // Draw premium gradient background
+      const grad = ctx.createLinearGradient(0, 0, 300, 300);
+      grad.addColorStop(0, '#3b82f6'); // Blue-500
+      grad.addColorStop(1, '#1e3a8a'); // Indigo-900
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 300, 300);
+
+      // Accent design rings
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(150, 150, 120, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.beginPath();
+      ctx.arc(150, 150, 140, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Extract initials
+      const initials = name
+        .trim()
+        .split(/\s+/)
+        .map(n => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'M';
+
+      // Text configurations
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 100px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(initials, 150, 150);
+
+      resolve(canvas.toDataURL('image/png'));
+    });
+  };
+
+  const handleUpdateRowField = (index: number, field: string, value: string) => {
+    setCsvPreview(prev => {
+      const updated = [...prev];
+      const updatedRow = { ...updated[index], [field]: value };
+      const validation = validateRow(updatedRow);
+      updated[index] = {
+        ...updatedRow,
+        errors: validation.errors,
+        isValid: validation.isValid
+      };
+      return updated;
+    });
+  };
+
+  const handleRemoveRow = (index: number) => {
+    setCsvPreview(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveInvalidRows = () => {
+    setCsvPreview(prev => prev.filter(row => row.isValid));
+  };
+
   // CSV Parsing
   const handleCsvFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -190,7 +284,12 @@ export function MembershipAdminMembers() {
         };
 
         if (normalizedRow.name || normalizedRow.email) {
-          dataRows.push(normalizedRow);
+          const validation = validateRow(normalizedRow);
+          dataRows.push({
+            ...normalizedRow,
+            errors: validation.errors,
+            isValid: validation.isValid
+          });
         }
       }
       setCsvPreview(dataRows);
@@ -201,9 +300,68 @@ export function MembershipAdminMembers() {
   const handleBulkImport = async () => {
     if (!selectedTemplateId || csvPreview.length === 0) return;
 
+    const invalidRowsCount = csvPreview.filter(r => !r.isValid).length;
+    if (invalidRowsCount > 0) {
+      alert(`Please fix the ${invalidRowsCount} invalid rows highlighted in red before generating passes.`);
+      return;
+    }
+
     try {
       setImporting(true);
       const token = await getToken();
+
+      // Copy preview to mutate photoUrls if generating avatars
+      const finalData = [...csvPreview];
+
+      if (autoGenerateBadges) {
+        const rowsToGenerate = finalData.filter(r => !r.photoUrl);
+        if (rowsToGenerate.length > 0) {
+          setBadgeUploadProgress(`Generating & Uploading badges: 0/${rowsToGenerate.length}`);
+          let completed = 0;
+
+          for (let i = 0; i < finalData.length; i++) {
+            const row = finalData[i];
+            if (!row.photoUrl) {
+              setBadgeUploadProgress(`Generating & Uploading badges: ${completed + 1}/${rowsToGenerate.length}`);
+              
+              // 1. Generate initials badge data URL
+              const pngDataUrl = await generateInitialsBadgePng(row.name);
+              
+              // 2. Upload to R2 via API upload proxy
+              try {
+                // Convert data URL to Blob
+                const res = await fetch(pngDataUrl);
+                const blob = await res.blob();
+                
+                const uploadRes = await fetch(`/api/membership?action=upload&filename=avatar_${Date.now()}_${encodeURIComponent(row.name.replace(/\s+/g, '_'))}.png&contentType=image/png`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`
+                  },
+                  body: blob
+                });
+                
+                if (uploadRes.ok) {
+                  const uploadData = await uploadRes.json();
+                  if (uploadData.success && uploadData.publicUrl) {
+                    finalData[i] = {
+                      ...row,
+                      photoUrl: uploadData.publicUrl
+                    };
+                  }
+                }
+              } catch (uploadErr) {
+                console.error('Failed to upload auto-generated badge for ' + row.name, uploadErr);
+              }
+              
+              completed++;
+            }
+          }
+        }
+      }
+
+      setBadgeUploadProgress(null);
+      setImporting(true); // Retain active loading spinner
 
       const res = await fetch('/api/membership?resource=memberships&action=bulk', {
         method: 'POST',
@@ -214,7 +372,7 @@ export function MembershipAdminMembers() {
         body: JSON.stringify({
           clubId: club.id,
           templateId: Number(selectedTemplateId),
-          data: csvPreview
+          data: finalData
         })
       });
 
@@ -227,12 +385,14 @@ export function MembershipAdminMembers() {
       console.error(err);
     } finally {
       setImporting(false);
+      setBadgeUploadProgress(null);
     }
   };
 
   const handleResetImport = () => {
     setCsvPreview([]);
     setImportResults(null);
+    setBadgeUploadProgress(null);
   };
 
   const handleDownloadTemplate = () => {
@@ -471,47 +631,182 @@ export function MembershipAdminMembers() {
                   </div>
                 </div>
               ) : (
-                /* Preview Table */
+                /* Preview Table & Validator */
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center bg-slate-950/30 p-4 rounded-xl border border-slate-850">
-                    <span className="text-xs font-bold text-white">Parsed {csvPreview.length} member rows successfully.</span>
-                    <button
-                      onClick={() => setCsvPreview([])}
-                      className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-950/30 p-4 rounded-xl border border-slate-850">
+                    <div>
+                      <span className="text-xs font-bold text-white block">
+                        Parsed {csvPreview.length} member rows. 
+                        {csvPreview.filter(r => !r.isValid).length > 0 ? (
+                          <span className="text-red-400 ml-1.5">
+                            ({csvPreview.filter(r => !r.isValid).length} invalid rows found)
+                          </span>
+                        ) : (
+                          <span className="text-emerald-400 ml-1.5">(All rows valid!)</span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-slate-500 block mt-0.5">
+                        Double-click or type in any cell below to edit and correct issues in real-time.
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                      {csvPreview.filter(r => !r.isValid).length > 0 && (
+                        <button
+                          onClick={handleRemoveInvalidRows}
+                          className="px-3 py-1.5 bg-red-950/40 hover:bg-red-950/70 border border-red-500/30 text-red-400 rounded-xl text-[10px] font-bold transition-colors"
+                        >
+                          Remove Invalid Rows
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setCsvPreview([])}
+                        className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg transition-colors"
+                        title="Cancel Upload"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="border border-slate-800 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
+                  {/* Auto-generate initials badges config */}
+                  <div className="flex items-center gap-2 px-1">
+                    <input
+                      type="checkbox"
+                      id="autoGenerateBadges"
+                      checked={autoGenerateBadges}
+                      onChange={(e) => setAutoGenerateBadges(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 cursor-pointer"
+                    />
+                    <label htmlFor="autoGenerateBadges" className="text-xs text-slate-300 font-semibold cursor-pointer select-none">
+                      Auto-generate modern initials badges for members without photo URLs
+                    </label>
+                  </div>
+
+                  <div className="border border-slate-800 rounded-2xl overflow-hidden max-h-[350px] overflow-y-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-slate-800 bg-slate-950/40 text-slate-500 text-[10px] font-bold">
-                          <th className="px-4 py-2">Name</th>
-                          <th className="px-4 py-2">Email</th>
-                          <th className="px-4 py-2">Photo URL</th>
-                          <th className="px-4 py-2">Number</th>
-                          <th className="px-4 py-2">Since</th>
+                          <th className="px-4 py-2.5">Name</th>
+                          <th className="px-4 py-2.5">Email</th>
+                          <th className="px-4 py-2.5">Photo URL</th>
+                          <th className="px-4 py-2.5">Number</th>
+                          <th className="px-4 py-2.5">Since</th>
+                          <th className="px-4 py-2.5 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-850 bg-slate-950/10">
-                        {csvPreview.map((row, index) => (
-                          <tr key={index}>
-                            <td className="px-4 py-2 text-white font-bold">{row.name}</td>
-                            <td className="px-4 py-2 text-slate-300">{row.email}</td>
-                            <td className="px-4 py-2 text-slate-500 truncate max-w-[150px]">{row.photoUrl || 'none'}</td>
-                            <td className="px-4 py-2 text-slate-400">{row.membershipNumber || 'auto'}</td>
-                            <td className="px-4 py-2 text-slate-400">{row.memberSince || 'auto'}</td>
-                          </tr>
-                        ))}
+                        {csvPreview.map((row, index) => {
+                          const hasNameErr = !!row.errors?.name;
+                          const hasEmailErr = !!row.errors?.email;
+                          const hasSinceErr = !!row.errors?.memberSince;
+
+                          return (
+                            <tr key={index} className={row.isValid ? 'hover:bg-slate-950/5' : 'bg-red-950/10 hover:bg-red-950/15'}>
+                              {/* Name Cell */}
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="text"
+                                  value={row.name}
+                                  onChange={(e) => handleUpdateRowField(index, 'name', e.target.value)}
+                                  className={`w-full px-2 py-1 bg-slate-950 border text-xs text-white rounded-lg outline-none focus:ring-1 ${
+                                    hasNameErr 
+                                      ? 'border-red-500/50 focus:ring-red-500 bg-red-950/10' 
+                                      : 'border-slate-800 focus:ring-blue-500'
+                                  }`}
+                                  placeholder="Full Name"
+                                />
+                                {hasNameErr && (
+                                  <span className="text-[9px] text-red-400 font-semibold block mt-0.5 ml-1">{row.errors.name}</span>
+                                )}
+                              </td>
+
+                              {/* Email Cell */}
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="text"
+                                  value={row.email}
+                                  onChange={(e) => handleUpdateRowField(index, 'email', e.target.value)}
+                                  className={`w-full px-2 py-1 bg-slate-950 border text-xs text-white rounded-lg outline-none focus:ring-1 ${
+                                    hasEmailErr 
+                                      ? 'border-red-500/50 focus:ring-red-500 bg-red-950/10' 
+                                      : 'border-slate-800 focus:ring-blue-500'
+                                  }`}
+                                  placeholder="email@example.com"
+                                />
+                                {hasEmailErr && (
+                                  <span className="text-[9px] text-red-400 font-semibold block mt-0.5 ml-1">{row.errors.email}</span>
+                                )}
+                              </td>
+
+                              {/* Photo URL Cell */}
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="text"
+                                  value={row.photoUrl}
+                                  onChange={(e) => handleUpdateRowField(index, 'photoUrl', e.target.value)}
+                                  className="w-full px-2 py-1 bg-slate-950 border border-slate-800 text-xs text-white rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Leave blank for initials badge"
+                                />
+                              </td>
+
+                              {/* Membership Number Cell */}
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="text"
+                                  value={row.membershipNumber}
+                                  onChange={(e) => handleUpdateRowField(index, 'membershipNumber', e.target.value)}
+                                  className="w-full px-2 py-1 bg-slate-950 border border-slate-800 text-xs text-white rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Auto-generated"
+                                />
+                              </td>
+
+                              {/* Member Since Cell */}
+                              <td className="px-3 py-1.5">
+                                <input
+                                  type="text"
+                                  value={row.memberSince}
+                                  onChange={(e) => handleUpdateRowField(index, 'memberSince', e.target.value)}
+                                  className={`w-full px-2 py-1 bg-slate-950 border text-xs text-white rounded-lg outline-none focus:ring-1 ${
+                                    hasSinceErr 
+                                      ? 'border-red-500/50 focus:ring-red-500 bg-red-950/10' 
+                                      : 'border-slate-800 focus:ring-blue-500'
+                                  }`}
+                                  placeholder={new Date().getFullYear().toString()}
+                                />
+                                {hasSinceErr && (
+                                  <span className="text-[9px] text-red-400 font-semibold block mt-0.5 ml-1">{row.errors.memberSince}</span>
+                                )}
+                              </td>
+
+                              {/* Remove Individual Row Action */}
+                              <td className="px-3 py-1.5 text-right">
+                                <button
+                                  onClick={() => handleRemoveRow(index)}
+                                  className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all"
+                                  title="Delete Row"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
 
+                  {badgeUploadProgress && (
+                    <div className="flex items-center gap-2 bg-blue-950/30 border border-blue-500/30 p-3.5 rounded-xl text-blue-400 text-xs font-bold animate-pulse">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                      {badgeUploadProgress}
+                    </div>
+                  )}
+
                   <button
                     onClick={handleBulkImport}
-                    disabled={importing}
-                    className="flex items-center justify-center gap-1.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs disabled:opacity-50 transition-all"
+                    disabled={importing || badgeUploadProgress !== null}
+                    className="flex items-center justify-center gap-1.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs disabled:opacity-50 transition-all cursor-pointer shadow-md"
                   >
                     {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     Confirm & Bulk Generate Passes

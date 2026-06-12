@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-11 (Session 22) | `main` |
+| 2026-06-13 (Session 23) | `1eaed1f` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -12,15 +12,25 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is now in a **Production-Ready & Fully Verified** state. We have completed the following key tasks:
+The platform is now in an **optimized, cleaned-up, and feature-rich** state. We have completed several major upgrades:
 
-1. **Production Clerk Authentication**: Switched from Mock Clerk to real Clerk in production. Corrected sign-out / back button loops on the unauthorized screen so users are not trapped.
-2. **Apple Wallet Pass Generation**: Fixed Vercel `500` serverless bundle failures by co-locating certificate assets (`wwdr.pem`, `signerCert.pem`, etc.) inside the `api/certs/` folder, statically referencing them using static literals with `__dirname` for Vercel NFT trace compatibility. Fixed ASN.1 parsing crashes.
-3. **APNs Push Notifications**: Resolved JWT token signature errors by committing a static `certs/apns.p8` private key file. Cleaned up and stripped potential enclosing quotes from `APPLE_APNS_KEY_ID` and `APPLE_TEAM_ID` environment variables. verified that Wallet updates deliver successfully to devices.
+1. **Custom Multi-level Numbering System**: Designed and implemented a dynamic serial/numbering generator supporting segment tokens like `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` (e.g. `{NUMBER:4}` for 4-digit auto-incrementing padding). Built a live preview builder component in the admin club dashboard settings.
+2. **"Member Since" Header Slot**: Added a database column `member_since` (Neon Postgres), integrated it into Apple Wallet pass generation (`headerFields` top-right slot), updated member creation/editing forms, CSV bulk registration mappings, and rendered the preview on the design/creator cards.
+3. **Transition Speed Optimization (Caching)**: Promoted memberships, templates, and dashboard metrics fetching to `MembershipAdminLayout` context. Sub-menus now retrieve cached data instead of querying database/API endpoints on every navigation transition, resolving navigation slowness.
+4. **CSV Bulk Template Download**: Provided a downloadable CSV blank template pre-populated with format guidelines directly on the admin members dashboard.
+5. **Legacy Code Decommissioning**: Removed 34 unused files (legacy components and serverless functions inherited from the digital business cards repository) to optimize performance, clean up imports, and reduce production bundle footprints.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Advanced Features & Performance Optimization (Session 23)
+
+- [x] **Multi-level Numbering System**: Added `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` tokens, updated membership API routes, and built a live preview config editor in [AdminMembershipClubs.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/admin/AdminMembershipClubs.tsx).
+- [x] **"Member Since" Integration**: Added `member_since` to [schema.ts](file:///Volumes/Untitled/contact-tree-membership/src/db/schema.ts), mapped CSV bulk uploads/manual creation, and configured top-right Apple Wallet pass header mapping.
+- [x] **Menu Transitions Cache**: Refactored [MembershipAdminLayout.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/membership/admin/MembershipAdminLayout.tsx) to cache data and share it using Outlet context, eliminating page-to-page database queries.
+- [x] **Bulk Import Template Download**: Embedded CSV template generation in [MembershipAdminMembers.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/membership/admin/MembershipAdminMembers.tsx) for self-service downloads.
+- [x] **Decommissioning Legacy Code**: Removed 34 unused files across components, admin panels, and api endpoints to simplify maintenance.
 
 ### Clerk Production Auth & Wallet Updates (Session 22)
 
@@ -45,26 +55,6 @@ The platform is now in a **Production-Ready & Fully Verified** state. We have co
 - [x] **Rich Text Support**: Added support for React JSX structure inside the policy sections to render list items instead of relying entirely on simple strings.
 - [x] **Deployment Peer Dependency Fix**: Created a root [.npmrc](file:///Users/davidyoung/contact-tree/.npmrc) file configuring `legacy-peer-deps=true` to resolve the Vite 8 vs Tailwind peer dependency conflict on Vercel builds.
 
-### API Security Hardening (Session 20)
-
-- [x] **Security Middleware**: Implemented rate-limiting and request payload validation in `api/_utils/security.ts`.
-- [x] **Endpoint Integration**: Integrated security checks into all key backend API entry points:
-  - User onboarding and management (`api/user.ts`)
-  - Billing and billing actions (`api/billing.ts`)
-  - Apple Wallet pass generation (`api/passes.ts`)
-  - Cards endpoint (`api/cards.ts`)
-  - Leads collection (`api/leads.ts`)
-  - Public routes (`api/public.ts`)
-  - Webhook receivers (`api/apple-webhook.ts`, `api/webhooks/stripe.ts`)
-  - Contact and Admin pages (`api/contact.ts`, `api/admin/index.ts`)
-
-### Growth & SEO (Session 19)
-
-- [x] **Dynamic OpenGraph Images**: Integrated `@vercel/og` to generate on-the-fly preview images (1200x630) for each public card based on the user's selected theme and avatar.
-- [x] **Meta Tag Injection**: Added serverless logic to intercept `/card/:slug` requests and inject `<meta>` tags (og:image, og:title, twitter:card) directly into the raw HTML for social media crawlers.
-- [x] **Vercel Function Consolidation**: Successfully avoided Vercel Hobby plan limits by consolidating edge functions directly into `api/public.ts`, ensuring smooth deployment of the OG feature.
-- [x] **Branding Updates**: Updated root favicon across the platform to the new "RS" logo (`favicon.png` and `favicon.ico`), including cache-busting configurations.
-
 ---
 
 ## 🏗️ KEY ARCHITECTURE
@@ -72,11 +62,16 @@ The platform is now in a **Production-Ready & Fully Verified** state. We have co
 ```bash
 /src
   /components
-    PolicyPage.tsx         ← Front-end rendering of privacy, terms, and cookies
+    /membership
+      /admin
+        MembershipAdminLayout.tsx    ← Handles database queries cache and context propagation
+        MembershipAdminMembers.tsx   ← Directory, template CSV exporter, and CSV upload parsing
+        MembershipAdminTemplates.tsx ← Club templates layout with 6-template strict validation limit
+      MembershipCardCreator.tsx      ← Card designer interface with "Member Since" and custom inputs
+      MembershipCardPreview.tsx      ← Real-time visual SVG preview of front and back wallet passes
 /api
-  _utils/security.ts       ← Core rate-limiting and payload validation middleware
-  webhooks/stripe.ts       ← Bulletproofed webhook verification logic + security integration
-  public.ts                ← Consolidated handler for public routing and SEO meta injection
+  membership.ts                      ← Custom dynamic sequential numbering system & CSV import handler
+  passes.ts                          ← Apple Wallet pass compiler & APNs trigger endpoints
 ```
 
 ---
@@ -85,25 +80,25 @@ The platform is now in a **Production-Ready & Fully Verified** state. We have co
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `src/components/PolicyPage.tsx` | 2026-06-07 | Privacy: Synced frontend with June 7, 2026 policy, added rich JSX layout, dynamic contact emails |
-| `.npmrc` | 2026-06-07 | Build: Bypassed peer dependency conflicts to resolve Vercel deployment build failures |
-| `api/_utils/security.ts` | 2026-06-07 | Security: Added request rate limit checking and payload schema verification |
-| `api/*.ts` | 2026-06-07 | Security: Hardened all backend entry points with rate limiting and payload checks |
-| `privacy_policy.md` | 2026-06-07 | Privacy: Updated text to June 7, 2026 version |
+| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-12 | Optimized transitions: Lifted template, membership, and dashboard queries to parent context. |
+| `src/components/admin/AdminMembershipClubs.tsx` | 2026-06-12 | Numbering System: Added dynamic token selector UI & live generated code format previewing. |
+| `src/components/membership/admin/MembershipAdminMembers.tsx` | 2026-06-12 | CSV Import: Added template CSV download action & mapped "Member Since" headers. |
+| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-12 | Creator: Rendered "Member Since" (4-digit numeric field) in form inputs. |
+| `api/membership.ts` | 2026-06-12 | Core Logic: Replaced static numbering with multi-token parsing engine, added creation limit guards. |
+| `db/schema.ts` | 2026-06-12 | Schema: Added `member_since` column to `memberships` table. |
 
 ---
 
 ## ▶️ HOW TO RESUME
 
 1. **Verify Build Health:** `npm run build`
-2. **Review Deployment:** Confirm Vercel builds successfully with the new `.npmrc` configuration.
-3. **Verify Security Headers:** Ensure API endpoints return appropriate responses when rate-limited or sent invalid payloads.
+2. **Launch Local Server:** `npm run dev -- --port 5173`
+3. **Verify CSV Template & Import:** Check if the CSV template download matches the expected import headers.
 
 ---
 
 ## 💡 DESIGN PRINCIPLES
 
-- **"Value First"** — Users design their card *before* being asked to sign up or pay
-- **Consistency** — `PricingCards` is one component used in both `/pricing` and the wizard
-- **Minimal friction** — Clerk handles auth, `localStorage` bridges the pre/post-auth gap
-- **Vercel Hobby constraints** — Stay under 12 serverless functions; consolidate where possible
+- **Caching over Round-Trips** — Avoid calling backend routes repeatedly on simple admin page navigation.
+- **Strict Validations** — Hard rules like "max 6 templates per club" must be enforced on both client interfaces and server APIs.
+- **Dynamic Configs** — Standard formatting engines (like membership serial numbers) should be flexible and predictable.
