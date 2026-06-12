@@ -45,7 +45,7 @@ export function StripDesigner({ cardData, initialWalletData, onSave, onClose }: 
     const [photoConfig, setPhotoConfig] = useState(savedConfig?.photoConfig || {
         show: true,
         position: 'left' as 'left' | 'right',
-        x: 22,
+        x: 23,
         y: 50,
         scale: 100,
         border: 'none' as 'none' | 'thin' | 'thick',
