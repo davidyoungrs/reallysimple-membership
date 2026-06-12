@@ -62,6 +62,7 @@ export function MembershipAdminTemplates() {
   }, [club]);
 
   const handleOpenCreate = () => {
+    if (templates.length >= 6) return;
     setEditingTemplate(null);
     setName('');
     setMembershipType('Gold');
@@ -258,9 +259,15 @@ export function MembershipAdminTemplates() {
         {isSuperUser && (
           <button
             onClick={handleOpenCreate}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
+            disabled={templates.length >= 6}
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
+              templates.length >= 6 
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none border border-slate-750' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/10'
+            }`}
+            title={templates.length >= 6 ? 'Maximum limit of 6 templates reached' : undefined}
           >
-            <Plus className="w-4 h-4" /> Create Template
+            <Plus className="w-4 h-4" /> Create Template {templates.length >= 6 && '(Limit Reached)'}
           </button>
         )}
       </div>

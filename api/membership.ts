@@ -468,6 +468,12 @@ async function handleTemplates(
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        // Limit maximum templates per club to 6
+        const existingTemplates = await db.select().from(membershipTemplates).where(eq(membershipTemplates.clubId, Number(clubId)));
+        if (existingTemplates.length >= 6) {
+            return res.status(400).json({ error: 'Maximum limit of 6 templates reached for this club' });
+        }
+
         const [newTemplate] = await db.insert(membershipTemplates)
             .values({
                 clubId: Number(clubId),
