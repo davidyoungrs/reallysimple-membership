@@ -235,6 +235,19 @@ export function MembershipAdminMembers() {
     setImportResults(null);
   };
 
+  const handleDownloadTemplate = () => {
+    const csvContent = "name,email,photo_url,membership_type,membership_number,member_since\nJane Doe,jane@example.com,https://example.com/photo.jpg,Gold,GLD-001,2026\nJohn Smith,john@example.com,,Silver,,2025";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "membership_bulk_template.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading && members.length === 0) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
@@ -408,12 +421,20 @@ export function MembershipAdminMembers() {
                 Upload a CSV with headers: <code className="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 font-mono">name, email, photo_url, membership_type, membership_number, member_since</code>
               </p>
             </div>
-            {importResults && (
+            {importResults ? (
               <button
                 onClick={handleResetImport}
                 className="text-xs font-bold text-blue-400 hover:underline"
               >
                 Upload another file
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleDownloadTemplate}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] font-bold border border-slate-700 transition-colors shadow-sm cursor-pointer"
+              >
+                Download Template CSV
               </button>
             )}
           </div>
