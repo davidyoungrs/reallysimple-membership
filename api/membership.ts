@@ -16,6 +16,32 @@ export function normalizeR2Url(url: string | null | undefined): string | null {
     return url;
 }
 
+export function generateMembershipNumber(format: string, clubSlug: string, membershipType: string, sequenceNumber: number): string {
+    let result = format || '{NUMBER}';
+    
+    // Replace {CLUB}
+    result = result.replace(/\{CLUB\}/g, (clubSlug || 'CLUB').toUpperCase());
+    
+    // Replace {TYPE}
+    const typeCode = (membershipType || 'MEM').substring(0, 3).toUpperCase();
+    result = result.replace(/\{TYPE\}/g, typeCode);
+    
+    // Replace {YYYY}, {YY}, {MM}
+    const now = new Date();
+    result = result.replace(/\{YYYY\}/g, String(now.getFullYear()));
+    result = result.replace(/\{YY\}/g, String(now.getFullYear()).slice(-2));
+    result = result.replace(/\{MM\}/g, String(now.getMonth() + 1).padStart(2, '0'));
+    
+    // Replace {NUMBER} or {NUMBER:X}
+    const numberRegex = /\{NUMBER(?::(\d+))?\}/g;
+    result = result.replace(numberRegex, (_, paddingStr) => {
+        const padding = paddingStr ? parseInt(paddingStr, 10) : 3;
+        return String(sequenceNumber).padStart(padding, '0');
+    });
+    
+    return result;
+}
+
 export async function syncMembershipWallet(membershipUid: string) {
     try {
         const devices = await db.select({
@@ -691,7 +717,12 @@ async function handleMemberships(
                         const currentCount = Number(countRecords[0]?.count || 0);
 
                         while (!isUnique) {
-                            const candidateNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount + counterOffset).padStart(3, '0'));
+                            const candidateNumber = generateMembershipNumber(
+                                club.membershipNumberFormat,
+                                club.slug,
+                                membershipType,
+                                currentCount + counterOffset
+                            );
                             const candidateSlug = slug || `${club.slug}-${candidateNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
                             const collision = await tx.select().from(memberships).where(eq(memberships.slug, candidateSlug)).limit(1);
                             if (collision.length === 0) {
@@ -775,7 +806,12 @@ async function handleMemberships(
             const currentCount = Number(countRecords[0]?.count || 0);
 
             while (!isUnique) {
-                const candidateNumber = club.membershipNumberFormat.replace('{NUMBER}', String(currentCount + counterOffset).padStart(3, '0'));
+                const candidateNumber = generateMembershipNumber(
+                    club.membershipNumberFormat,
+                    club.slug,
+                    template.membershipType,
+                    currentCount + counterOffset
+                );
                 const candidateSlug = slug || `${club.slug}-${candidateNumber.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
                 const collision = await db.select().from(memberships).where(eq(memberships.slug, candidateSlug)).limit(1);
                 if (collision.length === 0) {

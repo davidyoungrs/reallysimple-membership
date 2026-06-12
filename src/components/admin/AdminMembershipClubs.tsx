@@ -244,6 +244,24 @@ export function AdminMembershipClubs() {
     }
   };
 
+  const getFormatPreview = (fmt: string) => {
+    let result = fmt || '{NUMBER}';
+    const cleanSlug = slug || 'london-golf';
+    result = result.replace(/\{CLUB\}/g, cleanSlug.toUpperCase());
+    result = result.replace(/\{TYPE\}/g, 'GLD');
+    const now = new Date();
+    result = result.replace(/\{YYYY\}/g, String(now.getFullYear()));
+    result = result.replace(/\{YY\}/g, String(now.getFullYear()).slice(-2));
+    result = result.replace(/\{MM\}/g, String(now.getMonth() + 1).padStart(2, '0'));
+    
+    const numberRegex = /\{NUMBER(?::(\d+))?\}/g;
+    result = result.replace(numberRegex, (_, paddingStr) => {
+      const padding = paddingStr ? parseInt(paddingStr, 10) : 3;
+      return String(12).padStart(padding, '0');
+    });
+    return result;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -480,7 +498,7 @@ export function AdminMembershipClubs() {
                       />
                     )}
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 space-y-2">
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Membership ID Format</label>
                     <input
                       type="text"
@@ -488,9 +506,51 @@ export function AdminMembershipClubs() {
                       placeholder="e.g. LGC-{NUMBER}"
                       value={membershipNumberFormat}
                       onChange={(e) => setMembershipNumberFormat(e.target.value)}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm"
+                      className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-                    <p className="text-[10px] text-slate-400 mt-1">Use {"{NUMBER}"} as the auto-increment token (will render e.g. LGC-001).</p>
+                    
+                    {/* Live Preview Box */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex justify-between items-center">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Live Preview (Gold, #12)</span>
+                        <code className="text-sm font-mono font-bold text-slate-700">{getFormatPreview(membershipNumberFormat)}</code>
+                      </div>
+                      <span className="text-[10px] text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded font-bold">Generated ID</span>
+                    </div>
+
+                    {/* Token helper badges */}
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-450 block mb-1">Click dynamic token to insert:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { token: '{CLUB}', label: 'Club Slug' },
+                          { token: '{TYPE}', label: 'Tier/Level' },
+                          { token: '{YYYY}', label: 'Year (YYYY)' },
+                          { token: '{YY}', label: 'Year (YY)' },
+                          { token: '{MM}', label: 'Month (MM)' },
+                          { token: '{NUMBER:3}', label: '# (001)' },
+                          { token: '{NUMBER:4}', label: '# (0001)' },
+                          { token: '{NUMBER:5}', label: '# (00001)' },
+                        ].map(({ token, label }) => (
+                          <button
+                            key={token}
+                            type="button"
+                            onClick={() => {
+                              setMembershipNumberFormat(prev => {
+                                if (prev.includes('{NUMBER}') && token.startsWith('{NUMBER:')) {
+                                  return prev.replace('{NUMBER}', token);
+                                }
+                                return prev + token;
+                              });
+                            }}
+                            className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-[10px] font-mono font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                            title={label}
+                          >
+                            {token}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
