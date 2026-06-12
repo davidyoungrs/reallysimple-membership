@@ -701,7 +701,7 @@ async function handleMemberships(
             await db.transaction(async (tx) => {
                 let index = 1;
                 for (const row of csvData) {
-                    const { name, email, photoUrl, membershipType, membershipNumber, slug } = row;
+                    const { name, email, photoUrl, membershipType, membershipNumber, slug, memberSince } = row;
                     if (!name || !email) {
                         results.push({ name, email, success: false, error: 'Name and Email are required' });
                         continue;
@@ -762,6 +762,7 @@ async function handleMemberships(
                                 membershipNumber: finalNumber,
                                 membershipType: membershipType || template.membershipType,
                                 cardConfig: template.cardConfig,
+                                memberSince: memberSince ? Number(memberSince) : new Date().getFullYear(),
                                 slug: finalSlug,
                                 status: 'active',
                                 issuedAt,
@@ -781,7 +782,7 @@ async function handleMemberships(
         }
 
         // B. SINGLE CARD CREATION
-        const { templateId, memberName, memberEmail, memberPhoto, membershipNumber, slug, cardConfig, expiresAt: customExpiresAt } = body;
+        const { templateId, memberName, memberEmail, memberPhoto, membershipNumber, slug, cardConfig, expiresAt: customExpiresAt, memberSince } = body;
         if (!templateId || !memberName || !memberEmail) {
             return res.status(400).json({ error: 'Missing required fields: templateId, memberName, memberEmail' });
         }
@@ -850,6 +851,7 @@ async function handleMemberships(
                 membershipNumber: finalNumber,
                 membershipType: template.membershipType,
                 cardConfig: cardConfig || template.cardConfig,
+                memberSince: memberSince ? Number(memberSince) : new Date().getFullYear(),
                 slug: finalSlug,
                 status: 'active',
                 issuedAt,
@@ -862,7 +864,7 @@ async function handleMemberships(
     }
 
     if (method === 'PUT') {
-        const { id, memberName, memberEmail, memberPhoto, stripImageUrl, membershipNumber, slug, cardConfig, status, expiresAt } = body;
+        const { id, memberName, memberEmail, memberPhoto, stripImageUrl, membershipNumber, slug, cardConfig, status, expiresAt, memberSince } = body;
         if (!id) return res.status(400).json({ error: 'Missing membership ID' });
 
         const membershipId = Number(id);
@@ -911,6 +913,7 @@ async function handleMemberships(
                 membershipNumber,
                 slug,
                 cardConfig,
+                memberSince: memberSince !== undefined ? (memberSince ? Number(memberSince) : null) : undefined,
                 status,
                 expiresAt: expiresAt ? new Date(expiresAt) : undefined,
                 updatedAt: new Date(),

@@ -143,6 +143,7 @@ export const memberships = pgTable('memberships', {
     membershipType: text('membership_type').notNull(),
     stripImageUrl: text('strip_image_url'), // generated strip image URL (or R2 upload)
     cardConfig: jsonb('card_config').notNull(), // Snapshot of card config at creation
+    memberSince: integer('member_since'),
     slug: text('slug').notNull().unique(), // e.g. "club-slug-001"
     status: text('status').default('active').notNull(), // 'active', 'expired', 'revoked'
     issuedAt: timestamp('issued_at').defaultNow().notNull(),

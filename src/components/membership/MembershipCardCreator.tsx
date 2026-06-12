@@ -31,6 +31,7 @@ export function MembershipCardCreator() {
   // Form Fields
   const [memberName, setMemberName] = useState('');
   const [memberEmail, setMemberEmail] = useState('');
+  const [memberSince, setMemberSince] = useState(new Date().getFullYear().toString());
   const [memberPhoto, setMemberPhoto] = useState('');
   const [membershipNumber, setMembershipNumber] = useState('');
   const [slug, setSlug] = useState('');
@@ -66,7 +67,8 @@ export function MembershipCardCreator() {
           setMemberEmail(m.memberEmail);
           setMemberPhoto(m.memberPhoto || '');
           setMembershipNumber(m.membershipNumber);
-          setSlug(m.slug);
+           setSlug(m.slug);
+          setMemberSince(m.memberSince ? String(m.memberSince) : new Date().getFullYear().toString());
           let config = m.cardConfig;
           if (config?.stripConfig) {
             let s = { ...config.stripConfig };
@@ -451,7 +453,8 @@ export function MembershipCardCreator() {
         stripImageUrl: uploadedStripUrl,
         membershipNumber: membershipNumber || undefined,
         slug: slug || undefined,
-        cardConfig
+        cardConfig,
+        memberSince: memberSince ? Number(memberSince) : undefined
       };
 
       if (editId) {
@@ -644,6 +647,19 @@ export function MembershipCardCreator() {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Member Since (Year)</label>
+                    <input
+                      type="number"
+                      min="1900"
+                      max="2100"
+                      placeholder={String(new Date().getFullYear())}
+                      value={memberSince}
+                      onChange={(e) => setMemberSince(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-900 bg-white"
+                    />
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1">Member Number (Optional)</label>
@@ -828,6 +844,7 @@ export function MembershipCardCreator() {
                 membershipType={selectedTemplate?.membershipType || 'Gold'}
                 stripImageUrl={stripImageUrl}
                 isFlipped={isFlipped}
+                memberSince={memberSince}
               />
             </div>
           )}

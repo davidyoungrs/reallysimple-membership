@@ -15,6 +15,7 @@ interface MembershipCardPreviewProps {
   expiresAt?: Date | string;
   isFlipped?: boolean;
   isPreview?: boolean;
+  memberSince?: number | string;
 }
 
 export function MembershipCardPreview({
@@ -30,6 +31,7 @@ export function MembershipCardPreview({
   expiresAt,
   isFlipped = false,
   isPreview = false,
+  memberSince,
 }: MembershipCardPreviewProps) {
   const showStrip = cardConfig.showMemberPhoto || cardConfig.showMemberName;
   const logoUrl = clubLogoUrl;
@@ -66,7 +68,7 @@ export function MembershipCardPreview({
           style={{ backgroundColor: cardConfig.walletBackgroundColor || '#ffffff' }}
         >
           {/* Top Section / Header */}
-          <div className="px-4 py-3 flex justify-between items-center z-10">
+          <div className="px-4 py-3 flex justify-between items-center z-10 w-full">
             <div className="flex items-center gap-2">
               {cardConfig.showClubLogo !== false && logoUrl && (
                 <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain rounded-full" />
@@ -79,6 +81,21 @@ export function MembershipCardPreview({
                   {clubName || 'CLUB NAME'}
                 </span>
               )}
+            </div>
+            {/* Header Field (Member Since) */}
+            <div className="text-right flex flex-col">
+              <span 
+                className="text-[7px] font-bold uppercase tracking-wider opacity-70"
+                style={{ color: cardConfig.walletLabelColor || '#666666' }}
+              >
+                MEMBER SINCE
+              </span>
+              <span 
+                className="text-[10px] font-extrabold leading-none"
+                style={{ color: cardConfig.walletForegroundColor || '#000000' }}
+              >
+                {memberSince || new Date().getFullYear()}
+              </span>
             </div>
           </div>
 

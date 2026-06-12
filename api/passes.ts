@@ -762,6 +762,12 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         await addImage(membership.stripImageUrl || '/wallet-strip.png', 'strip.png');
 
         if (!isVoided) {
+            pass.headerFields.push({
+                key: 'member-since',
+                label: 'Member Since',
+                value: String(membership.memberSince || new Date(membership.issuedAt || Date.now()).getFullYear()),
+            });
+
             if (cardConfig.showMembershipType !== false) {
                 pass.secondaryFields.push({
                     key: 'membership-type',

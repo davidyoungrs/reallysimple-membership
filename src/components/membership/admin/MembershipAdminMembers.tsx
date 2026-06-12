@@ -199,6 +199,7 @@ export function MembershipAdminMembers() {
           photoUrl: row.photo_url || row.photourl || row.photo || '',
           membershipType: row.membership_type || row.membershiptype || row.type || '',
           membershipNumber: row.membership_number || row.membershipnumber || row.number || '',
+          memberSince: row.member_since || row.membersince || row['member since'] || row.since || '',
         };
 
         if (normalizedRow.name || normalizedRow.email) {
@@ -334,7 +335,9 @@ export function MembershipAdminMembers() {
                           </div>
                           <div>
                             <span className="block font-bold text-white leading-snug">{member.memberName}</span>
-                            <span className="text-[10px] text-slate-500 font-semibold">{member.memberEmail}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold">
+                              {member.memberEmail} {member.memberSince && `• Since ${member.memberSince}`}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -415,7 +418,7 @@ export function MembershipAdminMembers() {
             <div>
               <h3 className="font-extrabold text-base text-white uppercase tracking-wider">CSV Bulk Card Registration</h3>
               <p className="text-xs text-slate-400 mt-1">
-                Upload a CSV with headers: <code className="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 font-mono">name, email, photo_url, membership_type, membership_number</code>
+                Upload a CSV with headers: <code className="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 font-mono">name, email, photo_url, membership_type, membership_number, member_since</code>
               </p>
             </div>
             {importResults && (
@@ -480,6 +483,7 @@ export function MembershipAdminMembers() {
                           <th className="px-4 py-2">Email</th>
                           <th className="px-4 py-2">Photo URL</th>
                           <th className="px-4 py-2">Number</th>
+                          <th className="px-4 py-2">Since</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-850 bg-slate-950/10">
@@ -489,6 +493,7 @@ export function MembershipAdminMembers() {
                             <td className="px-4 py-2 text-slate-300">{row.email}</td>
                             <td className="px-4 py-2 text-slate-500 truncate max-w-[150px]">{row.photoUrl || 'none'}</td>
                             <td className="px-4 py-2 text-slate-400">{row.membershipNumber || 'auto'}</td>
+                            <td className="px-4 py-2 text-slate-400">{row.memberSince || 'auto'}</td>
                           </tr>
                         ))}
                       </tbody>
