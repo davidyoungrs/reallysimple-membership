@@ -1,56 +1,42 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link, useParams } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
 import { Users, Award, ShieldAlert, PlusCircle, FileSpreadsheet, Loader2, ArrowRight } from 'lucide-react';
 
 export function MembershipAdminDashboard() {
   const { clubSlug } = useParams<{ clubSlug: string }>();
-  const { club } = useOutletContext<{ club: any }>();
-  const { getToken } = useAuth();
+  const { club, members, loadingMembers, fetchMembers } = useOutletContext<{ 
+    club: any; 
+    members: any[]; 
+    loadingMembers: boolean;
+    fetchMembers: () => Promise<void>;
+  }>();
 
   const [stats, setStats] = useState({ total: 0, active: 0, expired: 0, revoked: 0 });
   const [recentMembers, setRecentMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadDashboardData() {
-      if (!club) return;
-      try {
-        setLoading(true);
-        const token = await getToken();
-        
-        // Fetch all memberships for this club
-        const res = await fetch(`/api/membership?resource=memberships&clubId=${club.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await res.json();
-        if (result.success && result.memberships) {
-          const list = result.memberships;
-          
-          // Compute stats
-          const computed = list.reduce(
-            (acc: any, item: any) => {
-              acc.total++;
-              if (item.status === 'active') acc.active++;
-              else if (item.status === 'expired') acc.expired++;
-              else if (item.status === 'revoked') acc.revoked++;
-              return acc;
-            },
-            { total: 0, active: 0, expired: 0, revoked: 0 }
-          );
-          setStats(computed);
-          
-          // Get last 5 recently added
-          setRecentMembers(list.slice(0, 5));
-        }
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-      } finally {
-        setLoading(false);
-      }
+    // Fetch members if not loaded yet
+    if (club && members.length === 0 && !loadingMembers) {
+      fetchMembers();
     }
-    loadDashboardData();
-  }, [club, getToken]);
+  }, [club, members, loadingMembers, fetchMembers]);
+
+  useEffect(() => {
+    const computed = members.reduce(
+      (acc: any, item: any) => {
+        acc.total++;
+        if (item.status === 'active') acc.active++;
+        else if (item.status === 'expired') acc.expired++;
+        else if (item.status === 'revoked') acc.revoked++;
+        return acc;
+      },
+      { total: 0, active: 0, expired: 0, revoked: 0 }
+    );
+    setStats(computed);
+    setRecentMembers(members.slice(0, 5));
+  }, [members]);
+
+  const loading = loadingMembers && members.length === 0;
 
   if (loading) {
     return (

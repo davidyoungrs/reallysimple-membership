@@ -5,13 +5,17 @@ import { Loader2, Plus, Edit2, Layers, X, ShieldAlert } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminTemplates() {
-  const { club } = useOutletContext<{ club: any; branding: ClubBrandingConfig }>();
+  const { club, templates, fetchTemplates, loadingTemplates } = useOutletContext<{
+    club: any;
+    branding: ClubBrandingConfig;
+    templates: any[];
+    fetchTemplates: () => Promise<void>;
+    loadingTemplates: boolean;
+  }>();
+  
   const { getToken } = useAuth();
   const { user } = useUser();
   const isSuperUser = user?.publicMetadata?.role === 'admin';
-
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Edit / Create Form States
   const [showFormModal, setShowFormModal] = useState(false);
@@ -38,28 +42,13 @@ export function MembershipAdminTemplates() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTemplates = async () => {
-    if (!club) return;
-    try {
-      setLoading(true);
-      const token = await getToken();
-      const res = await fetch(`/api/membership?resource=templates&clubId=${club.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.success && result.templates) {
-        setTemplates(result.templates);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchTemplates();
-  }, [club]);
+    if (club && templates.length === 0 && !loadingTemplates) {
+      fetchTemplates();
+    }
+  }, [club, templates, loadingTemplates, fetchTemplates]);
+
+  const loading = loadingTemplates && templates.length === 0;
 
   const handleOpenCreate = () => {
     if (templates.length >= 6) return;

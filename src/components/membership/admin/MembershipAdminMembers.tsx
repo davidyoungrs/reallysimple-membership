@@ -4,14 +4,28 @@ import { useAuth } from '@clerk/clerk-react';
 import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload, Share2, Mail, Copy } from 'lucide-react';
 
 export function MembershipAdminMembers() {
-  const { club } = useOutletContext<{ club: any }>();
+  const { 
+    club, 
+    members, 
+    templates, 
+    fetchMembers, 
+    fetchTemplates, 
+    loadingMembers, 
+    loadingTemplates 
+  } = useOutletContext<{
+    club: any;
+    members: any[];
+    templates: any[];
+    fetchMembers: () => Promise<void>;
+    fetchTemplates: () => Promise<void>;
+    loadingMembers: boolean;
+    loadingTemplates: boolean;
+  }>();
+  
   const { getToken } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Directory states
-  const [members, setMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -26,53 +40,26 @@ export function MembershipAdminMembers() {
   // CSV Import States
   const [showImportView, setShowImportView] = useState(searchParams.get('import') === 'true');
   const [csvPreview, setCsvPreview] = useState<any[]>([]);
-  const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResults, setImportResults] = useState<any[] | null>(null);
 
-  const fetchMembers = async () => {
-    if (!club) return;
-    try {
-      setLoading(true);
-      const token = await getToken();
-      const res = await fetch(`/api/membership?resource=memberships&clubId=${club.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.success && result.memberships) {
-        setMembers(result.memberships);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (club && members.length === 0 && !loadingMembers) {
+      fetchMembers();
     }
-  };
-
-  const fetchTemplates = async () => {
-    if (!club) return;
-    try {
-      const token = await getToken();
-      const res = await fetch(`/api/membership?resource=templates&clubId=${club.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.success && result.templates) {
-        setTemplates(result.templates);
-        if (result.templates.length > 0) {
-          setSelectedTemplateId(String(result.templates[0].id));
-        }
-      }
-    } catch (err) {
-      console.error(err);
+    if (club && templates.length === 0 && !loadingTemplates) {
+      fetchTemplates();
     }
-  };
+  }, [club, members, templates, loadingMembers, loadingTemplates, fetchMembers, fetchTemplates]);
 
   useEffect(() => {
-    fetchMembers();
-    fetchTemplates();
-  }, [club]);
+    if (templates.length > 0 && !selectedTemplateId) {
+      setSelectedTemplateId(String(templates[0].id));
+    }
+  }, [templates, selectedTemplateId]);
+
+  const loading = (loadingMembers && members.length === 0) || (loadingTemplates && templates.length === 0);
 
   // Search/Filter logic
   const filteredMembers = members.filter(m => {

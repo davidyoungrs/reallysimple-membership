@@ -12,6 +12,56 @@ export function MembershipAdminLayout() {
   const [club, setClub] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  
+  const [members, setMembers] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  const fetchMembers = async () => {
+    if (!club) return;
+    try {
+      setLoadingMembers(true);
+      const token = await getToken();
+      const res = await fetch(`/api/membership?resource=memberships&clubId=${club.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success && result.memberships) {
+        setMembers(result.memberships);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    if (!club) return;
+    try {
+      setLoadingTemplates(true);
+      const token = await getToken();
+      const res = await fetch(`/api/membership?resource=templates&clubId=${club.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success && result.templates) {
+        setTemplates(result.templates);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  useEffect(() => {
+    if (club) {
+      fetchMembers();
+      fetchTemplates();
+    }
+  }, [club]);
 
   useEffect(() => {
     async function checkAccessAndLoadClub() {
@@ -163,8 +213,16 @@ export function MembershipAdminLayout() {
         </header>
 
         <main className="flex-grow p-8 overflow-y-auto">
-          {/* Inject Club contextual properties to nested routes */}
-          <Outlet context={{ club, branding }} />
+          <Outlet context={{ 
+            club, 
+            branding, 
+            members, 
+            templates, 
+            fetchMembers, 
+            fetchTemplates, 
+            loadingMembers, 
+            loadingTemplates 
+          }} />
         </main>
       </div>
     </div>
