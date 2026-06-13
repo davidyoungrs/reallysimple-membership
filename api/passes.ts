@@ -203,10 +203,10 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             signerKey: getCertContent('WALLET_SIGNER_KEY', 'signerKey.pem'),
         };
 
-        console.log('[PassGen] cert types:', {
-            wwdr: certs.wwdr?.substring(0, 27),
-            signerCert: certs.signerCert?.substring(0, 27),
-            signerKey: certs.signerKey?.substring(0, 30),
+        console.log('[PassGen] cert types & lengths:', {
+            wwdr: certs.wwdr?.substring(0, 27) + ` (${certs.wwdr?.length || 0} chars)`,
+            signerCert: certs.signerCert?.substring(0, 27) + ` (${certs.signerCert?.length || 0} chars)`,
+            signerKey: certs.signerKey?.substring(0, 30) + ` (${certs.signerKey?.length || 0} chars)`,
         });
 
         if (!certs.wwdr || !certs.signerCert || !certs.signerKey) {
@@ -641,10 +641,10 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             signerKey: getCertContent('WALLET_SIGNER_KEY', 'signerKey.pem'),
         };
 
-        console.log('[PassGen-Membership] cert types:', {
-            wwdr: certs.wwdr?.substring(0, 27),
-            signerCert: certs.signerCert?.substring(0, 27),
-            signerKey: certs.signerKey?.substring(0, 30),
+        console.log('[PassGen-Membership] cert types & lengths:', {
+            wwdr: certs.wwdr?.substring(0, 27) + ` (${certs.wwdr?.length || 0} chars)`,
+            signerCert: certs.signerCert?.substring(0, 27) + ` (${certs.signerCert?.length || 0} chars)`,
+            signerKey: certs.signerKey?.substring(0, 30) + ` (${certs.signerKey?.length || 0} chars)`,
         });
 
         if (!certs.wwdr || !certs.signerCert || !certs.signerKey) {

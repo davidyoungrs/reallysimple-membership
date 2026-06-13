@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { MembershipCardPreview } from './MembershipCardPreview.jsx';
 import { MembershipStripDesigner } from './MembershipStripDesigner.jsx';
 import { type MembershipCardConfig } from '../../types/membershipTypes.js';
@@ -15,6 +15,7 @@ export function MembershipCardCreator() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const editId = searchParams.get('edit');
+  const outletCtx = useOutletContext<{ fetchMembers?: () => Promise<void> }>() || {};
 
   // Edit fields
   const [status, setStatus] = useState<'active' | 'expired' | 'revoked'>('active');
@@ -476,6 +477,11 @@ export function MembershipCardCreator() {
 
       const result = await saveRes.json();
       if (!saveRes.ok) throw new Error(result.error || 'Failed to save card');
+
+      // Refresh list to update dashboard metrics
+      if (typeof outletCtx.fetchMembers === 'function') {
+        outletCtx.fetchMembers().catch(err => console.error('Failed to refetch members context:', err));
+      }
 
       setFeedback({
         type: 'success',
