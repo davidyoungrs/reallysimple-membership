@@ -1060,7 +1060,8 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                                 { twoItems: { startItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["member_name"]' }] } }, endItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["expiry_date"]' }] } } } }
                             ]
                         }
-                    }
+                    },
+                    ...(passLocations.length > 0 ? { locations: passLocations } : {})
                 }]
             }
         };
