@@ -213,6 +213,22 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             return res.status(500).json({ error: 'Missing certificates' });
         }
 
+        if (certs.signerCert.length < 1400) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_SIGNER_CERT: length is too short (${certs.signerCert.length} chars, expected ~1860). It was likely truncated during copy-pasting to Vercel environment variables. Please check and re-paste the entire value.` 
+            });
+        }
+        if (certs.signerKey.length < 1300) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_SIGNER_KEY: length is too short (${certs.signerKey.length} chars, expected ~1680). It was likely truncated during copy-pasting to Vercel environment variables. Please check and re-paste the entire value.` 
+            });
+        }
+        if (certs.wwdr.length < 1000) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_WWDR_CERT: length is too short (${certs.wwdr.length} chars, expected ~1200). It was likely truncated. Please check and re-paste the entire value.` 
+            });
+        }
+
         const modelPath = path.join(__dirname, 'certs/model.pass');
         if (!fs.existsSync(modelPath)) {
             console.error(`[PassGen] model.pass not found at: ${modelPath}`);
@@ -649,6 +665,22 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
 
         if (!certs.wwdr || !certs.signerCert || !certs.signerKey) {
             return res.status(500).json({ error: 'Missing certificates' });
+        }
+
+        if (certs.signerCert.length < 1400) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_SIGNER_CERT: length is too short (${certs.signerCert.length} chars, expected ~1860). It was likely truncated during copy-pasting to Vercel environment variables. Please check and re-paste the entire value.` 
+            });
+        }
+        if (certs.signerKey.length < 1300) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_SIGNER_KEY: length is too short (${certs.signerKey.length} chars, expected ~1680). It was likely truncated during copy-pasting to Vercel environment variables. Please check and re-paste the entire value.` 
+            });
+        }
+        if (certs.wwdr.length < 1000) {
+            return res.status(500).json({ 
+                error: `Invalid WALLET_WWDR_CERT: length is too short (${certs.wwdr.length} chars, expected ~1200). It was likely truncated. Please check and re-paste the entire value.` 
+            });
         }
 
         const modelPath = path.join(__dirname, 'certs/model.pass');
