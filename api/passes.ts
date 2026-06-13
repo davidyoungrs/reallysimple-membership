@@ -638,7 +638,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
             throw new Error('Internal Server Error: JWT library issue');
         }
 
-        const token = jwt.sign(newPass, GOOGLE_PRIVATE_KEY, { algorithm: 'RS256' });
+        const token = jwt.sign(newPass, cleanPemString(GOOGLE_PRIVATE_KEY), { algorithm: 'RS256' });
         const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
         return res.status(200).json({ saveUrl });
@@ -963,7 +963,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
 
         if (results.length === 0) return res.status(404).json({ error: 'Membership not found' });
 
-        const { membership, club } = results[0];
+        const { membership, club, template } = results[0];
         const cardConfig = membership.cardConfig as any;
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-membership-v1`;
@@ -1080,7 +1080,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
             }
         };
 
-        const token = jwt.sign(newPass, GOOGLE_PRIVATE_KEY, { algorithm: 'RS256' });
+        const token = jwt.sign(newPass, cleanPemString(GOOGLE_PRIVATE_KEY), { algorithm: 'RS256' });
         const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
         return res.status(200).json({ saveUrl });
