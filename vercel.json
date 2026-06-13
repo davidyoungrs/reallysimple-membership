@@ -29,5 +29,11 @@
         "api/passes.ts": {
             "includeFiles": "certs/**"
         }
-    }
+    },
+    "crons": [
+        {
+            "path": "/api/cron/expiry-alerts",
+            "schedule": "0 10 * * *"
+        }
+    ]
 }

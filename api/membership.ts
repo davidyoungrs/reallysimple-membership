@@ -811,6 +811,13 @@ async function handleMemberships(
                     }
                 }
             });
+            import('./_utils/membership_emails.js').then(({ sendWelcomeEmail }) => {
+                results.forEach(r => {
+                    if (r.success) {
+                        sendWelcomeEmail(r.email, r.name, club.name, club.slug, r.slug!).catch(e => console.error(e));
+                    }
+                });
+            }).catch(e => console.error('Failed to load membership_emails utility', e));
 
             return res.status(200).json({ success: true, results });
         }
@@ -893,6 +900,10 @@ async function handleMemberships(
                 issuedBy: userId,
             })
             .returning();
+
+        import('./_utils/membership_emails.js').then(({ sendWelcomeEmail }) => {
+            sendWelcomeEmail(memberEmail, memberName, club.name, club.slug, finalSlug).catch(e => console.error(e));
+        }).catch(e => console.error('Failed to load membership_emails utility', e));
 
         return res.status(201).json({ success: true, membership: newMembership });
     }
