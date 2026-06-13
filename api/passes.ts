@@ -31,20 +31,24 @@ const CERT_DIR = path.join(__dirname, 'certs');
  *    RSA format (-----BEGIN RSA PRIVATE KEY-----) that node-forge can parse
  */
 function cleanPemString(pem: string): string {
-    const match = pem.match(/(-----BEGIN [\s\S]+?-----)([\s\S]+?)(-----END [\s\S]+?-----)/);
+    const match = pem.match(/(-----BEGIN [\s\S]+?-----)(([\s\S]+?))(-----END [\s\S]+?-----)/)
     if (!match) return pem;
     
     const header = match[1];
-    const body = match[2];
-    const footer = match[3];
+    const rawBody = match[2];
+    const footer = match[4];
     
-    // Clean the body: remove all whitespace and invalid base64 characters
-    const cleanedBody = body.replace(/[^A-Za-z0-9+/=]/g, '');
+    // Strip all non-base64 chars from the body
+    const strippedB64 = rawBody.replace(/[^A-Za-z0-9+/=]/g, '');
     
-    // Split into 64-character lines (standard PEM formatting)
+    // Round-trip through Buffer to fix any DER corruption / bad padding
+    const derBytes = Buffer.from(strippedB64, 'base64');
+    const cleanB64 = derBytes.toString('base64');
+    
+    // Format into standard 64-character lines
     const lines: string[] = [];
-    for (let i = 0; i < cleanedBody.length; i += 64) {
-        lines.push(cleanedBody.substring(i, i + 64));
+    for (let i = 0; i < cleanB64.length; i += 64) {
+        lines.push(cleanB64.substring(i, i + 64));
     }
     
     return `${header}\n${lines.join('\n')}\n${footer}`;
@@ -90,8 +94,17 @@ function getCertContent(envVar: string, fileName: string): string | null {
     const pkcs8Match = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/);
     if (pkcs8Match) {
         try {
-            const cleanedKey = cleanPemString(pkcs8Match[0]);
-            const privateKey = forge.pki.privateKeyFromPem(cleanedKey);
+            // Extract and round-trip the raw base64 body through a Buffer to ensure clean DER bytes
+            const bodyMatch = pkcs8Match[0].match(/-----BEGIN PRIVATE KEY-----([\ \s\S]+?)-----END PRIVATE KEY-----/);
+            if (!bodyMatch) throw new Error('Could not extract PKCS#8 body');
+            const strippedB64 = bodyMatch[1].replace(/[^A-Za-z0-9+/=]/g, '');
+            const derBytes = Buffer.from(strippedB64, 'base64');
+            const cleanB64 = derBytes.toString('base64');
+            const lines: string[] = [];
+            for (let i = 0; i < cleanB64.length; i += 64) lines.push(cleanB64.substring(i, i + 64));
+            const cleanedPkcs8 = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+            console.log(`[PassGen] Cleaned PKCS#8 key: ${cleanedPkcs8.length} chars, DER bytes: ${derBytes.length}`);
+            const privateKey = forge.pki.privateKeyFromPem(cleanedPkcs8);
             return forge.pki.privateKeyToPem(privateKey);
         } catch (e: any) {
             console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
