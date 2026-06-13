@@ -1051,7 +1051,6 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                             contentDescription: { defaultValue: { language: 'en-US', value: 'STRIP' } }
                         }
                     } : {}),
-                    ...(passLocations.length > 0 ? { locations: passLocations } : {}),
                     cardTitle: { defaultValue: { language: 'en-US', value: isVoided ? 'INACTIVE MEMBERSHIP' : title } },
                     ...(cardConfig.showMembershipType !== false ? {
                         header: { defaultValue: { language: 'en-US', value: membership.membershipType } }
@@ -1075,7 +1074,8 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                                 { twoItems: { startItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["member_name"]' }] } }, endItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["expiry_date"]' }] } } } }
                             ]
                         }
-                    }
+                    },
+                    ...(passLocations.length > 0 ? { locations: passLocations } : {})
                 }]
             }
         };

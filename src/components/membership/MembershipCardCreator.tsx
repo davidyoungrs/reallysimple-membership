@@ -510,7 +510,7 @@ export function MembershipCardCreator() {
         const res = await fetch(generatedPasses.googleUrl);
         const data = await res.json();
         if (data.saveUrl) {
-          window.open(data.saveUrl, '_blank');
+          window.location.href = data.saveUrl;
         }
       } catch (err) {
         console.error('Failed to generate Google Wallet link', err);
