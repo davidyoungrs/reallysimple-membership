@@ -473,7 +473,7 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
 async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: string) {
     const GOOGLE_ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
     const GOOGLE_SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_WALLET_CLIENT_EMAIL;
-    const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_WALLET_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_WALLET_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
 
     if (!GOOGLE_ISSUER_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
         console.error("Missing Google Wallet credentials");
@@ -638,7 +638,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
             throw new Error('Internal Server Error: JWT library issue');
         }
 
-        const token = jwt.sign(newPass, cleanPemString(GOOGLE_PRIVATE_KEY), { algorithm: 'RS256' });
+        const token = jwt.sign(newPass, GOOGLE_PRIVATE_KEY, { algorithm: 'RS256' });
         const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
         return res.status(200).json({ saveUrl });
@@ -935,7 +935,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
 export async function handleGoogleMembershipPass(req: VercelRequest, res: VercelResponse, slug: string) {
     const GOOGLE_ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
     const GOOGLE_SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_WALLET_CLIENT_EMAIL;
-    const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_WALLET_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_WALLET_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^"|"$/g, '');
 
     if (!GOOGLE_ISSUER_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
         console.error("Missing Google Wallet credentials");
@@ -1080,7 +1080,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
             }
         };
 
-        const token = jwt.sign(newPass, cleanPemString(GOOGLE_PRIVATE_KEY), { algorithm: 'RS256' });
+        const token = jwt.sign(newPass, GOOGLE_PRIVATE_KEY, { algorithm: 'RS256' });
         const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
         return res.status(200).json({ saveUrl });
