@@ -726,6 +726,19 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
 
         const isVoided = membership.status === 'expired' || membership.status === 'revoked';
 
+        let passLocations: any[] = [];
+        if (cardConfig.locations && Array.isArray(cardConfig.locations) && cardConfig.locations.length > 0) {
+            const clubLocations = club.brandingConfig?.locations || [];
+            passLocations = cardConfig.locations
+                .map((locId: string) => clubLocations.find((l: any) => l.id === locId))
+                .filter(Boolean)
+                .map((l: any) => ({
+                    latitude: l.latitude,
+                    longitude: l.longitude,
+                    relevantText: l.relevantText
+                }));
+        }
+
         const pass = await PKPass.from(
             { model: modelPath, certificates: certs as any },
             {
@@ -743,6 +756,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                 foregroundColor: cleanColorToRgb(cardConfig.walletForegroundColor, 'rgb(0,0,0)'),
                 labelColor: cleanColorToRgb(cardConfig.walletLabelColor, 'rgb(0,0,0)'),
                 voided: isVoided,
+                ...(passLocations.length > 0 ? { locations: passLocations } : {})
             }
         );
 
@@ -896,22 +910,6 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             message: verificationUrl,
             messageEncoding: 'utf-8',
         });
-
-        if (cardConfig.locations && Array.isArray(cardConfig.locations) && cardConfig.locations.length > 0) {
-            const clubLocations = club.brandingConfig?.locations || [];
-            const passLocations = cardConfig.locations
-                .map((locId: string) => clubLocations.find((l: any) => l.id === locId))
-                .filter(Boolean)
-                .map((l: any) => ({
-                    latitude: l.latitude,
-                    longitude: l.longitude,
-                    relevantText: l.relevantText
-                }));
-
-            if (passLocations.length > 0) {
-                (pass as any).setLocations(...passLocations);
-            }
-        }
 
         console.log('Generating pass buffer for membership...');
         const buffer = pass.getAsBuffer();
