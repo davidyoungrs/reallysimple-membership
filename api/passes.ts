@@ -1,5 +1,5 @@
 import { db } from '../src/db/index.js';
-import { businessCards, users, memberships, clubs } from '../src/db/schema.js';
+import { businessCards, users, memberships, clubs, membershipTemplates } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { PKPass } from 'passkit-generator';
 import fs from 'fs';
@@ -657,16 +657,19 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         const results = await db.select({
             membership: memberships,
             club: clubs,
+            template: membershipTemplates,
         })
         .from(memberships)
         .innerJoin(clubs, eq(memberships.clubId, clubs.id))
+        .leftJoin(membershipTemplates, eq(memberships.templateId, membershipTemplates.id))
         .where(eq(memberships.slug, slug))
         .limit(1);
 
         if (results.length === 0) return res.status(404).send('Membership not found');
 
-        const { membership, club } = results[0];
+        const { membership, club, template } = results[0];
         const cardConfig = membership.cardConfig as any;
+        const templateConfig = template?.cardConfig as any;
 
         const teamId = process.env.APPLE_TEAM_ID;
         const passTypeId = process.env.APPLE_PASS_TYPE_ID;
@@ -727,14 +730,15 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         const isVoided = membership.status === 'expired' || membership.status === 'revoked';
 
         let passLocations: any[] = [];
-        if (cardConfig.locations && Array.isArray(cardConfig.locations) && cardConfig.locations.length > 0) {
+        const locIds = templateConfig?.locations || cardConfig.locations || [];
+        if (locIds && Array.isArray(locIds) && locIds.length > 0) {
             const clubLocations = club.brandingConfig?.locations || [];
-            passLocations = cardConfig.locations
+            passLocations = locIds
                 .map((locId: string) => clubLocations.find((l: any) => l.id === locId))
                 .filter(Boolean)
                 .map((l: any) => ({
-                    latitude: l.latitude,
-                    longitude: l.longitude,
+                    latitude: Number(l.latitude),
+                    longitude: Number(l.longitude),
                     relevantText: l.relevantText
                 }));
         }
