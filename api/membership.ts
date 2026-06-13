@@ -976,16 +976,24 @@ async function handleMemberships(
         
         // 1. Delete R2 Images
         try {
-            if (existingMembership.memberPhoto) {
-                const photoUrl = new URL(existingMembership.memberPhoto);
-                const key = photoUrl.pathname.substring(1); // remove leading slash
-                await deleteFromR2(key);
-            }
-            if (existingMembership.stripImageUrl) {
-                const stripUrl = new URL(existingMembership.stripImageUrl);
-                const key = stripUrl.pathname.substring(1);
-                await deleteFromR2(key);
-            }
+            const extractR2Key = (urlStr: string | null) => {
+                if (!urlStr) return null;
+                try {
+                    const url = new URL(urlStr, 'http://dummy.com');
+                    const keyParam = url.searchParams.get('key');
+                    if (keyParam) return keyParam;
+                    if (url.hostname.includes('r2.dev') || url.hostname.includes('cloudflarestorage')) {
+                        return url.pathname.substring(1);
+                    }
+                } catch { }
+                return null;
+            };
+
+            const photoKey = extractR2Key(existingMembership.memberPhoto);
+            if (photoKey) await deleteFromR2(photoKey);
+
+            const stripKey = extractR2Key(existingMembership.stripImageUrl);
+            if (stripKey) await deleteFromR2(stripKey);
         } catch (e) {
             console.error('Failed to delete R2 images during member deletion:', e);
         }
