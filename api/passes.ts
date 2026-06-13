@@ -39,17 +39,31 @@ function cleanPemString(pem: string): string {
     
     // Strip all non-base64 chars from the body
     const strippedB64 = rawBody.replace(/[^A-Za-z0-9+/=]/g, '');
+    let derBytes = Buffer.from(strippedB64, 'base64');
     
-    // Round-trip through Buffer to fix any DER corruption / bad padding
-    const derBytes = Buffer.from(strippedB64, 'base64');
+    // Pure-JS PKCS#8 to PKCS#1 conversion to bypass Vercel OpenSSL 3 bug.
+    // Unencrypted PKCS#8 RSA keys have a 26-byte ASN.1 wrapper before the PKCS#1 key sequence.
+    if (header === '-----BEGIN PRIVATE KEY-----') {
+        if (derBytes.length > 26 && 
+            derBytes[4] === 0x02 && derBytes[5] === 0x01 && derBytes[6] === 0x00 && // version 0
+            derBytes[7] === 0x30 && derBytes[8] === 0x0d && // AlgorithmIdentifier sequence
+            derBytes[9] === 0x06 && derBytes[10] === 0x09) { // OID
+            
+            // Extract the inner PKCS#1 key
+            derBytes = derBytes.subarray(26);
+            return formatPem('-----BEGIN RSA PRIVATE KEY-----', derBytes, '-----END RSA PRIVATE KEY-----');
+        }
+    }
+    
+    return formatPem(header, derBytes, footer);
+}
+
+function formatPem(header: string, derBytes: Buffer, footer: string): string {
     const cleanB64 = derBytes.toString('base64');
-    
-    // Format into standard 64-character lines
     const lines: string[] = [];
     for (let i = 0; i < cleanB64.length; i += 64) {
         lines.push(cleanB64.substring(i, i + 64));
     }
-    
     return `${header}\n${lines.join('\n')}\n${footer}`;
 }
 
@@ -88,18 +102,10 @@ function getCertContent(envVar: string, fileName: string): string | null {
     const certMatch = raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/);
     if (certMatch) return cleanPemString(certMatch[0]);
 
-    // For private keys: convert PKCS#8 to PKCS#1 because node-forge's
-    // decryptRsaPrivateKey() cannot parse unencrypted PKCS#8 keys.
+    // For private keys: pure-JS PKCS#8 to PKCS#1 conversion is handled inside cleanPemString
     const pkcs8Match = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/);
     if (pkcs8Match) {
-        const cleanedPkcs8 = cleanPemString(pkcs8Match[0]);
-        try {
-            const privKey = crypto.createPrivateKey({ key: cleanedPkcs8, format: 'pem', type: 'pkcs8' });
-            return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
-        } catch (e: any) {
-            console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
-            throw new Error(`Failed to convert PKCS#8 key to PKCS#1. Error: ${e.message}. The environment variable might be corrupt.`);
-        }
+        return cleanPemString(pkcs8Match[0]);
     }
 
     // Already PKCS#1 RSA key or some other format – just strip bag attributes
