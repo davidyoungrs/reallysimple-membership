@@ -71,9 +71,9 @@ function getCertContent(envVar: string, fileName: string): string | null {
         try {
             const privKey = crypto.createPrivateKey({ key: pkcs8Match[0], format: 'pem', type: 'pkcs8' });
             return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
-        } catch (e) {
+        } catch (e: any) {
             console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
-            return pkcs8Match[0]; // fall back and let the library fail with its own error
+            throw new Error(`PKCS#8 to PKCS#1 private key conversion failed: ${e.message || e}. Key matched length: ${pkcs8Match[0].length} chars. Raw key env length: ${raw.length} chars.`);
         }
     }
 
