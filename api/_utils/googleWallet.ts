@@ -47,8 +47,8 @@ export async function patchGoogleWalletObject(objectId: string, payload: any) {
 }
 
 export async function revokeGoogleWalletObject(objectId: string) {
-    // According to Google Wallet API, setting state to 'expired' or 'inactive' effectively revokes it
-    return await patchGoogleWalletObject(objectId, { state: 'expired' });
+    // According to Google Wallet API, setting state to 'inactive' effectively revokes it
+    return await patchGoogleWalletObject(objectId, { state: 'inactive' });
 }
 
 export function buildGoogleWalletMembershipObject(
@@ -122,7 +122,7 @@ export function buildGoogleWalletMembershipObject(
         ...(cardConfig.showMembershipNumber !== false ? {
             subheader: { defaultValue: { language: 'en-US', value: membership.membershipNumber } }
         } : {}),
-        state: isVoided ? 'expired' : 'active',
+        state: isVoided ? 'inactive' : 'active',
         textModulesData: textModules,
         barcode: {
             type: 'QR_CODE',

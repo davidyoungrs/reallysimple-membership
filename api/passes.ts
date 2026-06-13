@@ -605,7 +605,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                     cardTitle: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'SUBSCRIPTION LAPSED' : title } },
                     header: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'INACTIVE' : headerValue } },
                     subheader: { defaultValue: { language: 'en-US', value: effectiveTier === 'starter' ? 'Reactivate via app' : subheaderValue } },
-                    state: effectiveTier === 'starter' ? 'expired' : 'active',
+                    state: effectiveTier === 'starter' ? 'inactive' : 'active',
                     textModulesData: effectiveTier === 'starter' ? [] : textModules.slice(0, 10), // Limit to 10 modules
                     barcode: {
                         type: 'QR_CODE',
