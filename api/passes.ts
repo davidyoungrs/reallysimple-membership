@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import forge from 'node-forge';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
@@ -90,8 +91,8 @@ function getCertContent(envVar: string, fileName: string): string | null {
     if (pkcs8Match) {
         try {
             const cleanedKey = cleanPemString(pkcs8Match[0]);
-            const privKey = crypto.createPrivateKey(cleanedKey);
-            return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
+            const privateKey = forge.pki.privateKeyFromPem(cleanedKey);
+            return forge.pki.privateKeyToPem(privateKey);
         } catch (e: any) {
             console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
             throw new Error(`PKCS#8 to PKCS#1 private key conversion failed: ${e.message || e}. Key matched length: ${pkcs8Match[0].length} chars. Raw key env length: ${raw.length} chars.`);
