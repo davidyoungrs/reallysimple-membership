@@ -585,14 +585,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                     ...(user?.currentPeriodEnd && user.tier !== 'grandfathered' && user.tier !== 'business' ? {
                         validTimeInterval: {
                             end: {
-                                date: {
-                                    year: user.currentPeriodEnd.getFullYear(),
-                                    month: user.currentPeriodEnd.getMonth() + 1,
-                                    day: user.currentPeriodEnd.getDate(),
-                                    hours: user.currentPeriodEnd.getHours(),
-                                    minutes: user.currentPeriodEnd.getMinutes(),
-                                    seconds: user.currentPeriodEnd.getSeconds()
-                                }
+                                date: user.currentPeriodEnd.toISOString()
                             }
                         }
                     } : {}),
@@ -1028,14 +1021,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                     ...(membership.expiresAt ? {
                         validTimeInterval: {
                             end: {
-                                date: {
-                                    year: new Date(membership.expiresAt).getFullYear(),
-                                    month: new Date(membership.expiresAt).getMonth() + 1,
-                                    day: new Date(membership.expiresAt).getDate(),
-                                    hours: new Date(membership.expiresAt).getHours(),
-                                    minutes: new Date(membership.expiresAt).getMinutes(),
-                                    seconds: new Date(membership.expiresAt).getSeconds(),
-                                }
+                                date: new Date(membership.expiresAt).toISOString()
                             }
                         }
                     } : {}),
@@ -1074,8 +1060,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                                 { twoItems: { startItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["member_name"]' }] } }, endItem: { firstValue: { fields: [{ fieldPath: 'object.textModulesData["expiry_date"]' }] } } } }
                             ]
                         }
-                    },
-                    ...(passLocations.length > 0 ? { locations: passLocations } : {})
+                    }
                 }]
             }
         };
