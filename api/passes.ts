@@ -7,7 +7,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import forge from 'node-forge';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
 
@@ -30,30 +29,6 @@ const CERT_DIR = path.join(__dirname, 'certs');
  *  - Converting PKCS#8 private keys (-----BEGIN PRIVATE KEY-----) to PKCS#1
  *    RSA format (-----BEGIN RSA PRIVATE KEY-----) that node-forge can parse
  */
-function cleanPemString(pem: string): string {
-    const match = pem.match(/(-----BEGIN [\s\S]+?-----)(([\s\S]+?))(-----END [\s\S]+?-----)/)
-    if (!match) return pem;
-    
-    const header = match[1];
-    const rawBody = match[2];
-    const footer = match[4];
-    
-    // Strip all non-base64 chars from the body
-    const strippedB64 = rawBody.replace(/[^A-Za-z0-9+/=]/g, '');
-    
-    // Round-trip through Buffer to fix any DER corruption / bad padding
-    const derBytes = Buffer.from(strippedB64, 'base64');
-    const cleanB64 = derBytes.toString('base64');
-    
-    // Format into standard 64-character lines
-    const lines: string[] = [];
-    for (let i = 0; i < cleanB64.length; i += 64) {
-        lines.push(cleanB64.substring(i, i + 64));
-    }
-    
-    return `${header}\n${lines.join('\n')}\n${footer}`;
-}
-
 function getCertContent(envVar: string, fileName: string): string | null {
     let raw: string | null = null;
 
@@ -87,37 +62,27 @@ function getCertContent(envVar: string, fileName: string): string | null {
     // Strip any "Bag Attributes" / "Key Attributes" headers that macOS Keychain
     // exports prepend to the PEM block. We need only the PEM block itself.
     const certMatch = raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/);
-    if (certMatch) return cleanPemString(certMatch[0]);
+    if (certMatch) return certMatch[0];
 
     // For private keys: convert PKCS#8 to PKCS#1 because node-forge's
     // decryptRsaPrivateKey() cannot parse unencrypted PKCS#8 keys.
     const pkcs8Match = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/);
     if (pkcs8Match) {
         try {
-            // Extract and round-trip the raw base64 body through a Buffer to ensure clean DER bytes
-            const bodyMatch = pkcs8Match[0].match(/-----BEGIN PRIVATE KEY-----([\ \s\S]+?)-----END PRIVATE KEY-----/);
-            if (!bodyMatch) throw new Error('Could not extract PKCS#8 body');
-            const strippedB64 = bodyMatch[1].replace(/[^A-Za-z0-9+/=]/g, '');
-            const derBytes = Buffer.from(strippedB64, 'base64');
-            const cleanB64 = derBytes.toString('base64');
-            const lines: string[] = [];
-            for (let i = 0; i < cleanB64.length; i += 64) lines.push(cleanB64.substring(i, i + 64));
-            const cleanedPkcs8 = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
-            console.log(`[PassGen] Cleaned PKCS#8 key: ${cleanedPkcs8.length} chars, DER bytes: ${derBytes.length}`);
-            const privateKey = forge.pki.privateKeyFromPem(cleanedPkcs8);
-            return forge.pki.privateKeyToPem(privateKey);
-        } catch (e: any) {
+            const privKey = crypto.createPrivateKey({ key: pkcs8Match[0], format: 'pem', type: 'pkcs8' });
+            return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
+        } catch (e) {
             console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
-            throw new Error(`PKCS#8 to PKCS#1 private key conversion failed: ${e.message || e}. Key matched length: ${pkcs8Match[0].length} chars. Raw key env length: ${raw.length} chars.`);
+            return pkcs8Match[0]; // fall back and let the library fail with its own error
         }
     }
 
     // Already PKCS#1 RSA key or some other format – just strip bag attributes
     const rsaKeyMatch = raw.match(/-----BEGIN RSA PRIVATE KEY-----[\s\S]+?-----END RSA PRIVATE KEY-----/);
-    if (rsaKeyMatch) return cleanPemString(rsaKeyMatch[0]);
+    if (rsaKeyMatch) return rsaKeyMatch[0];
 
     const encKeyMatch = raw.match(/-----BEGIN ENCRYPTED PRIVATE KEY-----[\s\S]+?-----END ENCRYPTED PRIVATE KEY-----/);
-    if (encKeyMatch) return cleanPemString(encKeyMatch[0]);
+    if (encKeyMatch) return encKeyMatch[0];
 
     // No known block found — return as-is (may still work or produce a clear error)
     console.warn(`[PassGen] getCertContent(${envVar}): no recognisable PEM block found, returning raw value`);
