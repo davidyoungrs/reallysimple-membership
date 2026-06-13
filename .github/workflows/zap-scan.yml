@@ -1,0 +1,30 @@
+name: OWASP ZAP Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Run weekly on Sundays at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    name: Scan the web application
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'https://reallysimple-membership.vercel.app'
+          rules_file_name: '.github/zap/rules.tsv'
+          cmd_options: '-a'
+          fail_action: true
