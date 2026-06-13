@@ -759,10 +759,13 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                 backgroundColor: cleanColorToRgb(cardConfig.walletBackgroundColor, 'rgb(255,255,255)'),
                 foregroundColor: cleanColorToRgb(cardConfig.walletForegroundColor, 'rgb(0,0,0)'),
                 labelColor: cleanColorToRgb(cardConfig.walletLabelColor, 'rgb(0,0,0)'),
-                voided: isVoided,
-                ...(passLocations.length > 0 ? { locations: passLocations } : {})
+                voided: isVoided
             }
         );
+
+        if (passLocations.length > 0) {
+            pass.setLocations(...passLocations);
+        }
 
         if (membership.expiresAt) {
             (pass as any).setExpirationDate(new Date(membership.expiresAt));
