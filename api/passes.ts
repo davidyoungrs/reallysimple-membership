@@ -367,8 +367,8 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
         };
 
         await addImage(data.wallet?.logoUrl || data.logoUrl, 'logo.png');
-        if (data.wallet?.showStripImage !== false) {
-            await addImage(data.wallet?.stripImageUrl || '/wallet-strip.png', 'strip.png');
+        if (data.wallet?.showStripImage !== false && data.wallet?.stripImageUrl) {
+            await addImage(data.wallet.stripImageUrl, 'strip.png');
         }
 
         // --- FIELD POPULATION ---
@@ -527,14 +527,14 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
         };
 
         // Helper to find first non-data-uri logo
-        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback: string) => {
+        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback?: string) => {
             if (preferred && !preferred.startsWith('data:')) return toAbsoluteUrl(preferred);
             if (secondary && !secondary.startsWith('data:')) return toAbsoluteUrl(secondary);
-            return toAbsoluteUrl(fallback);
+            return fallback ? toAbsoluteUrl(fallback) : undefined;
         };
 
         const logoUrl = getValidUrl(card.wallet?.logoUrl, card.logoUrl, '/icon.png');
-        const heroUrl = getValidUrl(card.wallet?.stripImageUrl, '/wallet-strip.png', '/wallet-strip.png');
+        const heroUrl = getValidUrl(card.wallet?.stripImageUrl, undefined, undefined);
 
         if (card.wallet?.logoUrl?.startsWith('data:')) {
             console.warn(`[PassGen] Google Wallet does not support data URIs. Falling back for logo.`);
@@ -602,7 +602,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
                         sourceUri: { uri: logoUrl },
                         contentDescription: { defaultValue: { language: 'en-US', value: 'LOGO' } }
                     },
-                    ...(card.wallet?.showStripImage !== false ? {
+                    ...(card.wallet?.showStripImage !== false && heroUrl ? {
                         heroImage: {
                             sourceUri: { uri: heroUrl },
                             contentDescription: { defaultValue: { language: 'en-US', value: 'HERO' } }
@@ -836,7 +836,9 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         if (cardConfig.showClubLogo !== false) {
             await addImage(club.logoUrl || '/icon.png', 'logo.png');
         }
-        await addImage(membership.stripImageUrl || '/wallet-strip.png', 'strip.png');
+        if (membership.stripImageUrl) {
+            await addImage(membership.stripImageUrl, 'strip.png');
+        }
 
         if (!isVoided) {
             pass.headerFields.push({
@@ -971,14 +973,14 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
             return new URL(url, baseUrl).toString();
         };
 
-        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback: string) => {
+        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback?: string) => {
             if (preferred && !preferred.startsWith('data:')) return toAbsoluteUrl(preferred);
             if (secondary && !secondary.startsWith('data:')) return toAbsoluteUrl(secondary);
-            return toAbsoluteUrl(fallback);
+            return fallback ? toAbsoluteUrl(fallback) : undefined;
         };
 
         const logoUrl = getValidUrl(club.logoUrl, '/icon.png', '/icon.png');
-        const stripUrl = getValidUrl(membership.stripImageUrl, '/wallet-strip.png', '/wallet-strip.png');
+        const stripUrl = getValidUrl(membership.stripImageUrl, undefined, undefined);
 
         const title = club.name.substring(0, 50);
         const isVoided = membership.status === 'expired' || membership.status === 'revoked';
@@ -1026,10 +1028,12 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                         sourceUri: { uri: logoUrl },
                         contentDescription: { defaultValue: { language: 'en-US', value: 'LOGO' } }
                     },
-                    heroImage: {
-                        sourceUri: { uri: stripUrl },
-                        contentDescription: { defaultValue: { language: 'en-US', value: 'STRIP' } }
-                    },
+                    ...(stripUrl ? {
+                        heroImage: {
+                            sourceUri: { uri: stripUrl },
+                            contentDescription: { defaultValue: { language: 'en-US', value: 'STRIP' } }
+                        }
+                    } : {}),
                     cardTitle: { defaultValue: { language: 'en-US', value: isVoided ? 'INACTIVE MEMBERSHIP' : title } },
                     header: { defaultValue: { language: 'en-US', value: membership.membershipType } },
                     subheader: { defaultValue: { language: 'en-US', value: membership.membershipNumber } },
