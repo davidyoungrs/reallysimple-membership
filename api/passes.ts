@@ -953,9 +953,11 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
         const results = await db.select({
             membership: memberships,
             club: clubs,
+            template: membershipTemplates,
         })
         .from(memberships)
         .innerJoin(clubs, eq(memberships.clubId, clubs.id))
+        .leftJoin(membershipTemplates, eq(memberships.templateId, membershipTemplates.id))
         .where(eq(memberships.slug, slug))
         .limit(1);
 
@@ -986,6 +988,20 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
 
         const title = club.name.substring(0, 50);
         const isVoided = membership.status === 'expired' || membership.status === 'revoked';
+        
+        const templateConfig = template?.cardConfig as any;
+        const locIds = templateConfig?.locations || cardConfig.locations || [];
+        let passLocations: any[] = [];
+        if (locIds && Array.isArray(locIds) && locIds.length > 0) {
+            const clubLocations = club.brandingConfig?.locations || [];
+            passLocations = locIds
+                .map((locId: string) => clubLocations.find((l: any) => l.id === locId))
+                .filter(Boolean)
+                .map((l: any) => ({
+                    latitude: Number(l.latitude),
+                    longitude: Number(l.longitude)
+                }));
+        }
 
         const textModules: any[] = [
             { header: 'Member Name', body: membership.memberName, id: 'member_name' },
@@ -1035,9 +1051,14 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                             contentDescription: { defaultValue: { language: 'en-US', value: 'STRIP' } }
                         }
                     } : {}),
+                    ...(passLocations.length > 0 ? { locations: passLocations } : {}),
                     cardTitle: { defaultValue: { language: 'en-US', value: isVoided ? 'INACTIVE MEMBERSHIP' : title } },
-                    header: { defaultValue: { language: 'en-US', value: membership.membershipType } },
-                    subheader: { defaultValue: { language: 'en-US', value: membership.membershipNumber } },
+                    ...(cardConfig.showMembershipType !== false ? {
+                        header: { defaultValue: { language: 'en-US', value: membership.membershipType } }
+                    } : {}),
+                    ...(cardConfig.showMembershipNumber !== false ? {
+                        subheader: { defaultValue: { language: 'en-US', value: membership.membershipNumber } }
+                    } : {}),
                     state: isVoided ? 'expired' : 'active',
                     textModulesData: textModules,
                     barcode: {
