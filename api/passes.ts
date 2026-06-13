@@ -897,6 +897,22 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             messageEncoding: 'utf-8',
         });
 
+        if (cardConfig.locations && Array.isArray(cardConfig.locations) && cardConfig.locations.length > 0) {
+            const clubLocations = club.brandingConfig?.locations || [];
+            const passLocations = cardConfig.locations
+                .map((locId: string) => clubLocations.find((l: any) => l.id === locId))
+                .filter(Boolean)
+                .map((l: any) => ({
+                    latitude: l.latitude,
+                    longitude: l.longitude,
+                    relevantText: l.relevantText
+                }));
+
+            if (passLocations.length > 0) {
+                (pass as any).setLocations(...passLocations);
+            }
+        }
+
         console.log('Generating pass buffer for membership...');
         const buffer = pass.getAsBuffer();
 

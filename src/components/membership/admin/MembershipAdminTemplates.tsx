@@ -5,7 +5,7 @@ import { Loader2, Plus, Edit2, Layers, X, ShieldAlert } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminTemplates() {
-  const { club, templates, fetchTemplates, loadingTemplates } = useOutletContext<{
+  const { club, branding, templates, fetchTemplates, loadingTemplates } = useOutletContext<{
     club: any;
     branding: ClubBrandingConfig;
     templates: any[];
@@ -38,6 +38,7 @@ export function MembershipAdminTemplates() {
   const [showClubLogo, setShowClubLogo] = useState(true);
   const [showClubName, setShowClubName] = useState(true);
   const [fontFamily, setFontFamily] = useState('Inter');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,7 @@ export function MembershipAdminTemplates() {
     setShowClubLogo(true);
     setShowClubName(true);
     setFontFamily('Inter');
+    setSelectedLocations([]);
     setShowFormModal(true);
     setError(null);
   };
@@ -89,6 +91,7 @@ export function MembershipAdminTemplates() {
     setShowClubLogo(config.showClubLogo !== false);
     setShowClubName(config.showClubName !== false);
     setFontFamily(config.fontFamily || 'Inter');
+    setSelectedLocations(config.locations || []);
     
     setShowFormModal(true);
     setError(null);
@@ -114,6 +117,7 @@ export function MembershipAdminTemplates() {
         showClubLogo,
         showClubName,
         fontFamily,
+        locations: selectedLocations,
         stripConfig: (() => {
           let sConfig = editingTemplate?.cardConfig?.stripConfig || {
             bgType: 'color',
@@ -511,6 +515,43 @@ export function MembershipAdminTemplates() {
                       <option value="Roboto">Roboto</option>
                     </select>
                   </div>
+                </div>
+              </div>
+
+              {/* Geofenced Notifications */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-850 pb-1">Geofenced Notifications</h3>
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-400">Select which master club locations should trigger a lock-screen notification when a member with this card approaches.</p>
+                  {(!branding.locations || branding.locations.length === 0) ? (
+                    <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                      <p className="text-xs text-slate-500 italic">No master locations configured for this club.</p>
+                      <p className="text-[10px] text-slate-600 mt-1">Go back to the main Clubs page and edit the club to add Master Geofenced Locations.</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-2">
+                      {branding.locations.map((loc: any) => (
+                        <label key={loc.id} className="flex items-start gap-3 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={selectedLocations.includes(loc.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedLocations([...selectedLocations, loc.id]);
+                              } else {
+                                setSelectedLocations(selectedLocations.filter(id => id !== loc.id));
+                              }
+                            }}
+                            className="mt-0.5 w-4 h-4 accent-blue-500 rounded bg-slate-900 border-slate-700"
+                          />
+                          <div>
+                            <p className="text-xs font-bold text-slate-200">{loc.name}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5"><span className="font-semibold text-slate-500">Message:</span> "{loc.relevantText}"</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -1,11 +1,20 @@
 import { type StripConfig } from '../types.js';
 
+export interface MasterLocation {
+  id: string; // unique ID like a UUID
+  name: string; // e.g., "Main Clubhouse", "VIP Lounge"
+  latitude: number;
+  longitude: number;
+  relevantText: string; // Lock-screen notification message
+}
+
 export interface ClubBrandingConfig {
   primaryColor: string;      // Main accent
   secondaryColor: string;    // Secondary accent
   textColor: string;         // Default text
   backgroundColor: string;   // Page/card background
   fontFamily: string;        // Google Font name
+  locations?: MasterLocation[]; // Master list of geofenced locations for this club
 }
 
 export interface MembershipCardConfig {
@@ -24,6 +33,8 @@ export interface MembershipCardConfig {
   showClubName: boolean;
   // Fonts
   fontFamily: string;
+  // Geofencing: array of MasterLocation IDs selected for this template
+  locations?: string[];
 }
 
 export interface MembershipRecord {

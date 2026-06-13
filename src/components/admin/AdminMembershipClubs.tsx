@@ -24,6 +24,7 @@ export function AdminMembershipClubs() {
   const [textColor, setTextColor] = useState('#1f2937');
   const [backgroundColor, setBackgroundColor] = useState('#f3f4f6');
   const [fontFamily, setFontFamily] = useState('Inter');
+  const [locations, setLocations] = useState<any[]>([]);
   const [adminInput, setAdminInput] = useState('');
   const [adminsList, setAdminsList] = useState<string[]>([]);
   
@@ -118,6 +119,7 @@ export function AdminMembershipClubs() {
     setTextColor('#1f2937');
     setBackgroundColor('#f3f4f6');
     setFontFamily('Inter');
+    setLocations([]);
     setAdminsList([]);
     setAdminInput('');
     setEditingClub(null);
@@ -136,6 +138,7 @@ export function AdminMembershipClubs() {
     setTextColor(club.brandingConfig.textColor);
     setBackgroundColor(club.brandingConfig.backgroundColor);
     setFontFamily(club.brandingConfig.fontFamily || 'Inter');
+    setLocations(club.brandingConfig.locations || []);
     
     // Admins need to be fetched, but we can default to empty and let details pull them
     setAdminsList([]);
@@ -194,6 +197,7 @@ export function AdminMembershipClubs() {
           textColor,
           backgroundColor,
           fontFamily,
+          locations,
         },
         admins: adminsList
       };
@@ -623,6 +627,102 @@ export function AdminMembershipClubs() {
                       <option value="Playfair Display">Playfair Display (Serif)</option>
                     </select>
                   </div>
+                </div>
+              </div>
+
+              {/* Master Geofenced Locations */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b pb-1">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Master Geofenced Locations</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocations([...locations, {
+                        id: crypto.randomUUID(),
+                        name: 'New Location',
+                        latitude: 0,
+                        longitude: 0,
+                        relevantText: 'Welcome!'
+                      }]);
+                    }}
+                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Location
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  {locations.map((loc, idx) => (
+                    <div key={loc.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 relative">
+                      <button
+                        type="button"
+                        onClick={() => setLocations(locations.filter(l => l.id !== loc.id))}
+                        className="absolute top-3 right-3 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      
+                      <div className="grid grid-cols-2 gap-3 pr-6">
+                        <div className="col-span-2">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase">Location Name</label>
+                          <input
+                            type="text"
+                            value={loc.name}
+                            onChange={(e) => {
+                              const newLocs = [...locations];
+                              newLocs[idx].name = e.target.value;
+                              setLocations(newLocs);
+                            }}
+                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase">Latitude</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={loc.latitude}
+                            onChange={(e) => {
+                              const newLocs = [...locations];
+                              newLocs[idx].latitude = parseFloat(e.target.value) || 0;
+                              setLocations(newLocs);
+                            }}
+                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase">Longitude</label>
+                          <input
+                            type="number"
+                            step="any"
+                            value={loc.longitude}
+                            onChange={(e) => {
+                              const newLocs = [...locations];
+                              newLocs[idx].longitude = parseFloat(e.target.value) || 0;
+                              setLocations(newLocs);
+                            }}
+                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase">Lock-screen Notification Message</label>
+                          <input
+                            type="text"
+                            value={loc.relevantText}
+                            onChange={(e) => {
+                              const newLocs = [...locations];
+                              newLocs[idx].relevantText = e.target.value;
+                              setLocations(newLocs);
+                            }}
+                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {locations.length === 0 && (
+                    <p className="text-xs text-slate-400 italic">No master locations defined. Add locations here to make them available for templates.</p>
+                  )}
                 </div>
               </div>
 
