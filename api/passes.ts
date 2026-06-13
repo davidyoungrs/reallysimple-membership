@@ -29,6 +29,26 @@ const CERT_DIR = path.join(__dirname, 'certs');
  *  - Converting PKCS#8 private keys (-----BEGIN PRIVATE KEY-----) to PKCS#1
  *    RSA format (-----BEGIN RSA PRIVATE KEY-----) that node-forge can parse
  */
+function cleanPemString(pem: string): string {
+    const match = pem.match(/(-----BEGIN [\s\S]+?-----)([\s\S]+?)(-----END [\s\S]+?-----)/);
+    if (!match) return pem;
+    
+    const header = match[1];
+    const body = match[2];
+    const footer = match[3];
+    
+    // Clean the body: remove all whitespace and invalid base64 characters
+    const cleanedBody = body.replace(/[^A-Za-z0-9+/=]/g, '');
+    
+    // Split into 64-character lines (standard PEM formatting)
+    const lines: string[] = [];
+    for (let i = 0; i < cleanedBody.length; i += 64) {
+        lines.push(cleanedBody.substring(i, i + 64));
+    }
+    
+    return `${header}\n${lines.join('\n')}\n${footer}`;
+}
+
 function getCertContent(envVar: string, fileName: string): string | null {
     let raw: string | null = null;
 
@@ -62,14 +82,15 @@ function getCertContent(envVar: string, fileName: string): string | null {
     // Strip any "Bag Attributes" / "Key Attributes" headers that macOS Keychain
     // exports prepend to the PEM block. We need only the PEM block itself.
     const certMatch = raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/);
-    if (certMatch) return certMatch[0];
+    if (certMatch) return cleanPemString(certMatch[0]);
 
     // For private keys: convert PKCS#8 to PKCS#1 because node-forge's
     // decryptRsaPrivateKey() cannot parse unencrypted PKCS#8 keys.
     const pkcs8Match = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/);
     if (pkcs8Match) {
         try {
-            const privKey = crypto.createPrivateKey({ key: pkcs8Match[0], format: 'pem', type: 'pkcs8' });
+            const cleanedKey = cleanPemString(pkcs8Match[0]);
+            const privKey = crypto.createPrivateKey(cleanedKey);
             return privKey.export({ format: 'pem', type: 'pkcs1' }) as string;
         } catch (e: any) {
             console.error('[PassGen] PKCS#8->PKCS#1 conversion failed:', e);
@@ -79,10 +100,10 @@ function getCertContent(envVar: string, fileName: string): string | null {
 
     // Already PKCS#1 RSA key or some other format – just strip bag attributes
     const rsaKeyMatch = raw.match(/-----BEGIN RSA PRIVATE KEY-----[\s\S]+?-----END RSA PRIVATE KEY-----/);
-    if (rsaKeyMatch) return rsaKeyMatch[0];
+    if (rsaKeyMatch) return cleanPemString(rsaKeyMatch[0]);
 
     const encKeyMatch = raw.match(/-----BEGIN ENCRYPTED PRIVATE KEY-----[\s\S]+?-----END ENCRYPTED PRIVATE KEY-----/);
-    if (encKeyMatch) return encKeyMatch[0];
+    if (encKeyMatch) return cleanPemString(encKeyMatch[0]);
 
     // No known block found — return as-is (may still work or produce a clear error)
     console.warn(`[PassGen] getCertContent(${envVar}): no recognisable PEM block found, returning raw value`);
