@@ -74,15 +74,15 @@ export function MembershipCardCreator() {
           if (config?.stripConfig) {
             let s = { ...config.stripConfig };
             let needsUpdate = false;
-            if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26 || s.photoConfig.x === 32)) {
+            if (s.photoConfig && [22, 23, 26, 32].includes(s.photoConfig.x)) {
               s.photoConfig = {
                 ...s.photoConfig,
-                x: 23,
+                x: 32,
                 scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
               };
               needsUpdate = true;
             }
-            if (s.textConfig && (s.textConfig.nameX === 38 || s.textConfig.nameX === 48)) {
+            if (s.textConfig && [38, 40, 48].includes(s.textConfig.nameX)) {
               s.textConfig = {
                 ...s.textConfig,
                 nameX: 40
@@ -184,15 +184,15 @@ export function MembershipCardCreator() {
       if (config?.stripConfig) {
         let s = { ...config.stripConfig };
         let needsUpdate = false;
-        if (s.photoConfig && (s.photoConfig.x === 22 || s.photoConfig.x === 26 || s.photoConfig.x === 32)) {
+        if (s.photoConfig && [22, 23, 26, 32].includes(s.photoConfig.x)) {
           s.photoConfig = {
             ...s.photoConfig,
-            x: 23,
+            x: 32,
             scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
           };
           needsUpdate = true;
         }
-        if (s.textConfig && (s.textConfig.nameX === 38 || s.textConfig.nameX === 48)) {
+        if (s.textConfig && [38, 40, 48].includes(s.textConfig.nameX)) {
           s.textConfig = {
             ...s.textConfig,
             nameX: 40

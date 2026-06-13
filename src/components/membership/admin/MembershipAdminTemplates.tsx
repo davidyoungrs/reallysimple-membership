@@ -143,23 +143,23 @@ export function MembershipAdminTemplates() {
             photoConfig: {
               show: showMemberPhoto,
               position: 'left',
-              x: 23,
+              x: 32,
               y: 50,
               scale: 90,
               border: 'thin',
             },
           };
-          if (sConfig.photoConfig && (sConfig.photoConfig.x === 22 || sConfig.photoConfig.x === 26 || sConfig.photoConfig.x === 32)) {
+          if (sConfig.photoConfig && [22, 23, 26, 32].includes(sConfig.photoConfig.x)) {
             sConfig = {
               ...sConfig,
               photoConfig: {
                 ...sConfig.photoConfig,
-                x: 23,
+                x: 32,
                 scale: sConfig.photoConfig.scale === 100 ? 90 : sConfig.photoConfig.scale
               }
             };
           }
-          if (sConfig.textConfig && (sConfig.textConfig.nameX === 38 || sConfig.textConfig.nameX === 48)) {
+          if (sConfig.textConfig && [38, 40, 48].includes(sConfig.textConfig.nameX)) {
             sConfig = {
               ...sConfig,
               textConfig: {
