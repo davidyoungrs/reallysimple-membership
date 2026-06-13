@@ -506,14 +506,19 @@ export function MembershipCardCreator() {
 
   const downloadGoogleWallet = async () => {
     if (generatedPasses?.googleUrl) {
+      // Open empty window immediately to bypass popup blocker
+      const newWindow = window.open('', '_blank');
       try {
         const res = await fetch(generatedPasses.googleUrl);
         const data = await res.json();
-        if (data.saveUrl) {
-          window.location.href = data.saveUrl;
+        if (data.saveUrl && newWindow) {
+          newWindow.location.href = data.saveUrl;
+        } else if (newWindow) {
+          newWindow.close();
         }
       } catch (err) {
         console.error('Failed to generate Google Wallet link', err);
+        if (newWindow) newWindow.close();
       }
     }
   };
