@@ -143,7 +143,7 @@ export function MembershipAdminTemplates() {
             photoConfig: {
               show: showMemberPhoto,
               position: 'left',
-              x: 32,
+              x: 23,
               y: 50,
               scale: 90,
               border: 'thin',
@@ -154,7 +154,7 @@ export function MembershipAdminTemplates() {
               ...sConfig,
               photoConfig: {
                 ...sConfig.photoConfig,
-                x: 32,
+                x: 23,
                 scale: sConfig.photoConfig.scale === 100 ? 90 : sConfig.photoConfig.scale
               }
             };

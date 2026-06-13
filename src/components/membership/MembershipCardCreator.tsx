@@ -77,7 +77,7 @@ export function MembershipCardCreator() {
             if (s.photoConfig && [22, 23, 26, 32].includes(s.photoConfig.x)) {
               s.photoConfig = {
                 ...s.photoConfig,
-                x: 32,
+                x: 23,
                 scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
               };
               needsUpdate = true;
@@ -187,7 +187,7 @@ export function MembershipCardCreator() {
         if (s.photoConfig && [22, 23, 26, 32].includes(s.photoConfig.x)) {
           s.photoConfig = {
             ...s.photoConfig,
-            x: 32,
+            x: 23,
             scale: s.photoConfig.scale === 100 ? 90 : s.photoConfig.scale
           };
           needsUpdate = true;
