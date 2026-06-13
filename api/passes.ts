@@ -884,11 +884,6 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                 value: membership.memberName,
             });
 
-            pass.backFields.push({
-                key: 'member-email',
-                label: 'Email Address',
-                value: membership.memberEmail,
-            });
 
             if (membership.expiresAt) {
                 pass.backFields.push({
@@ -994,7 +989,6 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
 
         const textModules: any[] = [
             { header: 'Member Name', body: membership.memberName, id: 'member_name' },
-            { header: 'Email Address', body: membership.memberEmail, id: 'member_email' },
             { header: 'Status', body: membership.status.toUpperCase(), id: 'member_status' },
         ];
 
