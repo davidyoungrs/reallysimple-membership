@@ -42,6 +42,8 @@ export function generateMembershipNumber(format: string, clubSlug: string, membe
     return result;
 }
 
+import { buildGoogleWalletMembershipObject, patchGoogleWalletObject } from './_utils/googleWallet.js';
+
 export async function syncMembershipWallet(membershipUid: string) {
     try {
         const devices = await db.select({
@@ -74,9 +76,41 @@ export async function syncMembershipWallet(membershipUid: string) {
                 console.error(`[APNs-Membership] Failed push to ${device.pushToken.substring(0, 8)}:`, pushErr);
             }
         }
-        console.log(`[APNs-Membership] Pushed updates to ${successCount}/${devices.length} devices for membership UID ${membershipUid}`);
+        if (devices.length > 0) {
+            console.log(`[APNs-Membership] Pushed updates to ${successCount}/${devices.length} devices for membership UID ${membershipUid}`);
+        }
+
+        // --- Google Wallet Sync ---
+        try {
+            const GOOGLE_ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID?.trim();
+            if (GOOGLE_ISSUER_ID) {
+                const results = await db.select({
+                    membership: memberships,
+                    club: clubs,
+                    template: membershipTemplates,
+                })
+                .from(memberships)
+                .innerJoin(clubs, eq(memberships.clubId, clubs.id))
+                .leftJoin(membershipTemplates, eq(memberships.templateId, membershipTemplates.id))
+                .where(eq(memberships.uid, membershipUid))
+                .limit(1);
+
+                if (results.length > 0) {
+                    const { membership, club, template } = results[0];
+                    const baseUrl = 'https://reallysimple-membership.vercel.app';
+                    const genericObject = buildGoogleWalletMembershipObject(membership, club, template, baseUrl, GOOGLE_ISSUER_ID);
+                    
+                    // The objectId is the id of the genericObject
+                    await patchGoogleWalletObject(genericObject.id, genericObject);
+                    console.log(`[GoogleWallet-Membership] Pushed update to Google Wallet for UID ${membershipUid}`);
+                }
+            }
+        } catch (gErr) {
+            console.error('[GoogleWallet-Membership] Sync error:', gErr);
+        }
+
     } catch (err) {
-        console.error('[APNs-Membership] Sync error:', err);
+        console.error('[Wallet-Sync] Overall sync error:', err);
     }
 }
 

@@ -1,5 +1,6 @@
 import { db } from '../src/db/index.js';
 import { businessCards, users, memberships, clubs, membershipTemplates } from '../src/db/schema.js';
+import { buildGoogleWalletMembershipObject } from './_utils/googleWallet.js';
 import { eq } from 'drizzle-orm';
 import { PKPass } from 'passkit-generator';
 import fs from 'fs';
@@ -960,28 +961,10 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
         const cardConfig = membership.cardConfig as any;
 
         const classId = `${GOOGLE_ISSUER_ID}.contact-tree-membership-v1`;
-        const objectId = `${GOOGLE_ISSUER_ID}.${membership.uid.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}`;
 
         const baseUrl = 'https://reallysimple-membership.vercel.app';
+        const genericObject = buildGoogleWalletMembershipObject(membership, club, template, baseUrl, GOOGLE_ISSUER_ID);
 
-        const toAbsoluteUrl = (url: string) => {
-            if (!url || url.startsWith('data:')) return '';
-            if (url.startsWith('http')) return url;
-            return new URL(url, baseUrl).toString();
-        };
-
-        const getValidUrl = (preferred: string | undefined, secondary: string | undefined, fallback?: string) => {
-            if (preferred && !preferred.startsWith('data:')) return toAbsoluteUrl(preferred);
-            if (secondary && !secondary.startsWith('data:')) return toAbsoluteUrl(secondary);
-            return fallback ? toAbsoluteUrl(fallback) : undefined;
-        };
-
-        const logoUrl = getValidUrl(club.logoUrl, '/icon.png', '/icon.png');
-        const stripUrl = getValidUrl(membership.stripImageUrl, undefined, undefined);
-
-        const title = club.name.substring(0, 50);
-        const isVoided = membership.status === 'expired' || membership.status === 'revoked';
-        
         const templateConfig = template?.cardConfig as any;
         const locIds = templateConfig?.locations || cardConfig.locations || [];
         let passLocations: any[] = [];
@@ -996,62 +979,13 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
                 }));
         }
 
-        const textModules: any[] = [
-            { header: 'Member Name', body: membership.memberName, id: 'member_name' },
-            { header: 'Status', body: membership.status.toUpperCase(), id: 'member_status' },
-        ];
-
-        if (membership.expiresAt) {
-            textModules.push({
-                header: 'Expiry Date',
-                body: new Date(membership.expiresAt).toLocaleDateString(),
-                id: 'expiry_date'
-            });
-        }
-
         const newPass = {
             iss: GOOGLE_SERVICE_ACCOUNT_EMAIL,
             aud: 'google',
             typ: 'savetowallet',
             iat: Math.floor(Date.now() / 1000),
             payload: {
-                genericObjects: [{
-                    id: objectId,
-                    classId: classId,
-                    ...(membership.expiresAt ? {
-                        validTimeInterval: {
-                            end: {
-                                date: new Date(membership.expiresAt).toISOString()
-                            }
-                        }
-                    } : {}),
-                    genericType: 'GENERIC_TYPE_UNSPECIFIED',
-                    hexBackgroundColor: cardConfig.walletBackgroundColor || '#4f46e5',
-                    logo: {
-                        sourceUri: { uri: logoUrl },
-                        contentDescription: { defaultValue: { language: 'en-US', value: 'LOGO' } }
-                    },
-                    ...(stripUrl ? {
-                        heroImage: {
-                            sourceUri: { uri: stripUrl },
-                            contentDescription: { defaultValue: { language: 'en-US', value: 'STRIP' } }
-                        }
-                    } : {}),
-                    cardTitle: { defaultValue: { language: 'en-US', value: isVoided ? 'INACTIVE MEMBERSHIP' : title } },
-                    ...(cardConfig.showMembershipType !== false ? {
-                        header: { defaultValue: { language: 'en-US', value: membership.membershipType } }
-                    } : {}),
-                    ...(cardConfig.showMembershipNumber !== false ? {
-                        subheader: { defaultValue: { language: 'en-US', value: membership.membershipNumber } }
-                    } : {}),
-                    state: isVoided ? 'expired' : 'active',
-                    textModulesData: textModules,
-                    barcode: {
-                        type: 'QR_CODE',
-                        value: `${baseUrl}/membership/${membership.slug}`,
-                        alternateText: 'Scan to Verify'
-                    }
-                }],
+                genericObjects: [genericObject],
                 genericClasses: [{
                     id: classId,
                     classTemplateInfo: {
