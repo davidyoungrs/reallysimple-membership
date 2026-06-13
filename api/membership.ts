@@ -937,15 +937,43 @@ async function handleMemberships(
         const hasAccess = await checkIsClubAdmin(existingMembership.clubId);
         if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
-        // Revoke: Update status to 'revoked'
+        // Scrub & Hide Deletion
+        const { deleteFromR2 } = await import('../src/utils/storage.js');
+        
+        // 1. Delete R2 Images
+        try {
+            if (existingMembership.memberPhoto) {
+                const photoUrl = new URL(existingMembership.memberPhoto);
+                const key = photoUrl.pathname.substring(1); // remove leading slash
+                await deleteFromR2(key);
+            }
+            if (existingMembership.stripImageUrl) {
+                const stripUrl = new URL(existingMembership.stripImageUrl);
+                const key = stripUrl.pathname.substring(1);
+                await deleteFromR2(key);
+            }
+        } catch (e) {
+            console.error('Failed to delete R2 images during member deletion:', e);
+        }
+
+        // 2. Scrub Personal Data & set status to 'revoked'
         const [revokedMembership] = await db.update(memberships)
-            .set({ status: 'revoked', updatedAt: new Date() })
+            .set({ 
+                memberName: 'Deleted Member',
+                memberEmail: 'deleted@example.com',
+                memberPhone: null,
+                memberPhoto: null,
+                stripImageUrl: null,
+                status: 'revoked', 
+                updatedAt: new Date() 
+            })
             .where(eq(memberships.id, id))
             .returning();
 
+        // 3. Trigger Apple Wallet Sync to push the voided/scrubbed pass to phones
         await syncMembershipWallet(existingMembership.uid);
 
-        return res.status(200).json({ success: true, membership: revokedMembership, message: 'Membership status set to revoked' });
+        return res.status(200).json({ success: true, membership: revokedMembership, message: 'Member deleted, data scrubbed, and pass revoked' });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

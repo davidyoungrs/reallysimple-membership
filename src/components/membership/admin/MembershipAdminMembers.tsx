@@ -65,6 +65,11 @@ export function MembershipAdminMembers() {
 
   // Search/Filter logic
   const filteredMembers = members.filter(m => {
+    // Hide scrubbed/deleted members completely from the UI
+    if (m.memberName === 'Deleted Member' && m.memberEmail === 'deleted@example.com') {
+      return false;
+    }
+
     const matchesQuery = 
       m.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.memberEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,9 +80,9 @@ export function MembershipAdminMembers() {
     return matchesQuery && matchesStatus;
   });
 
-  // Action: Revoke
+  // Action: Delete (Scrub & Hide)
   const handleRevoke = async (id: number) => {
-    if (!window.confirm('Are you sure you want to revoke this membership? This will render the Wallet passes inactive.')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this member? This will wipe their data and images from the server and revoke their Wallet passes.')) return;
     
     try {
       const token = await getToken();
