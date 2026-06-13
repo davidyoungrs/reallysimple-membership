@@ -29,6 +29,7 @@ dist-ssr
 *.p12
 *.cer
 *.key
+*.p8
 
 # Temporary artifacts
 *.pkpass

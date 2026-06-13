@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-13 (Session 23) | `8bf43ed` |
+| 2026-06-13 (Session 24) | `main` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -12,17 +12,24 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is now in an **optimized, cleaned-up, and feature-rich** state. We have completed several major upgrades:
+The platform is now in a **secure, optimized, cleaned-up, and feature-rich** state. We have completed several major upgrades:
 
-1. **Custom Multi-level Numbering System**: Designed and implemented a dynamic serial/numbering generator supporting segment tokens like `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` (e.g. `{NUMBER:4}` for 4-digit auto-incrementing padding). Built a live preview builder component in the admin club dashboard settings.
-2. **"Member Since" Header Slot**: Added a database column `member_since` (Neon Postgres), integrated it into Apple Wallet pass generation (`headerFields` top-right slot), updated member creation/editing forms, CSV bulk registration mappings, and rendered the preview on the design/creator cards.
-3. **Transition Speed Optimization (Caching)**: Promoted memberships, templates, and dashboard metrics fetching to `MembershipAdminLayout` context. Sub-menus now retrieve cached data instead of querying database/API endpoints on every navigation transition, resolving navigation slowness.
-4. **CSV Bulk Template Download**: Provided a downloadable CSV blank template pre-populated with format guidelines directly on the admin members dashboard.
-5. **Legacy Code Decommissioning**: Removed 34 unused files (legacy components and serverless functions inherited from the digital business cards repository) to optimize performance, clean up imports, and reduce production bundle footprints.
+1. **Secret Scanning & Security Cleanup**: Scanned the codebase for hardcoded keys, passwords, and tokens. Removed sensitive Apple Wallet certs and APNs private keys from Git tracking to ensure zero credentials are exposed or committed.
+2. **Custom Multi-level Numbering System**: Designed and implemented a dynamic serial/numbering generator supporting segment tokens like `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` (e.g. `{NUMBER:4}` for 4-digit auto-incrementing padding). Built a live preview builder component in the admin club dashboard settings.
+3. **"Member Since" Header Slot**: Added a database column `member_since` (Neon Postgres), integrated it into Apple Wallet pass generation (`headerFields` top-right slot), updated member creation/editing forms, CSV bulk registration mappings, and rendered the preview on the design/creator cards.
+4. **Transition Speed Optimization (Caching)**: Promoted memberships, templates, and dashboard metrics fetching to `MembershipAdminLayout` context. Sub-menus now retrieve cached data instead of querying database/API endpoints on every navigation transition, resolving navigation slowness.
+5. **CSV Bulk Template Download**: Provided a downloadable CSV blank template pre-populated with format guidelines directly on the admin members dashboard.
+6. **Legacy Code Decommissioning**: Removed 34 unused files (legacy components and serverless functions inherited from the digital business cards repository) to optimize performance, clean up imports, and reduce production bundle footprints.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Security & Git Cleanup (Session 24)
+
+- [x] **Ignored *.p8 Certificate Format**: Updated `.gitignore` to block `.p8` files, ensuring APNs private keys are never committed.
+- [x] **Untracked Sensitive Certificates**: Removed `apns.p8`, `signerKey.pem`, `wwdrKey.pem`, `signerCert.pem`, `wwdr.pem`, and `AppleWWDRCAG4.cer` from Git tracking.
+- [x] **Configured Environment Variable Fallbacks**: Verified that the backend code successfully loads cert/key details from `APPLE_APNS_AUTH_KEY`, `WALLET_WWDR_CERT`, `WALLET_SIGNER_CERT`, and `WALLET_SIGNER_KEY` variables when local files are deleted.
 
 ### Advanced Features & Performance Optimization (Session 23)
 
@@ -91,9 +98,14 @@ The platform is now in an **optimized, cleaned-up, and feature-rich** state. We 
 
 ## ▶️ HOW TO RESUME
 
-1. **Verify Build Health:** `npm run build`
-2. **Launch Local Server:** `npm run dev -- --port 5173`
-3. **Verify CSV Template & Import:** Check if the CSV template download matches the expected import headers.
+1. **Configure Production Credentials**: Ensure the following variables are uploaded to Vercel/production environment:
+   - `APPLE_APNS_AUTH_KEY` (Contents of `apns.p8`)
+   - `WALLET_WWDR_CERT` (Contents of `wwdr.pem`)
+   - `WALLET_SIGNER_CERT` (Contents of `signerCert.pem`)
+   - `WALLET_SIGNER_KEY` (Contents of `signerKey.pem`)
+2. **Verify Build Health:** `npm run build`
+3. **Launch Local Server:** `npm run dev -- --port 5173`
+4. **Verify CSV Template & Import:** Check if the CSV template download matches the expected import headers.
 
 ---
 
