@@ -301,23 +301,22 @@ export async function handleApplePass(req: VercelRequest, res: VercelResponse, s
             if (!url) return;
             try {
                 if (url.startsWith('/api/public') || url.includes('/api/public?')) {
-                    const urlObj = new URL(url, 'http://localhost');
-                    const key = urlObj.searchParams.get('key');
-                    if (key) {
-                        const { getFromR2 } = await import('../src/utils/storage.js');
-                        const s3Response = await getFromR2(key);
-                        if (s3Response.Body) {
-                            const buffer = Buffer.from(await s3Response.Body.transformToByteArray());
-                            pass.addBuffer(name, buffer);
-                            if (name === 'logo.png') {
-                                pass.addBuffer('logo@2x.png', buffer);
-                                pass.addBuffer('logo@3x.png', buffer);
-                            } else if (name === 'strip.png') {
-                                pass.addBuffer('strip@2x.png', buffer);
-                                pass.addBuffer('strip@3x.png', buffer);
-                            }
-                            return;
+                    const protocol = host.includes('localhost') ? 'http' : 'https';
+                    const absoluteUrl = `${protocol}://${host}${url}`;
+                    const response = await fetch(absoluteUrl);
+                    if (response.ok) {
+                        const buffer = Buffer.from(await response.arrayBuffer());
+                        pass.addBuffer(name, buffer);
+                        if (name === 'logo.png') {
+                            pass.addBuffer('logo@2x.png', buffer);
+                            pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
+                        return;
+                    } else {
+                        console.error(`[PassGen] Failed to fetch image via HTTP proxy ${absoluteUrl}: status ${response.status}`);
                     }
                 }
 
@@ -771,23 +770,22 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
             if (!url) return;
             try {
                 if (url.startsWith('/api/public') || url.includes('/api/public?')) {
-                    const urlObj = new URL(url, 'http://localhost');
-                    const key = urlObj.searchParams.get('key');
-                    if (key) {
-                        const { getFromR2 } = await import('../src/utils/storage.js');
-                        const s3Response = await getFromR2(key);
-                        if (s3Response.Body) {
-                            const buffer = Buffer.from(await s3Response.Body.transformToByteArray());
-                            pass.addBuffer(name, buffer);
-                            if (name === 'logo.png') {
-                                pass.addBuffer('logo@2x.png', buffer);
-                                pass.addBuffer('logo@3x.png', buffer);
-                            } else if (name === 'strip.png') {
-                                pass.addBuffer('strip@2x.png', buffer);
-                                pass.addBuffer('strip@3x.png', buffer);
-                            }
-                            return;
+                    const protocol = host.includes('localhost') ? 'http' : 'https';
+                    const absoluteUrl = `${protocol}://${host}${url}`;
+                    const response = await fetch(absoluteUrl);
+                    if (response.ok) {
+                        const buffer = Buffer.from(await response.arrayBuffer());
+                        pass.addBuffer(name, buffer);
+                        if (name === 'logo.png') {
+                            pass.addBuffer('logo@2x.png', buffer);
+                            pass.addBuffer('logo@3x.png', buffer);
+                        } else if (name === 'strip.png') {
+                            pass.addBuffer('strip@2x.png', buffer);
+                            pass.addBuffer('strip@3x.png', buffer);
                         }
+                        return;
+                    } else {
+                        console.error(`[PassGen-Membership] Failed to fetch image via HTTP proxy ${absoluteUrl}: status ${response.status}`);
                     }
                 }
 

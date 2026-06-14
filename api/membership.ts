@@ -10,7 +10,13 @@ export function normalizeR2Url(url: string | null | undefined): string | null {
     if (url.includes('.r2.dev/')) {
         const parts = url.split('.r2.dev/');
         if (parts.length > 1) {
-            return `/api/public?resource=asset&key=${parts[1]}`;
+            const key = parts[1];
+            const customDomain = process.env.R2_CUSTOM_DOMAIN?.trim();
+            if (customDomain) {
+                const cleanDomain = customDomain.replace(/\/$/, '');
+                return `${cleanDomain}/${key}`;
+            }
+            return `/api/public?resource=asset&key=${key}`;
         }
     }
     return url;
@@ -919,17 +925,70 @@ async function handleMemberships(
 
         const hasAccess = await checkIsClubAdmin(existingMembership.clubId);
 
+        // Helper to check and cleanup replaced files in R2
+        const checkAndCleanupReplacedFiles = async (
+            oldPhoto: string | null,
+            newPhoto: string | undefined | null,
+            oldStrip: string | null,
+            newStrip: string | undefined | null
+        ) => {
+            try {
+                const extractR2Key = (urlStr: string | null) => {
+                    if (!urlStr) return null;
+                    try {
+                        const url = new URL(urlStr, 'http://dummy.com');
+                        const keyParam = url.searchParams.get('key');
+                        if (keyParam) return keyParam;
+                        if (url.hostname.includes('r2.dev') || url.hostname.includes('cloudflarestorage')) {
+                            return url.pathname.substring(1);
+                        }
+                    } catch { }
+                    return null;
+                };
+
+                const keysToDelete: string[] = [];
+
+                if (newPhoto !== undefined && newPhoto !== oldPhoto && oldPhoto) {
+                    const key = extractR2Key(oldPhoto);
+                    if (key) keysToDelete.push(key);
+                }
+
+                if (newStrip !== undefined && newStrip !== oldStrip && oldStrip) {
+                    const key = extractR2Key(oldStrip);
+                    if (key) keysToDelete.push(key);
+                }
+
+                if (keysToDelete.length > 0) {
+                    const { deleteFromR2 } = await import('../src/utils/storage.js');
+                    for (const key of keysToDelete) {
+                        console.log(`[R2-Cleanup] Deleting replaced file key: ${key}`);
+                        await deleteFromR2(key).catch(e => console.error(`Failed to delete key ${key}:`, e));
+                    }
+                }
+            } catch (err) {
+                console.error('[R2-Cleanup] Error during R2 file cleanup:', err);
+            }
+        };
+
         // Role restriction: Member themselves can ONLY update memberPhoto and stripImageUrl
         if (!hasAccess) {
             if (existingMembership.memberEmail !== authenticatedUserEmail) {
                 return res.status(403).json({ error: 'Forbidden: Access denied' });
             }
 
+            const oldPhoto = existingMembership.memberPhoto;
+            const oldStrip = existingMembership.stripImageUrl;
+            const newPhoto = memberPhoto || existingMembership.memberPhoto;
+            const newStrip = stripImageUrl || existingMembership.stripImageUrl;
+
+            // Clean up replaced files asynchronously
+            checkAndCleanupReplacedFiles(oldPhoto, newPhoto, oldStrip, newStrip);
+
             // Member updating their own photo
             const [updatedMembership] = await db.update(memberships)
                 .set({
-                    memberPhoto: memberPhoto || existingMembership.memberPhoto,
-                    stripImageUrl: stripImageUrl || existingMembership.stripImageUrl,
+                    memberPhoto: newPhoto,
+                    stripImageUrl: newStrip,
                     updatedAt: new Date(),
                 })
                 .where(eq(memberships.id, membershipId))
@@ -948,6 +1007,14 @@ async function handleMemberships(
                 return res.status(400).json({ error: 'Membership slug already in use' });
             }
         }
+
+        // Clean up replaced files asynchronously
+        checkAndCleanupReplacedFiles(
+            existingMembership.memberPhoto,
+            memberPhoto,
+            existingMembership.stripImageUrl,
+            stripImageUrl
+        );
 
         const [updatedMembership] = await db.update(memberships)
             .set({

@@ -427,21 +427,31 @@ export function MembershipCardCreator() {
       // 1. Generate & Upload Strip Banner to R2 first
       let uploadedStripUrl = stripImageUrl;
       if (cardConfig?.stripConfig) {
-        const stripBlob = await generateStripImageBlob(cardConfig.stripConfig);
-        if (stripBlob) {
-          const uploadRes = await fetch(`/api/membership?action=upload&filename=strip_${Date.now()}.png&contentType=image/png`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'image/png',
-              Authorization: `Bearer ${token}`
-            },
-            body: stripBlob
-          });
-          const { publicUrl } = await uploadRes.json();
-          if (publicUrl) {
-            uploadedStripUrl = publicUrl;
-            setStripImageUrl(publicUrl);
+        // Only regenerate and upload if there are changes affecting the strip image
+        const nameChanged = !editId || memberName !== membershipData?.memberName;
+        const photoChanged = !editId || memberPhoto !== (membershipData?.memberPhoto || '');
+        const configChanged = !editId || JSON.stringify(cardConfig) !== JSON.stringify(membershipData?.cardConfig);
+        
+        if (nameChanged || photoChanged || configChanged || !stripImageUrl) {
+          console.log('[Creator] Strip config or name/photo dirty, regenerating strip...');
+          const stripBlob = await generateStripImageBlob(cardConfig.stripConfig);
+          if (stripBlob) {
+            const uploadRes = await fetch(`/api/membership?action=upload&filename=strip_${Date.now()}.png&contentType=image/png`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'image/png',
+                Authorization: `Bearer ${token}`
+              },
+              body: stripBlob
+            });
+            const { publicUrl } = await uploadRes.json();
+            if (publicUrl) {
+              uploadedStripUrl = publicUrl;
+              setStripImageUrl(publicUrl);
+            }
           }
+        } else {
+          console.log('[Creator] Strip image is clean, reusing existing URL:', stripImageUrl);
         }
       }
 
@@ -477,6 +487,10 @@ export function MembershipCardCreator() {
 
       const result = await saveRes.json();
       if (!saveRes.ok) throw new Error(result.error || 'Failed to save card');
+
+      if (result.membership) {
+        setMembershipData(result.membership);
+      }
 
       // Refresh list to update dashboard metrics
       if (typeof outletCtx.fetchMembers === 'function') {

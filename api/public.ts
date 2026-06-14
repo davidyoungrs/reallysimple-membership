@@ -11,7 +11,13 @@ export function normalizeR2Url(url: string | null | undefined): string | null {
     if (url.includes('.r2.dev/')) {
         const parts = url.split('.r2.dev/');
         if (parts.length > 1) {
-            return `/api/public?resource=asset&key=${parts[1]}`;
+            const key = parts[1];
+            const customDomain = process.env.R2_CUSTOM_DOMAIN?.trim();
+            if (customDomain) {
+                const cleanDomain = customDomain.replace(/\/$/, '');
+                return `${cleanDomain}/${key}`;
+            }
+            return `/api/public?resource=asset&key=${key}`;
         }
     }
     return url;
