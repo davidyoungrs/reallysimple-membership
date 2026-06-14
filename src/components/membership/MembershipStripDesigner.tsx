@@ -250,7 +250,7 @@ export function MembershipStripDesigner({
       setConfig(prev => {
         const p = prev.photoConfig || {};
         const currentZoom = p.innerScale || 100;
-        const nextZoom = Math.min(Math.max(currentZoom + zoomDelta, 100), 300);
+        const nextZoom = Math.min(Math.max(currentZoom + zoomDelta, 10), 300);
         return {
           ...prev,
           photoConfig: {
@@ -682,8 +682,8 @@ export function MembershipStripDesigner({
                           </div>
                           <input
                             type="range"
-                            min="30"
-                            max="150"
+                            min="10"
+                            max="200"
                             value={config.photoConfig.scale || 100}
                             onChange={(e) => setConfig(prev => ({
                               ...prev,
@@ -708,7 +708,7 @@ export function MembershipStripDesigner({
                             </div>
                             <input
                               type="range"
-                              min="100"
+                              min="10"
                               max="300"
                               value={config.photoConfig.innerScale || 100}
                               onChange={(e) => setConfig(prev => ({
