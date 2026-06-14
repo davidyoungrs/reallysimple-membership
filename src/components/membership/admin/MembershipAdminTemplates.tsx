@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Loader2, Plus, Edit2, Layers, X, ShieldAlert, Upload } from 'lucide-react';
+import { Loader2, Plus, Edit2, Layers, X, ShieldAlert, Upload, Trash2 } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminTemplates() {
@@ -325,6 +325,33 @@ export function MembershipAdminTemplates() {
     }
   };
 
+  const handleDeleteTemplate = async (template: any) => {
+    if (!isSuperUser) return;
+    if (!window.confirm(`Are you sure you want to delete the template "${template.name}"?\n\nWARNING: This will permanently delete the template and all membership cards associated with it. This action cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/membership?resource=templates&id=${template.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchTemplates();
+      } else {
+        throw new Error(data.error || 'Failed to delete template');
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to delete template');
+    }
+  };
+
+
   if (loading && templates.length === 0) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
@@ -396,12 +423,20 @@ export function MembershipAdminTemplates() {
             </div>
 
             {isSuperUser && (
-              <div className="mt-6 pt-4 border-t border-slate-850">
+              <div className="mt-6 pt-4 border-t border-slate-850 flex gap-2">
                 <button
                   onClick={() => handleOpenEdit(t)}
-                  className="w-full py-2 bg-slate-850 hover:bg-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800"
+                  className="flex-1 py-2 bg-slate-850 hover:bg-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-200"
                 >
-                  <Edit2 className="w-3.5 h-3.5" /> Configure Template
+                  <Edit2 className="w-3.5 h-3.5" /> Configure
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTemplate(t)}
+                  className="px-3 py-2 bg-slate-900 hover:bg-red-950/20 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-900/50 cursor-pointer"
+                  title="Delete Template"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
