@@ -96,7 +96,7 @@ export function MembershipAdminLayout() {
       }
     }
     checkAccessAndLoadClub();
-  }, [clubSlug, getToken]);
+  }, [clubSlug]);
 
   if (!isUserLoaded || loading) {
     return (

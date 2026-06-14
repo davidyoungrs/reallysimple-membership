@@ -104,7 +104,7 @@ export function MembershipCardCreator() {
       }
     }
     loadMembership();
-  }, [editId, getToken]);
+  }, [editId]);
 
   // Fetch clubs user has access to
   useEffect(() => {
@@ -132,7 +132,7 @@ export function MembershipCardCreator() {
       }
     }
     loadClubs();
-  }, [getToken, clubSlug, editId]);
+  }, [clubSlug, editId]);
 
   // Set selectedClub when membershipData or clubs list loads
   useEffect(() => {
@@ -175,7 +175,7 @@ export function MembershipCardCreator() {
       }
     }
     loadTemplates();
-  }, [selectedClub, getToken, editId, membershipData]);
+  }, [selectedClub, editId, membershipData]);
 
   // Load template config when template changes
   useEffect(() => {

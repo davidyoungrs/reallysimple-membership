@@ -107,7 +107,7 @@ export function AdminMembershipClubs() {
 
   useEffect(() => {
     fetchClubs();
-  }, [getToken]);
+  }, []);
 
   const handleOpenCreate = () => {
     setName('');

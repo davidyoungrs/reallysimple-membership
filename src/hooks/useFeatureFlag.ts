@@ -31,7 +31,7 @@ export function useFeatureFlag() {
         }
 
         fetchFeatures();
-    }, [isSignedIn, getToken]);
+    }, [isSignedIn]);
 
     const hasFeature = (featureKey: string) => {
         return !!features[featureKey];
