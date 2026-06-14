@@ -48,7 +48,22 @@ export function MembershipAdminTemplates() {
   const [stripBgColor, setStripBgColor] = useState('#2563eb');
   const [stripBgImageUrl, setStripBgImageUrl] = useState('');
   const [uploadingStripImage, setUploadingStripImage] = useState(false);
-  const [backFields, setBackFields] = useState<Array<{ label: string; value: string }>>([]);
+  const [backFields, setBackFields] = useState<Array<{ label: string; value: string; isLink?: boolean; linkText?: string; linkUrl?: string }>>([]);
+
+  const updateBackField = (index: number, updates: any) => {
+    setBackFields(prev => prev.map((item, idx) => {
+      if (idx !== index) return item;
+      const newItem = { ...item, ...updates };
+      if (updates.isLink === false) {
+        newItem.value = newItem.linkText || '';
+        newItem.linkText = '';
+        newItem.linkUrl = '';
+      } else if (newItem.isLink) {
+        newItem.value = `[${newItem.linkText || ''}](${newItem.linkUrl || ''})`;
+      }
+      return newItem;
+    }));
+  };
 
   const handleStripImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -132,7 +147,30 @@ export function MembershipAdminTemplates() {
     setStripBgType(s.bgType || 'match');
     setStripBgColor(s.bgColor || '#2563eb');
     setStripBgImageUrl(s.bgImageUrl || '');
-    setBackFields(config.backFields || []);
+    
+    const rawBackFields = config.backFields || [];
+    const mappedBackFields = rawBackFields.map((field: any) => {
+      const cleanValue = (field.value || '').trim();
+      const mdLinkRegex = /^\[([^\]]+)\]\(((https?:\/\/[^\)]+)|(mailto:[^\)]+)|(tel:[^\)]+))\)$/;
+      const match = cleanValue.match(mdLinkRegex);
+      if (match) {
+        return {
+          label: field.label,
+          value: cleanValue,
+          isLink: true,
+          linkText: match[1],
+          linkUrl: match[2],
+        };
+      }
+      return {
+        label: field.label,
+        value: cleanValue,
+        isLink: false,
+        linkText: '',
+        linkUrl: '',
+      };
+    });
+    setBackFields(mappedBackFields);
 
     setShowFormModal(true);
     setError(null);
@@ -159,7 +197,7 @@ export function MembershipAdminTemplates() {
         showClubName,
         fontFamily,
         locations: selectedLocations,
-        backFields,
+        backFields: backFields.map(f => ({ label: f.label, value: f.value })),
         stripConfig: (() => {
           let sConfig = editingTemplate?.cardConfig?.stripConfig || {
             bgType: 'color',
@@ -689,7 +727,7 @@ export function MembershipAdminTemplates() {
 
                   <div className="space-y-3">
                     {backFields.map((field, index) => (
-                      <div key={index} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 relative group">
+                      <div key={index} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-4 relative group">
                         <div className="flex justify-between items-center">
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Field #{index + 1}</span>
                           <button
@@ -701,13 +739,13 @@ export function MembershipAdminTemplates() {
                           </button>
                         </div>
                         
-                        <div className="grid grid-cols-1 gap-3">
+                        <div className="space-y-3">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Field Label</label>
                             <input
                               type="text"
                               value={field.label}
-                              placeholder="e.g. Terms of Use, Special Rules"
+                              placeholder="e.g. Terms of Use, Club Rules, Website"
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setBackFields(prev => prev.map((item, idx) => idx === index ? { ...item, label: val } : item));
@@ -716,20 +754,79 @@ export function MembershipAdminTemplates() {
                               required
                             />
                           </div>
+
                           <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Field Value (Rich Text / Links supported)</label>
-                            <textarea
-                              value={field.value}
-                              rows={3}
-                              placeholder="Type details or links here..."
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setBackFields(prev => prev.map((item, idx) => idx === index ? { ...item, value: val } : item));
-                              }}
-                              className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500 resize-y"
-                              required
-                            />
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Field Type</label>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => updateBackField(index, { isLink: false })}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase border transition-all cursor-pointer ${
+                                  !field.isLink
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-850'
+                                }`}
+                              >
+                                Plain Text
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateBackField(index, { isLink: true })}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase border transition-all cursor-pointer ${
+                                  field.isLink
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-850'
+                                }`}
+                              >
+                                Web / Contact Link
+                              </button>
+                            </div>
                           </div>
+                          
+                          {!field.isLink ? (
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Field Value (Plain Text)</label>
+                              <textarea
+                                value={field.value || ''}
+                                rows={3}
+                                placeholder="Type details here..."
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setBackFields(prev => prev.map((item, idx) => idx === index ? { ...item, value: val } : item));
+                                }}
+                                className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500 resize-y"
+                                required
+                              />
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-850">
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Link Text</label>
+                                <input
+                                  type="text"
+                                  value={field.linkText || ''}
+                                  placeholder="e.g. Visit Club Website"
+                                  onChange={(e) => updateBackField(index, { linkText: e.target.value })}
+                                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Link URL / Address</label>
+                                <input
+                                  type="text"
+                                  value={field.linkUrl || ''}
+                                  placeholder="e.g. https://domain.com, mailto:info@domain.com"
+                                  onChange={(e) => updateBackField(index, { linkUrl: e.target.value })}
+                                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500"
+                                  required
+                                />
+                              </div>
+                              <p className="md:col-span-2 text-[10px] text-slate-500 italic mt-1 leading-normal">
+                                Note: On Apple devices, this is rendered as a clean clickable text link. On Android devices, it renders as &quot;{field.linkText || 'Link Text'}: {field.linkUrl || 'URL'}&quot; to maintain cross-platform clickability.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -743,7 +840,7 @@ export function MembershipAdminTemplates() {
                     {backFields.length < 8 && (
                       <button
                         type="button"
-                        onClick={() => setBackFields(prev => [...prev, { label: '', value: '' }])}
+                        onClick={() => setBackFields(prev => [...prev, { label: '', value: '', isLink: false, linkText: '', linkUrl: '' }])}
                         className="w-full py-2 bg-slate-950 hover:bg-slate-900 text-xs font-bold text-blue-400 rounded-xl border border-slate-800 border-dashed transition-all cursor-pointer"
                       >
                         + Add Custom Back Field

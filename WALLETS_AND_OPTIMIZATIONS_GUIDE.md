@@ -72,6 +72,11 @@ When porting updates to the original project, look for these key changes inside 
 
 ## 5. Dynamic Back-of-Card Info Fields
 
-* **Template UI Settings:** Added a dynamic field builder to the template manager (`src/components/membership/admin/MembershipAdminTemplates.tsx`), allowing admins to add up to 8 label-value fields. These are persisted inside the `cardConfig.backFields` JSON array.
-* **Apple Wallet Compilation:** The pass compiler (`api/passes.ts`) reads this array, cleans values, checks for dynamic links (generating the HTML `attributedValue` anchor tag if links/email/phone protocols are present), and pushes them onto Apple Wallet's `backFields` collection.
-* **Google Wallet Syncing:** The Google Wallet compiler (`api/_utils/googleWallet.ts`) automatically extracts the same `backFields` list and maps them as generic Text Modules in the `textModulesData` array, providing cross-platform parity on Android.
+* **Template UI Settings & Guided Link Builder:** Added a dynamic field builder to the template manager (`src/components/membership/admin/MembershipAdminTemplates.tsx`), allowing admins to add up to 8 label-value fields.
+  * **UI Guided Flow:** Admins can select between **Plain Text** and **Web / Contact Link** for each field.
+  * **Link Builder inputs:** When choosing **Web / Contact Link**, the UI provides separate fields for **Link Text** (e.g. `Visit Website`) and **Link URL / Address** (e.g. `https://example.com` or `mailto:info@example.com`).
+  * **Markdown Serialization:** Under the hood, the UI encodes these inputs into standard Markdown `[Link Text](URL)` syntax in the JSON config, keeping the database schema untouched.
+  * **Markdown Deserialization:** On load, the UI uses a regex to automatically parse any Markdown formatted value back into the separate Link Text and Link URL boxes.
+* **Apple Wallet Compilation:** The pass compiler (`api/passes.ts`) reads this array. If a field matches Markdown link syntax, it compiles it into an HTML anchor tag for the `attributedValue` field (rendered as a blue clickable text link on iOS) and plain text for the `value` field.
+* **Google Wallet Syncing:** The Google Wallet compiler (`api/_utils/googleWallet.ts`) extracts the fields, compiles Markdown links into a clean `Link Text: URL` plain-text fallback, and maps them as generic Text Modules, preserving link clickability on Android.
+

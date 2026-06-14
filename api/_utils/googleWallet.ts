@@ -97,9 +97,13 @@ export function buildGoogleWalletMembershipObject(
     if (Array.isArray(customBackFields)) {
         customBackFields.forEach((field: any, idx: number) => {
             if (field.label && field.value) {
+                const cleanValue = field.value.trim();
+                const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+|mailto:[^\)]+|tel:[^\)]+)\)/g;
+                const plainTextValue = cleanValue.replace(mdLinkRegex, '$1: $2');
+                
                 textModules.push({
                     header: field.label,
-                    body: field.value,
+                    body: plainTextValue,
                     id: `custom_field_${idx}`
                 });
             }

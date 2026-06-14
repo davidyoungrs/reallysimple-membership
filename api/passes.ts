@@ -890,13 +890,32 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                 customBackFields.forEach((field: any, idx: number) => {
                     if (field.label && field.value) {
                         const cleanValue = field.value.trim();
-                        const hasLinks = cleanValue.includes('http://') || cleanValue.includes('https://') || cleanValue.includes('mailto:') || cleanValue.includes('tel:');
-                        pass.backFields.push({
-                            key: `custom-back-${idx}`,
-                            label: field.label,
-                            value: cleanValue,
-                            ...(hasLinks ? { attributedValue: cleanValue } : {})
-                        } as any);
+                        // Regex matching [Link Text](URL) where URL starts with http, https, mailto, or tel
+                        const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+|mailto:[^\)]+|tel:[^\)]+)\)/g;
+                        const hasMdLinks = mdLinkRegex.test(cleanValue);
+                        
+                        if (hasMdLinks) {
+                            // Reset regex index before replacing due to .test() flag side effects
+                            mdLinkRegex.lastIndex = 0;
+                            const plainTextValue = cleanValue.replace(mdLinkRegex, '$1: $2');
+                            mdLinkRegex.lastIndex = 0;
+                            const htmlValue = cleanValue.replace(mdLinkRegex, '<a href="$2">$1</a>');
+                            
+                            pass.backFields.push({
+                                key: `custom-back-${idx}`,
+                                label: field.label,
+                                value: plainTextValue,
+                                attributedValue: htmlValue
+                            } as any);
+                        } else {
+                            const hasLinks = cleanValue.includes('http://') || cleanValue.includes('https://') || cleanValue.includes('mailto:') || cleanValue.includes('tel:');
+                            pass.backFields.push({
+                                key: `custom-back-${idx}`,
+                                label: field.label,
+                                value: cleanValue,
+                                ...(hasLinks ? { attributedValue: cleanValue } : {})
+                            } as any);
+                        }
                     }
                 });
             }
