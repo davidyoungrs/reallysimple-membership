@@ -85,3 +85,12 @@ When porting updates to the original project, look for these key changes inside 
 * **Apple Wallet Compilation:** The pass compiler (`api/passes.ts`) reads this array. If a field matches Markdown link syntax, it compiles it into an HTML anchor tag for the `attributedValue` field (rendered as a blue clickable text link on iOS) and plain text for the `value` field.
 * **Google Wallet Syncing:** The Google Wallet compiler (`api/_utils/googleWallet.ts`) extracts the fields, compiles Markdown links into a clean `Link Text: URL` plain-text fallback, and maps them as generic Text Modules, preserving link clickability on Android.
 
+---
+
+## 6. Template Deletion & Cascade Effects
+
+* **UI Controls:** Added a red trash icon button next to the "Configure" button on each template card inside `src/components/membership/admin/MembershipAdminTemplates.tsx`.
+* **Confirmation Warning:** Clicking the button triggers a confirmation warning explaining that deleting a template will cascadingly delete all membership cards associated with it.
+* **API Handler:** Sends a `DELETE` request to `/api/membership?resource=templates&id=X`, which uses the existing Drizzle/Postgres database cascade constraint to remove the template and its dependent members cleanly.
+
+
