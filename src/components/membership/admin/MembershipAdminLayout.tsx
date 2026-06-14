@@ -28,7 +28,10 @@ export function MembershipAdminLayout() {
       });
       const result = await res.json();
       if (result.success && result.memberships) {
-        setMembers(result.memberships);
+        const activeMembers = result.memberships.filter((m: any) => 
+          !(m.memberName === 'Deleted Member' && m.memberEmail === 'deleted@example.com')
+        );
+        setMembers(activeMembers);
       }
     } catch (err) {
       console.error(err);
