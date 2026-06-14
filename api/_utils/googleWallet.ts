@@ -93,6 +93,19 @@ export function buildGoogleWalletMembershipObject(
         });
     }
 
+    const customBackFields = template?.cardConfig?.backFields || cardConfig?.backFields || [];
+    if (Array.isArray(customBackFields)) {
+        customBackFields.forEach((field: any, idx: number) => {
+            if (field.label && field.value) {
+                textModules.push({
+                    header: field.label,
+                    body: field.value,
+                    id: `custom_field_${idx}`
+                });
+            }
+        });
+    }
+
     const genericObject = {
         id: objectId,
         classId: classId,

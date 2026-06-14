@@ -885,6 +885,22 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
                 });
             }
 
+            const customBackFields = templateConfig?.backFields || cardConfig?.backFields || [];
+            if (Array.isArray(customBackFields)) {
+                customBackFields.forEach((field: any, idx: number) => {
+                    if (field.label && field.value) {
+                        const cleanValue = field.value.trim();
+                        const hasLinks = cleanValue.includes('http://') || cleanValue.includes('https://') || cleanValue.includes('mailto:') || cleanValue.includes('tel:');
+                        pass.backFields.push({
+                            key: `custom-back-${idx}`,
+                            label: field.label,
+                            value: cleanValue,
+                            ...(hasLinks ? { attributedValue: cleanValue } : {})
+                        } as any);
+                    }
+                });
+            }
+
             pass.backFields.push({
                 key: 'powered-by',
                 label: ' ',

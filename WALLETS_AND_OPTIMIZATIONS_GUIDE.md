@@ -67,3 +67,11 @@ When porting updates to the original project, look for these key changes inside 
    * Updated `getCertContent` to read PEM certificates synchronously from local files first (for local dev environments) and fallback to environment variables in serverless production runtimes, using regex formatting to strip quote wrappers and replace raw `\n` literals.
 3. **Dynamic Geofence Notifications:**
    * Configured the pass model to query master club coordinates, cross-reference them with the selected template geofences, and attach coordinates via `pass.setLocations(...)` to trigger lockscreen notifications on approach.
+
+---
+
+## 5. Dynamic Back-of-Card Info Fields
+
+* **Template UI Settings:** Added a dynamic field builder to the template manager (`src/components/membership/admin/MembershipAdminTemplates.tsx`), allowing admins to add up to 8 label-value fields. These are persisted inside the `cardConfig.backFields` JSON array.
+* **Apple Wallet Compilation:** The pass compiler (`api/passes.ts`) reads this array, cleans values, checks for dynamic links (generating the HTML `attributedValue` anchor tag if links/email/phone protocols are present), and pushes them onto Apple Wallet's `backFields` collection.
+* **Google Wallet Syncing:** The Google Wallet compiler (`api/_utils/googleWallet.ts`) automatically extracts the same `backFields` list and maps them as generic Text Modules in the `textModulesData` array, providing cross-platform parity on Android.

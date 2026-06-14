@@ -48,6 +48,7 @@ export function MembershipAdminTemplates() {
   const [stripBgColor, setStripBgColor] = useState('#2563eb');
   const [stripBgImageUrl, setStripBgImageUrl] = useState('');
   const [uploadingStripImage, setUploadingStripImage] = useState(false);
+  const [backFields, setBackFields] = useState<Array<{ label: string; value: string }>>([]);
 
   const handleStripImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,6 +103,7 @@ export function MembershipAdminTemplates() {
     setStripBgType('match');
     setStripBgColor('#2563eb');
     setStripBgImageUrl('');
+    setBackFields([]);
     setShowFormModal(true);
     setError(null);
   };
@@ -130,6 +132,7 @@ export function MembershipAdminTemplates() {
     setStripBgType(s.bgType || 'match');
     setStripBgColor(s.bgColor || '#2563eb');
     setStripBgImageUrl(s.bgImageUrl || '');
+    setBackFields(config.backFields || []);
 
     setShowFormModal(true);
     setError(null);
@@ -156,6 +159,7 @@ export function MembershipAdminTemplates() {
         showClubName,
         fontFamily,
         locations: selectedLocations,
+        backFields,
         stripConfig: (() => {
           let sConfig = editingTemplate?.cardConfig?.stripConfig || {
             bgType: 'color',
@@ -671,6 +675,81 @@ export function MembershipAdminTemplates() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Back of Card Info Fields */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-850 pb-1">Back of Card Fields</h3>
+                
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-400">
+                    Add custom fields to display on the back of the Apple Wallet pass (and as generic details on Android).
+                  </p>
+
+                  <div className="space-y-3">
+                    {backFields.map((field, index) => (
+                      <div key={index} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 relative group">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Field #{index + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => setBackFields(prev => prev.filter((_, i) => i !== index))}
+                            className="text-[10px] text-red-400 hover:text-red-300 font-bold transition-colors cursor-pointer"
+                          >
+                            Remove Field
+                          </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Field Label</label>
+                            <input
+                              type="text"
+                              value={field.label}
+                              placeholder="e.g. Terms of Use, Special Rules"
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBackFields(prev => prev.map((item, idx) => idx === index ? { ...item, label: val } : item));
+                              }}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Field Value (Rich Text / Links supported)</label>
+                            <textarea
+                              value={field.value}
+                              rows={3}
+                              placeholder="Type details or links here..."
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBackFields(prev => prev.map((item, idx) => idx === index ? { ...item, value: val } : item));
+                              }}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-blue-500 resize-y"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {backFields.length === 0 && (
+                      <div className="bg-slate-950/40 border border-dashed border-slate-800 rounded-2xl py-6 text-center text-slate-500 text-xs italic">
+                        No custom back-of-card fields defined yet.
+                      </div>
+                    )}
+
+                    {backFields.length < 8 && (
+                      <button
+                        type="button"
+                        onClick={() => setBackFields(prev => [...prev, { label: '', value: '' }])}
+                        className="w-full py-2 bg-slate-950 hover:bg-slate-900 text-xs font-bold text-blue-400 rounded-xl border border-slate-800 border-dashed transition-all cursor-pointer"
+                      >
+                        + Add Custom Back Field
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
