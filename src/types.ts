@@ -88,6 +88,9 @@ export interface StripConfig {
         y: number;
         scale: number;
         border: 'none' | 'thin' | 'thick';
+        innerScale?: number;
+        offsetX?: number;
+        offsetY?: number;
     };
 }
 

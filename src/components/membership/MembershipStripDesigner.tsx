@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { type StripConfig } from '../../types.js';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, RotateCcw } from 'lucide-react';
 
 interface MembershipStripDesignerProps {
   memberName: string;
@@ -83,6 +83,185 @@ export function MembershipStripDesigner({
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [profileImage, setProfileImage] = useState<HTMLImageElement | null>(null);
 
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [initialOffsets, setInitialOffsets] = useState<{ offsetX: number; offsetY: number }>({ offsetX: 0, offsetY: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!profileImage || !config.photoConfig?.show) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const scaleX = 1125 / rect.width;
+    const scaleY = 369 / rect.height;
+    const canvasX = x * scaleX;
+    const canvasY = y * scaleY;
+
+    const size = 280 * ((config.photoConfig.scale || 100) / 100);
+    const posX = 1125 * ((config.photoConfig.x || 23) / 100) - size / 2;
+    const posY = 369 * ((config.photoConfig.y || 50) / 100) - size / 2;
+    const cx = posX + size / 2;
+    const cy = posY + size / 2;
+    const radius = size / 2;
+
+    const dx = canvasX - cx;
+    const dy = canvasY - cy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= radius) {
+      setDragStart({ x: e.clientX, y: e.clientY });
+      setInitialOffsets({
+        offsetX: config.photoConfig.offsetX || 0,
+        offsetY: config.photoConfig.offsetY || 0
+      });
+      setIsDragging(true);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !dragStart || !config.photoConfig) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+
+    const scaleX = 1125 / rect.width;
+    const scaleY = 369 / rect.height;
+    const canvasDx = dx * scaleX;
+    const canvasDy = dy * scaleY;
+
+    setConfig(prev => {
+      const p = prev.photoConfig || {};
+      return {
+        ...prev,
+        photoConfig: {
+          ...p,
+          offsetX: Math.round(initialOffsets.offsetX + canvasDx),
+          offsetY: Math.round(initialOffsets.offsetY + canvasDy)
+        }
+      };
+    });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!profileImage || !config.photoConfig?.show || e.touches.length === 0) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const scaleX = 1125 / rect.width;
+    const scaleY = 369 / rect.height;
+    const canvasX = x * scaleX;
+    const canvasY = y * scaleY;
+
+    const size = 280 * ((config.photoConfig.scale || 100) / 100);
+    const posX = 1125 * ((config.photoConfig.x || 23) / 100) - size / 2;
+    const posY = 369 * ((config.photoConfig.y || 50) / 100) - size / 2;
+    const cx = posX + size / 2;
+    const cy = posY + size / 2;
+    const radius = size / 2;
+
+    const dx = canvasX - cx;
+    const dy = canvasY - cy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= radius) {
+      setDragStart({ x: touch.clientX, y: touch.clientY });
+      setInitialOffsets({
+        offsetX: config.photoConfig.offsetX || 0,
+        offsetY: config.photoConfig.offsetY || 0
+      });
+      setIsDragging(true);
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !dragStart || !config.photoConfig || e.touches.length === 0) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const dx = touch.clientX - dragStart.x;
+    const dy = touch.clientY - dragStart.y;
+
+    const scaleX = 1125 / rect.width;
+    const scaleY = 369 / rect.height;
+    const canvasDx = dx * scaleX;
+    const canvasDy = dy * scaleY;
+
+    setConfig(prev => {
+      const p = prev.photoConfig || {};
+      return {
+        ...prev,
+        photoConfig: {
+          ...p,
+          offsetX: Math.round(initialOffsets.offsetX + canvasDx),
+          offsetY: Math.round(initialOffsets.offsetY + canvasDy)
+        }
+      };
+    });
+    e.preventDefault();
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    if (!profileImage || !config.photoConfig?.show) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const scaleX = 1125 / rect.width;
+    const scaleY = 369 / rect.height;
+    const canvasX = x * scaleX;
+    const canvasY = y * scaleY;
+
+    const size = 280 * ((config.photoConfig.scale || 100) / 100);
+    const posX = 1125 * ((config.photoConfig.x || 23) / 100) - size / 2;
+    const posY = 369 * ((config.photoConfig.y || 50) / 100) - size / 2;
+    const cx = posX + size / 2;
+    const cy = posY + size / 2;
+    const radius = size / 2;
+
+    const dx = canvasX - cx;
+    const dy = canvasY - cy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= radius) {
+      e.preventDefault();
+      const zoomDelta = e.deltaY < 0 ? 5 : -5;
+      setConfig(prev => {
+        const p = prev.photoConfig || {};
+        const currentZoom = p.innerScale || 100;
+        const nextZoom = Math.min(Math.max(currentZoom + zoomDelta, 100), 300);
+        return {
+          ...prev,
+          photoConfig: {
+            ...p,
+            innerScale: nextZoom
+          }
+        };
+      });
+    }
+  };
+
   // Load profile photo
   useEffect(() => {
     if (memberPhoto) {
@@ -147,20 +326,49 @@ export function MembershipStripDesigner({
     // 2. Draw Member Photo
     if (config.photoConfig?.show && profileImage) {
       const size = 280 * ((config.photoConfig.scale || 100) / 100);
-      const posX = width * ((config.photoConfig.x || 15) / 100) - size / 2;
+      const posX = width * ((config.photoConfig.x || 23) / 100) - size / 2;
       const posY = height * ((config.photoConfig.y || 50) / 100) - size / 2;
+      const cx = posX + size / 2;
+      const cy = posY + size / 2;
+      const radius = size / 2;
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.closePath();
       ctx.clip();
-      ctx.drawImage(profileImage, posX, posY, size, size);
+
+      // Center context at circle center
+      ctx.translate(cx, cy);
+
+      // Apply drag pan offset
+      const offX = config.photoConfig.offsetX || 0;
+      const offY = config.photoConfig.offsetY || 0;
+      ctx.translate(offX, offY);
+
+      // Apply inner zoom scale
+      const zoom = (config.photoConfig.innerScale || 100) / 100;
+      ctx.scale(zoom, zoom);
+
+      // Cover calculations for profileImage (maintaining aspect ratio)
+      const imgWidth = profileImage.width;
+      const imgHeight = profileImage.height;
+      const imgRatio = imgWidth / imgHeight;
+      
+      let drawW = size;
+      let drawH = size;
+      if (imgRatio > 1) {
+        drawW = size * imgRatio;
+      } else {
+        drawH = size / imgRatio;
+      }
+
+      ctx.drawImage(profileImage, -drawW / 2, -drawH / 2, drawW, drawH);
       ctx.restore();
 
       if (config.photoConfig.border !== 'none') {
         ctx.beginPath();
-        ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
         ctx.lineWidth = config.photoConfig.border === 'thin' ? 6 : 14;
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
@@ -277,7 +485,18 @@ export function MembershipStripDesigner({
           {/* Canvas Wrapper */}
           <div className="w-full max-w-[800px] bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
             <div className="relative w-full aspect-[1125/369] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
-              <canvas ref={canvasRef} className="w-full h-full object-contain" />
+              <canvas 
+                ref={canvasRef} 
+                className={`w-full h-full object-contain ${profileImage && config.photoConfig?.show ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUp}
+                onWheel={handleWheel}
+              />
             </div>
             <p className="text-center text-xs text-gray-400 mt-2 font-medium">
               High Resolution Retina Canvas (1125 x 369)
@@ -417,40 +636,158 @@ export function MembershipStripDesigner({
                   </div>
 
                   {config.photoConfig?.show && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500">Photo Position X (%)</label>
-                        <input
-                          type="number"
-                          value={config.photoConfig.x}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            photoConfig: { ...prev.photoConfig, x: Number(e.target.value) }
-                          }))}
-                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
-                        />
+                    <div className="space-y-4">
+                      {/* Circle Position and Size */}
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                            <span>Circle Position X</span>
+                            <span>{config.photoConfig.x || 23}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="5"
+                            max="95"
+                            value={config.photoConfig.x || 23}
+                            onChange={(e) => setConfig(prev => ({
+                              ...prev,
+                              photoConfig: { ...prev.photoConfig, x: Number(e.target.value) }
+                            }))}
+                            className="w-full accent-blue-600"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                            <span>Circle Position Y</span>
+                            <span>{config.photoConfig.y || 50}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="5"
+                            max="95"
+                            value={config.photoConfig.y || 50}
+                            onChange={(e) => setConfig(prev => ({
+                              ...prev,
+                              photoConfig: { ...prev.photoConfig, y: Number(e.target.value) }
+                            }))}
+                            className="w-full accent-blue-600"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                            <span>Circle Size (Scale)</span>
+                            <span>{config.photoConfig.scale || 100}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="30"
+                            max="150"
+                            value={config.photoConfig.scale || 100}
+                            onChange={(e) => setConfig(prev => ({
+                              ...prev,
+                              photoConfig: { ...prev.photoConfig, scale: Number(e.target.value) }
+                            }))}
+                            className="w-full accent-blue-600"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-500">Photo Size Scale</label>
-                        <input
-                          type="number"
-                          value={config.photoConfig.scale}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            photoConfig: { ...prev.photoConfig, scale: Number(e.target.value) }
-                          }))}
-                          className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
-                        />
+
+                      {/* Photo Border & Alignment Controls */}
+                      <div className="space-y-3 pt-3 border-t border-gray-100 bg-gray-50 p-3 rounded-xl">
+                        <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                          🔄 Inside-Circle Zoom & Repositioning
+                        </span>
+                        
+                        <div className="space-y-2">
+                          <div>
+                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                              <span>Photo Zoom (Image scale)</span>
+                              <span>{config.photoConfig.innerScale || 100}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="100"
+                              max="300"
+                              value={config.photoConfig.innerScale || 100}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, innerScale: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                              <span>Horizontal Pan (X Offset)</span>
+                              <span>{config.photoConfig.offsetX || 0}px</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="-150"
+                              max="150"
+                              value={config.photoConfig.offsetX || 0}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, offsetX: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                              <span>Vertical Pan (Y Offset)</span>
+                              <span>{config.photoConfig.offsetY || 0}px</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="-150"
+                              max="150"
+                              value={config.photoConfig.offsetY || 0}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, offsetY: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setConfig(prev => ({
+                              ...prev,
+                              photoConfig: {
+                                ...prev.photoConfig,
+                                innerScale: 100,
+                                offsetX: 0,
+                                offsetY: 0
+                              }
+                            }))}
+                            className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-white border border-gray-250 px-2 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer"
+                          >
+                            <RotateCcw className="w-3 h-3" /> Reset Position
+                          </button>
+                          
+                          <span className="text-[9px] text-gray-400 font-medium italic text-right leading-none max-w-[130px]">
+                            Tip: Drag the photo directly inside the canvas, or scroll to zoom!
+                          </span>
+                        </div>
                       </div>
-                      <div className="col-span-2">
-                        <label className="block text-[10px] font-bold text-gray-500">Photo Border</label>
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">Photo Border</label>
                         <select
                           value={config.photoConfig.border}
                           onChange={(e) => setConfig(prev => ({
                             ...prev,
                             photoConfig: { ...prev.photoConfig, border: e.target.value as any }
                           }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 shadow-sm"
                         >
                           <option value="none">None</option>
                           <option value="thin">Thin White</option>

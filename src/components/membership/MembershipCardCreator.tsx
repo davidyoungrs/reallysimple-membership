@@ -336,17 +336,46 @@ export function MembershipCardCreator() {
               const size = 280 * ((configToUse.photoConfig.scale || 90) / 100);
               const posX = width * ((configToUse.photoConfig.x || 23) / 100) - size / 2;
               const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
+              const cx = posX + size / 2;
+              const cy = posY + size / 2;
+              const radius = size / 2;
 
               ctx.save();
               ctx.beginPath();
-              ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
+              ctx.arc(cx, cy, radius, 0, Math.PI * 2);
               ctx.clip();
-              ctx.drawImage(img, posX, posY, size, size);
+
+              // Center context at circle center
+              ctx.translate(cx, cy);
+
+              // Apply drag pan offset
+              const offX = configToUse.photoConfig.offsetX || 0;
+              const offY = configToUse.photoConfig.offsetY || 0;
+              ctx.translate(offX, offY);
+
+              // Apply inner zoom scale
+              const zoom = (configToUse.photoConfig.innerScale || 100) / 100;
+              ctx.scale(zoom, zoom);
+
+              // Cover calculations for avatar (maintaining aspect ratio)
+              const imgWidth = img.width;
+              const imgHeight = img.height;
+              const imgRatio = imgWidth / imgHeight;
+              
+              let drawW = size;
+              let drawH = size;
+              if (imgRatio > 1) {
+                drawW = size * imgRatio;
+              } else {
+                drawH = size / imgRatio;
+              }
+
+              ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
               ctx.restore();
 
               if (configToUse.photoConfig.border !== 'none') {
                 ctx.beginPath();
-                ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
                 ctx.lineWidth = configToUse.photoConfig.border === 'thin' ? 6 : 14;
                 ctx.strokeStyle = '#ffffff';
                 ctx.stroke();
