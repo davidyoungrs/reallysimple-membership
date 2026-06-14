@@ -257,15 +257,6 @@ export function MembershipCardCreator() {
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Draw background
-        if (configToUse.bgType === 'color') {
-          ctx.fillStyle = configToUse.bgColor;
-          ctx.fillRect(0, 0, width, height);
-        } else {
-          ctx.fillStyle = '#2563eb';
-          ctx.fillRect(0, 0, width, height);
-        }
-
         const drawTextAndResolve = () => {
           // Draw Name
           if (configToUse.textConfig?.showName) {
@@ -335,39 +326,73 @@ export function MembershipCardCreator() {
           }
         };
 
-        if (drawPhoto && configToUse.photoConfig?.show && memberPhoto) {
-          const img = new Image();
-          if (memberPhoto.startsWith('http://') || memberPhoto.startsWith('https://')) {
-            img.crossOrigin = 'anonymous';
-          }
-          img.onload = () => {
-            const size = 280 * ((configToUse.photoConfig.scale || 90) / 100);
-            const posX = width * ((configToUse.photoConfig.x || 23) / 100) - size / 2;
-            const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
+        const proceedWithPhoto = () => {
+          if (drawPhoto && configToUse.photoConfig?.show && memberPhoto) {
+            const img = new Image();
+            if (memberPhoto.startsWith('http://') || memberPhoto.startsWith('https://')) {
+              img.crossOrigin = 'anonymous';
+            }
+            img.onload = () => {
+              const size = 280 * ((configToUse.photoConfig.scale || 90) / 100);
+              const posX = width * ((configToUse.photoConfig.x || 23) / 100) - size / 2;
+              const posY = height * ((configToUse.photoConfig.y || 50) / 100) - size / 2;
 
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(img, posX, posY, size, size);
-            ctx.restore();
-
-            if (configToUse.photoConfig.border !== 'none') {
+              ctx.save();
               ctx.beginPath();
               ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
-              ctx.lineWidth = configToUse.photoConfig.border === 'thin' ? 6 : 14;
-              ctx.strokeStyle = '#ffffff';
-              ctx.stroke();
-            }
+              ctx.clip();
+              ctx.drawImage(img, posX, posY, size, size);
+              ctx.restore();
+
+              if (configToUse.photoConfig.border !== 'none') {
+                ctx.beginPath();
+                ctx.arc(posX + size / 2, posY + size / 2, size / 2, 0, Math.PI * 2);
+                ctx.lineWidth = configToUse.photoConfig.border === 'thin' ? 6 : 14;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+              }
+              drawTextAndResolve();
+            };
+            img.onerror = () => {
+              console.warn('Failed to load profile photo on canvas, rendering without it');
+              render(false);
+            };
+            img.src = memberPhoto;
+          } else {
             drawTextAndResolve();
+          }
+        };
+
+        // Draw background
+        if (configToUse.bgType === 'color') {
+          ctx.fillStyle = configToUse.bgColor;
+          ctx.fillRect(0, 0, width, height);
+          proceedWithPhoto();
+        } else if (configToUse.bgType === 'image' && configToUse.bgImageUrl) {
+          const bgImg = new Image();
+          bgImg.crossOrigin = 'anonymous';
+          bgImg.onload = () => {
+            const scale = Math.max(width / bgImg.width, height / bgImg.height);
+            const x = width / 2 - (bgImg.width / 2) * scale;
+            const y = height / 2 - (bgImg.height / 2) * scale;
+            ctx.save();
+            const filters = configToUse.bgFilters || { grayscale: 0, sepia: 0, opacity: 100 };
+            ctx.filter = `grayscale(${filters.grayscale}%) sepia(${filters.sepia}%) opacity(${filters.opacity}%)`;
+            ctx.drawImage(bgImg, x, y, bgImg.width * scale, bgImg.height * scale);
+            ctx.restore();
+            proceedWithPhoto();
           };
-          img.onerror = () => {
-            console.warn('Failed to load profile photo on canvas, rendering without it');
-            render(false);
+          bgImg.onerror = () => {
+            console.error('Failed to load strip background image on canvas, rendering solid color fallback');
+            ctx.fillStyle = configToUse.bgColor || '#2563eb';
+            ctx.fillRect(0, 0, width, height);
+            proceedWithPhoto();
           };
-          img.src = memberPhoto;
+          bgImg.src = configToUse.bgImageUrl;
         } else {
-          drawTextAndResolve();
+          ctx.fillStyle = '#2563eb';
+          ctx.fillRect(0, 0, width, height);
+          proceedWithPhoto();
         }
       };
 

@@ -99,9 +99,13 @@ export function MembershipStripDesigner({
 
   // Load custom background image if applicable
   useEffect(() => {
-    // If the config has a background image, we can try to pre-load it
-    // Note: For now, if we upload in-session, bgImage state handles it.
-  }, []);
+    if (config.bgType === 'image' && config.bgImageUrl) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => setBgImage(img);
+      img.src = config.bgImageUrl;
+    }
+  }, [config.bgType, config.bgImageUrl]);
 
   const draw = () => {
     const canvas = canvasRef.current;

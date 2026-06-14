@@ -114,7 +114,12 @@ export function MembershipCardPreview({
                   style={{
                     backgroundColor: cardConfig.stripConfig?.bgType === 'color' 
                       ? cardConfig.stripConfig.bgColor 
-                      : '#e5e7eb'
+                      : '#e5e7eb',
+                    backgroundImage: (cardConfig.stripConfig?.bgType === 'image' && cardConfig.stripConfig.bgImageUrl)
+                      ? `url(${cardConfig.stripConfig.bgImageUrl})`
+                      : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
                   }}
                 >
                   {/* Faux Render if Strip Image is generating */}

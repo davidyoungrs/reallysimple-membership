@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Loader2, Plus, Edit2, Layers, X, ShieldAlert } from 'lucide-react';
+import { Loader2, Plus, Edit2, Layers, X, ShieldAlert, Upload } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
 
 export function MembershipAdminTemplates() {
@@ -43,6 +43,41 @@ export function MembershipAdminTemplates() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Strip background configuration states
+  const [stripBgType, setStripBgType] = useState<'match' | 'color' | 'image'>('match');
+  const [stripBgColor, setStripBgColor] = useState('#2563eb');
+  const [stripBgImageUrl, setStripBgImageUrl] = useState('');
+  const [uploadingStripImage, setUploadingStripImage] = useState(false);
+
+  const handleStripImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingStripImage(true);
+      setError(null);
+      const token = await getToken();
+      const uploadRes = await fetch(`/api/membership?action=upload&filename=strip_bg_${Date.now()}_${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: file
+      });
+      const data = await uploadRes.json();
+      if (data.success && data.publicUrl) {
+        setStripBgImageUrl(data.publicUrl);
+      } else {
+        throw new Error(data.error || 'Failed to upload strip background image');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Image upload failed');
+    } finally {
+      setUploadingStripImage(false);
+    }
+  };
+
 
   const loading = loadingTemplates && templates.length === 0;
 
@@ -64,6 +99,9 @@ export function MembershipAdminTemplates() {
     setShowClubName(true);
     setFontFamily('Inter');
     setSelectedLocations([]);
+    setStripBgType('match');
+    setStripBgColor('#2563eb');
+    setStripBgImageUrl('');
     setShowFormModal(true);
     setError(null);
   };
@@ -88,6 +126,11 @@ export function MembershipAdminTemplates() {
     setFontFamily(config.fontFamily || 'Inter');
     setSelectedLocations(config.locations || []);
     
+    const s = config.stripConfig || {};
+    setStripBgType(s.bgType || 'match');
+    setStripBgColor(s.bgColor || '#2563eb');
+    setStripBgImageUrl(s.bgImageUrl || '');
+
     setShowFormModal(true);
     setError(null);
   };
@@ -144,6 +187,21 @@ export function MembershipAdminTemplates() {
               border: 'thin',
             },
           };
+
+          // Apply user selections for strip background
+          sConfig.bgType = stripBgType === 'match' ? 'color' : stripBgType;
+          sConfig.bgColor = stripBgType === 'match' ? walletBgColor : stripBgColor;
+          sConfig.bgImageUrl = stripBgType === 'image' ? stripBgImageUrl : undefined;
+
+          // Sync options
+          if (sConfig.textConfig) {
+            sConfig.textConfig.showName = showMemberName;
+            sConfig.textConfig.nameColor = walletFgColor;
+          }
+          if (sConfig.photoConfig) {
+            sConfig.photoConfig.show = showMemberPhoto;
+          }
+
           if (sConfig.photoConfig && [22, 23, 26, 32].includes(sConfig.photoConfig.x)) {
             sConfig = {
               ...sConfig,
@@ -435,8 +493,74 @@ export function MembershipAdminTemplates() {
                         onChange={(e) => setWalletLabelColor(e.target.value)}
                         className="flex-1 min-w-0 px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[10px] text-white"
                       />
-                    </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Strip Image Background Style */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-850 pb-1">Strip Image Background</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-350 mb-1">Strip Background Type</label>
+                    <select
+                      value={stripBgType}
+                      onChange={(e) => setStripBgType(e.target.value as any)}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none"
+                    >
+                      <option value="match">Match Pass Background</option>
+                      <option value="color">Custom Solid Color</option>
+                      <option value="image">Custom Background Image</option>
+                    </select>
+                  </div>
+
+                  {stripBgType === 'color' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 mb-1">Strip Background Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={stripBgColor}
+                          onChange={(e) => setStripBgColor(e.target.value)}
+                          className="w-8 h-8 border border-slate-800 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={stripBgColor}
+                          onChange={(e) => setStripBgColor(e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1.5 bg-slate-950 border border-slate-800 rounded text-[10px] text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {stripBgType === 'image' && (
+                    <div className="col-span-2 space-y-2">
+                      <label className="block text-xs font-semibold text-slate-350">Upload Strip Background Image</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleStripImageUpload}
+                          className="hidden"
+                          id="strip-bg-image-uploader"
+                        />
+                        <label
+                          htmlFor="strip-bg-image-uploader"
+                          className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all border border-slate-700 cursor-pointer"
+                        >
+                          <Upload className="w-4 h-4" /> {uploadingStripImage ? 'Uploading...' : 'Choose Background Image'}
+                        </label>
+                        {stripBgImageUrl && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-emerald-400 font-medium">Image Uploaded!</span>
+                            <img src={stripBgImageUrl} alt="Preview" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

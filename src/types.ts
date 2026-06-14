@@ -64,6 +64,7 @@ export interface StripConfig {
     bgColor: string;
     bgGradient: string[];
     bgFilters: { grayscale: number; sepia: number; opacity: number };
+    bgImageUrl?: string;
     textConfig: {
         showName: boolean;
         nameColor: string;
