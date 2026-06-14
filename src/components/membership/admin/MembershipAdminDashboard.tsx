@@ -4,22 +4,15 @@ import { Users, Award, ShieldAlert, PlusCircle, FileSpreadsheet, Loader2, ArrowR
 
 export function MembershipAdminDashboard() {
   const { clubSlug } = useParams<{ clubSlug: string }>();
-  const { club, members, loadingMembers, fetchMembers } = useOutletContext<{ 
+  const { club, members, loadingMembers } = useOutletContext<{ 
     club: any; 
     members: any[]; 
     loadingMembers: boolean;
-    fetchMembers: () => Promise<void>;
   }>();
 
   const [stats, setStats] = useState({ total: 0, active: 0, expired: 0, revoked: 0 });
   const [recentMembers, setRecentMembers] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Fetch members if not loaded yet
-    if (club && members.length === 0 && !loadingMembers) {
-      fetchMembers();
-    }
-  }, [club, members, loadingMembers, fetchMembers]);
 
   useEffect(() => {
     const computed = members.reduce(

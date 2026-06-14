@@ -9,7 +9,6 @@ export function MembershipAdminMembers() {
     members, 
     templates, 
     fetchMembers, 
-    fetchTemplates, 
     loadingMembers, 
     loadingTemplates 
   } = useOutletContext<{
@@ -17,7 +16,6 @@ export function MembershipAdminMembers() {
     members: any[];
     templates: any[];
     fetchMembers: () => Promise<void>;
-    fetchTemplates: () => Promise<void>;
     loadingMembers: boolean;
     loadingTemplates: boolean;
   }>();
@@ -46,14 +44,6 @@ export function MembershipAdminMembers() {
   const [autoGenerateBadges, setAutoGenerateBadges] = useState(true);
   const [badgeUploadProgress, setBadgeUploadProgress] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (club && members.length === 0 && !loadingMembers) {
-      fetchMembers();
-    }
-    if (club && templates.length === 0 && !loadingTemplates) {
-      fetchTemplates();
-    }
-  }, [club, members, templates, loadingMembers, loadingTemplates, fetchMembers, fetchTemplates]);
 
   useEffect(() => {
     if (templates.length > 0 && !selectedTemplateId) {

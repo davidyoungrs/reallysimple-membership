@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Loader2, Plus, Edit2, Layers, X, ShieldAlert } from 'lucide-react';
@@ -43,11 +43,6 @@ export function MembershipAdminTemplates() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (club && templates.length === 0 && !loadingTemplates) {
-      fetchTemplates();
-    }
-  }, [club, templates, loadingTemplates, fetchTemplates]);
 
   const loading = loadingTemplates && templates.length === 0;
 
