@@ -67,6 +67,11 @@ When porting updates to the original project, look for these key changes inside 
    * Updated `getCertContent` to read PEM certificates synchronously from local files first (for local dev environments) and fallback to environment variables in serverless production runtimes, using regex formatting to strip quote wrappers and replace raw `\n` literals.
 3. **Dynamic Geofence Notifications:**
    * Configured the pass model to query master club coordinates, cross-reference them with the selected template geofences, and attach coordinates via `pass.setLocations(...)` to trigger lockscreen notifications on approach.
+4. **Interactive Avatar Cropping & Alignment (Strip Designer):**
+   * Configured mouse dragging and touch gesture events directly on the `<canvas>` component inside `src/components/membership/MembershipStripDesigner.tsx` to allow real-time repositioning of the profile image avatar inside its circular frame.
+   * Enabled mouse-wheel scroll events to adjust `innerScale` (zoom factor) of the avatar.
+   * Introduced new JSON properties: `innerScale`, `offsetX`, and `offsetY` inside `photoConfig` in the `StripConfig` schema.
+   * Integrated corresponding translate and scale canvas rendering logic in `MembershipCardCreator.tsx` to ensure that generated backend R2 png strip images perfectly match the administrator's custom preview crop.
 
 ---
 
