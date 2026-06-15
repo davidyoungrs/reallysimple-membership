@@ -513,7 +513,7 @@ export function MembershipStripDesigner({
           {/* Right / Bottom Side: Scrollable Controls Panel */}
           <div className="flex-1 overflow-y-auto p-6">
             {isAdmin ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto items-start">
+              <div className="flex flex-col gap-6 text-left w-full">
                 {/* Left Column: Background Controls */}
                 <div className="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-2 uppercase tracking-wider">
