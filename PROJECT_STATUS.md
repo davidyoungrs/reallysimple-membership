@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-14 (Session 25) | `main` |
+| 2026-06-15 (Session 26) | `main` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -19,12 +19,25 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
 3. **"Member Since" Header Slot**: Added a database column `member_since` (Neon Postgres), integrated it into Apple Wallet pass generation (`headerFields` top-right slot), updated member creation/editing forms, CSV bulk registration mappings, and rendered the preview on the design/creator cards.
 4. **Transition Speed & Fetching Loop Fixes**: Fixed severe screen flickering and Vercel query floods (rate limiting) by removing unstable Clerk `getToken` references and redundant `useEffect` hooks in dashboard sub-screens. Layout context caching now handles data loading stably.
 5. **Class A & B Storage Optimization**: Optimized Cloudflare R2 bucket transactions by automatically deleting replaced images from storage during membership updates (Garbage Collection) and executing frontend dirty checks to skip regenerating strip images if styles/fields are unchanged.
-6. **Template Custom Strip Background**: Integrated custom options in templates allowing administrators to select "Match Pass Background", "Custom Solid Color", or upload a custom image (uploaded directly to R2) for the strip banner. Enabled the on-the-fly canvas rendering engine to pull, filter, and draw template background images dynamically.
-7. **Deleted Member Filtering**: Filtered out logically deleted/scrubbed member records from the dashboard layout state so that they no longer skew metrics like "TOTAL REGISTERED", "Revoked Cards", or appear in "Recent Members" lists.
+6. **Interactive Avatar Cropping & Alignment**: Added direct-canvas dragging (mouse and touch events) and scroll-to-zoom on the profile crop circle within the Strip Image Designer, accompanied by secondary offset and scale range slider controls. Synchronized this math with the final canvas PNG generator.
+7. **Guided Link Builder for Pass Back**: Implemented a guided UI that splits simple text fields from web links on the back-of-card settings, enabling admins to input Link Text and Link URL independently. Under the hood, these are stored in standard Markdown and compiled to native links for Apple and Google Wallet passes.
+8. **Template Custom Strip Background**: Integrated custom options in templates allowing administrators to select "Match Pass Background", "Custom Solid Color", or upload a custom image (uploaded directly to R2) for the strip banner. Enabled the on-the-fly canvas rendering engine to pull, filter, and draw template background images dynamically.
+9. **Template Deletion & Cascade Handler**: Integrated template deletion support with confirmation warning dialogs and backend handlers to clean up templates safely.
+10. **Full-Width Controls Layout**: Redesigned the Strip Designer modal controls into a vertically stacked, full-width column layout (`w-full`) with a fixed, non-scrolling preview workspace on the left (desktop) or top (mobile).
+11. **Deleted Member Filtering**: Filtered out logically deleted/scrubbed member records from the dashboard layout state so that they no longer skew metrics like "TOTAL REGISTERED", "Revoked Cards", or appear in "Recent Members" lists.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Advanced Media, Deletions, and UI Polish (Session 26)
+
+- [x] **Interactive Avatar Panning & Scaling**: Programmed mouse drag, touch pan, and scroll-to-zoom actions directly on the designer canvas to dynamically position profile photos within the crop circle. Integrated with standard controls (scale, pan offset sliders, position reset).
+- [x] **Pass Back-of-Card Guided Link Builder**: Added a wizard interface separating plain text fields from interactive web/contact links (asking for Link Text & Link URL separately). Standardizes storage via Markdown formatting and automatically parses it back.
+- [x] **Template Deletion**: Integrated confirmation dialogs and API request handlers to support deleting obsolete templates.
+- [x] **Full-Width Stacked Designer Layout**: Updated the modal layouts to ensure the controls panel occupies the full width of its column (`w-full`) and stacks the Background Settings and Layout & Overlays cards vertically.
+- [x] **Elevator Pitch PM Copy**: Crafted a professional product elevator pitch and saved it to [ELEVATOR_PITCH.md](file:///Volumes/Untitled/contact-tree-membership/ELEVATOR_PITCH.md).
+- [x] **Verify Build Health**: Executed `npm run build` and confirmed the project builds without errors.
 
 ### Advanced Features & Performance Optimization (Session 25)
 
@@ -59,9 +72,10 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
       /admin
         MembershipAdminLayout.tsx    ← Handles database queries cache and context propagation
         MembershipAdminMembers.tsx   ← Directory, template CSV exporter, and CSV upload parsing
-        MembershipAdminTemplates.tsx ← Club templates layout with custom strip background config & upload
+        MembershipAdminTemplates.tsx ← Club templates layout with custom strip background config, upload, delete, backFields
       MembershipCardCreator.tsx      ← Card designer interface with "Member Since" and dynamic strip rendering
       MembershipCardPreview.tsx      ← Real-time visual SVG preview of front and back wallet passes
+      MembershipStripDesigner.tsx    ← Visual banner editor with full-width stacked cards & interactive canvas cropping
 /api
   membership.ts                      ← Custom numbering system, CSV import, and PUT image garbage collection
   passes.ts                          ← Apple Wallet pass compiler & APNs push trigger endpoints
@@ -73,13 +87,12 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-14 | Filtered out deleted/scrubbed memberships from layout context cache. |
-| `src/components/membership/admin/MembershipAdminTemplates.tsx` | 2026-06-14 | Added strip background options, R2 image uploader UI, and removed query loops. |
-| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-14 | Updated canvas engine to asynchronously draw custom template background images. |
-| `src/components/membership/MembershipCardPreview.tsx` | 2026-06-14 | Added fallback inline CSS background-image previews. |
-| `src/components/membership/MembershipStripDesigner.tsx` | 2026-06-14 | Added pre-loading support for templates/cards containing bgImageUrl. |
-| `src/types.ts` | 2026-06-14 | Added `bgImageUrl` field to the `StripConfig` definition. |
-| `api/membership.ts` | 2026-06-14 | Integrated automatic R2 garbage collection during membership record updates. |
+| `src/components/membership/MembershipStripDesigner.tsx` | 2026-06-15 | Stacked controls, made cards full width, added mouse/touch drag coordinates & scroll zoom. |
+| `src/components/membership/admin/MembershipAdminTemplates.tsx` | 2026-06-15 | Integrated Guided Link Builder UI inputs and template deletion trigger with cascades. |
+| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-15 | Unified avatar cropping math with interactive drag/zoom coords. |
+| `api/passes.ts` | 2026-06-15 | Compiled backFields Markdown strings to attributed value links for Apple Wallet. |
+| `api/_utils/googleWallet.ts` | 2026-06-15 | Mapped backFields Markdown strings into text module data for Google Wallet. |
+| `ELEVATOR_PITCH.md` | 2026-06-15 | Created PM elevator pitch document for club digital card solutions. |
 
 ---
 
