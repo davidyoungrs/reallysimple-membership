@@ -481,411 +481,418 @@ export function MembershipStripDesigner({
         </div>
 
         {/* Workspace */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center gap-8 bg-gray-50">
-          {/* Canvas Wrapper */}
-          <div className="w-full max-w-[800px] bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <div className="relative w-full aspect-[1125/369] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
-              <canvas 
-                ref={canvasRef} 
-                className={`w-full h-full object-contain ${profileImage && config.photoConfig?.show ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleMouseUp}
-                onWheel={handleWheel}
-              />
+        <div className="flex-1 overflow-hidden bg-gray-50 flex flex-col lg:flex-row">
+          {/* Left / Top Side: Sticky Preview Panel */}
+          <div className="w-full lg:w-1/2 p-6 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 shrink-0 bg-gray-50/50">
+            <div className="w-full max-w-[500px] lg:max-w-none bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+              <div className="relative w-full aspect-[1125/369] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
+                <canvas 
+                  ref={canvasRef} 
+                  className={`w-full h-full object-contain ${profileImage && config.photoConfig?.show ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleMouseUp}
+                  onWheel={handleWheel}
+                />
+              </div>
+              <p className="text-center text-[10px] text-gray-400 mt-2 font-medium">
+                High Resolution Retina Canvas (1125 x 369)
+              </p>
             </div>
-            <p className="text-center text-xs text-gray-400 mt-2 font-medium">
-              High Resolution Retina Canvas (1125 x 369)
-            </p>
+            {isAdmin && profileImage && config.photoConfig?.show && (
+              <p className="text-[11px] text-gray-400 text-center mt-3 max-w-sm italic">
+                💡 Drag the photo directly inside the canvas to reposition it, or scroll to zoom.
+              </p>
+            )}
           </div>
 
-          {/* Controls Panel */}
-          {isAdmin && (
-            <div className="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-              {/* Left Column: Background Controls */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-2 uppercase tracking-wider">
-                  Background Settings
-                </h3>
+          {/* Right / Bottom Side: Scrollable Controls Panel */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {isAdmin ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto items-start">
+                {/* Left Column: Background Controls */}
+                <div className="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-2 uppercase tracking-wider">
+                    Background Settings
+                  </h3>
 
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setConfig(prev => ({ ...prev, bgType: 'color' }))}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all ${
-                      config.bgType === 'color' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    Solid Color
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all ${
-                      config.bgType === 'image' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    Faded Image
-                  </button>
-                </div>
-
-                {config.bgType === 'color' && (
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Pick Color</label>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="color"
-                        value={config.bgColor}
-                        onChange={(e) => setConfig(prev => ({ ...prev, bgColor: e.target.value }))}
-                        className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={config.bgColor}
-                        onChange={(e) => setConfig(prev => ({ ...prev, bgColor: e.target.value }))}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none text-gray-900 bg-white"
-                      />
-                    </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, bgType: 'color' }))}
+                      className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
+                        config.bgType === 'color' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      Solid Color
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
+                      className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
+                        config.bgType === 'image' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      Faded Image
+                    </button>
                   </div>
-                )}
 
-                {config.bgType === 'image' && (
-                  <div className="space-y-3">
-                    <label className="block text-xs font-bold text-gray-500">Upload Banner Image</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleBgImageUpload}
-                        className="hidden"
-                        id="bg-image-uploader"
-                      />
-                      <label
-                        htmlFor="bg-image-uploader"
-                        className="flex items-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors cursor-pointer text-sm font-bold border border-gray-300"
-                      >
-                        <Upload className="w-4 h-4" /> Choose File
-                      </label>
-                      {bgImage && <span className="text-xs text-green-600 font-medium">Image Loaded ✓</span>}
-                    </div>
-
-                    {bgImage && (
-                      <div className="space-y-2 pt-2">
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-gray-500">
-                            <span>Image Opacity</span>
-                            <span>{config.bgFilters?.opacity || 100}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="100"
-                            value={config.bgFilters?.opacity || 100}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              bgFilters: { ...prev.bgFilters, opacity: Number(e.target.value) }
-                            }))}
-                            className="w-full accent-blue-600"
-                          />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-gray-500">
-                            <span>Fading Filter (Grayscale)</span>
-                            <span>{config.bgFilters?.grayscale || 0}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={config.bgFilters?.grayscale || 0}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              bgFilters: { ...prev.bgFilters, grayscale: Number(e.target.value) }
-                            }))}
-                            className="w-full accent-blue-600"
-                          />
-                        </div>
+                  {config.bgType === 'color' && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Pick Color</label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={config.bgColor}
+                          onChange={(e) => setConfig(prev => ({ ...prev, bgColor: e.target.value }))}
+                          className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={config.bgColor}
+                          onChange={(e) => setConfig(prev => ({ ...prev, bgColor: e.target.value }))}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none text-gray-950 bg-white font-mono"
+                        />
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
 
-              {/* Right Column: Overlay Controls */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-2 uppercase tracking-wider">
-                  Layout & Overlays
-                </h3>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-600">Show Profile Photo</label>
-                    <input
-                      type="checkbox"
-                      checked={config.photoConfig?.show}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        photoConfig: { ...prev.photoConfig, show: e.target.checked }
-                      }))}
-                      className="w-4 h-4 accent-blue-600 rounded"
-                    />
-                  </div>
-
-                  {config.photoConfig?.show && (
-                    <div className="space-y-4">
-                      {/* Circle Position and Size */}
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
-                            <span>Circle Position X</span>
-                            <span>{config.photoConfig.x || 23}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="5"
-                            max="95"
-                            value={config.photoConfig.x || 23}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              photoConfig: { ...prev.photoConfig, x: Number(e.target.value) }
-                            }))}
-                            className="w-full accent-blue-600"
-                          />
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
-                            <span>Circle Position Y</span>
-                            <span>{config.photoConfig.y || 50}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="5"
-                            max="95"
-                            value={config.photoConfig.y || 50}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              photoConfig: { ...prev.photoConfig, y: Number(e.target.value) }
-                            }))}
-                            className="w-full accent-blue-600"
-                          />
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
-                            <span>Circle Size (Scale)</span>
-                            <span>{config.photoConfig.scale || 100}%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="200"
-                            value={config.photoConfig.scale || 100}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              photoConfig: { ...prev.photoConfig, scale: Number(e.target.value) }
-                            }))}
-                            className="w-full accent-blue-600"
-                          />
-                        </div>
+                  {config.bgType === 'image' && (
+                    <div className="space-y-3">
+                      <label className="block text-xs font-bold text-gray-500">Upload Banner Image</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBgImageUpload}
+                          className="hidden"
+                          id="bg-image-uploader"
+                        />
+                        <label
+                          htmlFor="bg-image-uploader"
+                          className="flex items-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors cursor-pointer text-sm font-bold border border-gray-300"
+                        >
+                          <Upload className="w-4 h-4" /> Choose File
+                        </label>
+                        {bgImage && <span className="text-xs text-green-600 font-medium">Image Loaded ✓</span>}
                       </div>
 
-                      {/* Photo Border & Alignment Controls */}
-                      <div className="space-y-3 pt-3 border-t border-gray-100 bg-gray-50 p-3 rounded-xl">
-                        <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                          🔄 Inside-Circle Zoom & Repositioning
-                        </span>
-                        
-                        <div className="space-y-2">
+                      {bgImage && (
+                        <div className="space-y-2 pt-2">
                           <div>
-                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
-                              <span>Photo Zoom (Image scale)</span>
-                              <span>{config.photoConfig.innerScale || 100}%</span>
+                            <div className="flex justify-between text-xs font-bold text-gray-500">
+                              <span>Image Opacity</span>
+                              <span>{config.bgFilters?.opacity || 100}%</span>
                             </div>
                             <input
                               type="range"
                               min="10"
-                              max="300"
-                              value={config.photoConfig.innerScale || 100}
+                              max="100"
+                              value={config.bgFilters?.opacity || 100}
                               onChange={(e) => setConfig(prev => ({
                                 ...prev,
-                                photoConfig: { ...prev.photoConfig, innerScale: Number(e.target.value) }
+                                bgFilters: { ...prev.bgFilters, opacity: Number(e.target.value) }
                               }))}
                               className="w-full accent-blue-600"
                             />
                           </div>
-
                           <div>
-                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
-                              <span>Horizontal Pan (X Offset)</span>
-                              <span>{config.photoConfig.offsetX || 0}px</span>
+                            <div className="flex justify-between text-xs font-bold text-gray-500">
+                              <span>Fading Filter (Grayscale)</span>
+                              <span>{config.bgFilters?.grayscale || 0}%</span>
                             </div>
                             <input
                               type="range"
-                              min="-150"
-                              max="150"
-                              value={config.photoConfig.offsetX || 0}
+                              min="0"
+                              max="100"
+                              value={config.bgFilters?.grayscale || 0}
                               onChange={(e) => setConfig(prev => ({
                                 ...prev,
-                                photoConfig: { ...prev.photoConfig, offsetX: Number(e.target.value) }
-                              }))}
-                              className="w-full accent-blue-600"
-                            />
-                          </div>
-
-                          <div>
-                            <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
-                              <span>Vertical Pan (Y Offset)</span>
-                              <span>{config.photoConfig.offsetY || 0}px</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="-150"
-                              max="150"
-                              value={config.photoConfig.offsetY || 0}
-                              onChange={(e) => setConfig(prev => ({
-                                ...prev,
-                                photoConfig: { ...prev.photoConfig, offsetY: Number(e.target.value) }
+                                bgFilters: { ...prev.bgFilters, grayscale: Number(e.target.value) }
                               }))}
                               className="w-full accent-blue-600"
                             />
                           </div>
                         </div>
-
-                        <div className="flex justify-between items-center pt-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setConfig(prev => ({
-                              ...prev,
-                              photoConfig: {
-                                ...prev.photoConfig,
-                                innerScale: 100,
-                                offsetX: 0,
-                                offsetY: 0
-                              }
-                            }))}
-                            className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-white border border-gray-250 px-2 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer"
-                          >
-                            <RotateCcw className="w-3 h-3" /> Reset Position
-                          </button>
-                          
-                          <span className="text-[9px] text-gray-400 font-medium italic text-right leading-none max-w-[130px]">
-                            Tip: Drag the photo directly inside the canvas, or scroll to zoom!
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">Photo Border</label>
-                        <select
-                          value={config.photoConfig.border}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            photoConfig: { ...prev.photoConfig, border: e.target.value as any }
-                          }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 shadow-sm"
-                        >
-                          <option value="none">None</option>
-                          <option value="thin">Thin White</option>
-                          <option value="thick">Thick White</option>
-                        </select>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-3 pt-2 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-600">Show Member Name</label>
-                    <input
-                      type="checkbox"
-                      checked={config.textConfig?.showName}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        textConfig: { ...prev.textConfig, showName: e.target.checked }
-                      }))}
-                      className="w-4 h-4 accent-blue-600 rounded"
-                    />
-                  </div>
+                {/* Right Column: Overlay Controls */}
+                <div className="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-2 uppercase tracking-wider">
+                    Layout & Overlays
+                  </h3>
 
-                  {config.textConfig?.showName && (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-500">Name Position X (%)</label>
-                          <input
-                            type="number"
-                            value={config.textConfig.nameX}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              textConfig: { ...prev.textConfig, nameX: Number(e.target.value) }
-                            }))}
-                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
-                          />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-gray-600">Show Profile Photo</label>
+                      <input
+                        type="checkbox"
+                        checked={config.photoConfig?.show}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          photoConfig: { ...prev.photoConfig, show: e.target.checked }
+                        }))}
+                        className="w-4 h-4 accent-blue-600 rounded"
+                      />
+                    </div>
+
+                    {config.photoConfig?.show && (
+                      <div className="space-y-4">
+                        {/* Circle Position and Size */}
+                        <div className="grid grid-cols-1 gap-3">
+                          <div>
+                            <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                              <span>Circle Position X</span>
+                              <span>{config.photoConfig.x || 23}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="5"
+                              max="95"
+                              value={config.photoConfig.x || 23}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, x: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                              <span>Circle Position Y</span>
+                              <span>{config.photoConfig.y || 50}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="5"
+                              max="95"
+                              value={config.photoConfig.y || 50}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, y: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                              <span>Circle Size (Scale)</span>
+                              <span>{config.photoConfig.scale || 100}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="10"
+                              max="200"
+                              value={config.photoConfig.scale || 100}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: { ...prev.photoConfig, scale: Number(e.target.value) }
+                              }))}
+                              className="w-full accent-blue-600"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-500">Name Position Y (%)</label>
-                          <input
-                            type="number"
-                            value={config.textConfig.nameY}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              textConfig: { ...prev.textConfig, nameY: Number(e.target.value) }
-                            }))}
-                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
-                          />
+
+                        {/* Photo Border & Alignment Controls */}
+                        <div className="space-y-3 pt-3 border-t border-gray-100 bg-gray-50 p-3 rounded-xl">
+                          <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                            🔄 Inside-Circle Zoom & Repositioning
+                          </span>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                                <span>Photo Zoom (Image scale)</span>
+                                <span>{config.photoConfig.innerScale || 100}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="10"
+                                max="300"
+                                value={config.photoConfig.innerScale || 100}
+                                onChange={(e) => setConfig(prev => ({
+                                  ...prev,
+                                  photoConfig: { ...prev.photoConfig, innerScale: Number(e.target.value) }
+                                }))}
+                                className="w-full accent-blue-600"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                                <span>Horizontal Pan (X Offset)</span>
+                                <span>{config.photoConfig.offsetX || 0}px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="-150"
+                                max="150"
+                                value={config.photoConfig.offsetX || 0}
+                                onChange={(e) => setConfig(prev => ({
+                                  ...prev,
+                                  photoConfig: { ...prev.photoConfig, offsetX: Number(e.target.value) }
+                                }))}
+                                className="w-full accent-blue-600"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+                                <span>Vertical Pan (Y Offset)</span>
+                                <span>{config.photoConfig.offsetY || 0}px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="-150"
+                                max="150"
+                                value={config.photoConfig.offsetY || 0}
+                                onChange={(e) => setConfig(prev => ({
+                                  ...prev,
+                                  photoConfig: { ...prev.photoConfig, offsetY: Number(e.target.value) }
+                                }))}
+                                className="w-full accent-blue-600"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center pt-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setConfig(prev => ({
+                                ...prev,
+                                photoConfig: {
+                                  ...prev.photoConfig,
+                                  innerScale: 100,
+                                  offsetX: 0,
+                                  offsetY: 0
+                                }
+                              }))}
+                              className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-white border border-gray-250 px-2 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer"
+                            >
+                              <RotateCcw className="w-3 h-3" /> Reset Position
+                            </button>
+                            
+                            <span className="text-[9px] text-gray-400 font-medium italic text-right leading-none max-w-[130px]">
+                              Tip: Drag the photo directly inside the canvas, or scroll to zoom!
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-500">Text Align</label>
+
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">Photo Border</label>
                           <select
-                            value={config.textConfig.align}
+                            value={config.photoConfig.border}
                             onChange={(e) => setConfig(prev => ({
                               ...prev,
-                              textConfig: { ...prev.textConfig, align: e.target.value as any }
+                              photoConfig: { ...prev.photoConfig, border: e.target.value as any }
                             }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 shadow-sm"
                           >
-                            <option value="left">Left</option>
-                            <option value="center">Center</option>
-                            <option value="right">Right</option>
+                            <option value="none">None</option>
+                            <option value="thin">Thin White</option>
+                            <option value="thick">Thick White</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-500">Font Color</label>
-                          <input
-                            type="color"
-                            value={config.textConfig.nameColor}
-                            onChange={(e) => setConfig(prev => ({
-                              ...prev,
-                              textConfig: { ...prev.textConfig, nameColor: e.target.value }
-                            }))}
-                            className="w-full h-9 border border-gray-300 rounded-lg cursor-pointer"
-                          />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-gray-600">Show Member Name</label>
+                      <input
+                        type="checkbox"
+                        checked={config.textConfig?.showName}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          textConfig: { ...prev.textConfig, showName: e.target.checked }
+                        }))}
+                        className="w-4 h-4 accent-blue-600 rounded"
+                      />
+                    </div>
+
+                    {config.textConfig?.showName && (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500">Name Position X (%)</label>
+                            <input
+                              type="number"
+                              value={config.textConfig.nameX}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                textConfig: { ...prev.textConfig, nameX: Number(e.target.value) }
+                              }))}
+                              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500">Name Position Y (%)</label>
+                            <input
+                              type="number"
+                              value={config.textConfig.nameY}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                textConfig: { ...prev.textConfig, nameY: Number(e.target.value) }
+                              }))}
+                              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500">Text Align</label>
+                            <select
+                              value={config.textConfig.align}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                textConfig: { ...prev.textConfig, align: e.target.value as any }
+                              }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900"
+                            >
+                              <option value="left">Left</option>
+                              <option value="center">Center</option>
+                              <option value="right">Right</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500">Font Color</label>
+                            <input
+                              type="color"
+                              value={config.textConfig.nameColor}
+                              onChange={(e) => setConfig(prev => ({
+                                ...prev,
+                                textConfig: { ...prev.textConfig, nameColor: e.target.value }
+                              }))}
+                              className="w-full h-9 border border-gray-300 rounded-lg cursor-pointer"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {!isAdmin && (
-            <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                🔒 Protected Design Template
-              </span>
-              <p className="text-xs text-gray-500">
-                The strip background and text positioning are locked by the Club Administrator.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center mt-8">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                  🔒 Protected Design Template
+                </span>
+                <p className="text-xs text-gray-500">
+                  The strip background and text positioning are locked by the Club Administrator.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
