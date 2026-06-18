@@ -638,6 +638,38 @@ async function handleTemplates(
 // MEMBERSHIPS RESOURCE HANDLERS
 // ==========================================
 
+function validateMemberInput(name: any, email: any): { valid: boolean; error?: string } {
+    if (name === undefined || name === null || typeof name !== 'string') {
+        return { valid: false, error: 'Name is required and must be a string' };
+    }
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) {
+        return { valid: false, error: 'Name must be at least 2 characters long' };
+    }
+    if (trimmedName.length > 100) {
+        return { valid: false, error: 'Name must be at most 100 characters long' };
+    }
+    // Reject HTML tags and javascript hrefs
+    if (/<[^>]*>|javascript:/i.test(trimmedName)) {
+        return { valid: false, error: 'Name contains invalid characters or script content' };
+    }
+
+    if (email === undefined || email === null || typeof email !== 'string') {
+        return { valid: false, error: 'Email is required and must be a string' };
+    }
+    const trimmedEmail = email.trim().toLowerCase();
+    if (trimmedEmail.length > 100) {
+        return { valid: false, error: 'Email must be at most 100 characters long' };
+    }
+    // RFC 5322 regex for standard emails
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    if (!emailRegex.test(trimmedEmail)) {
+        return { valid: false, error: 'Email address is invalid or malformed' };
+    }
+
+    return { valid: true };
+}
+
 async function handleMemberships(
     req: VercelRequest,
     res: VercelResponse,
@@ -788,8 +820,10 @@ async function handleMemberships(
                 let index = 1;
                 for (const row of csvData) {
                     const { name, email, photoUrl, membershipType, membershipNumber, slug, memberSince } = row;
-                    if (!name || !email) {
-                        results.push({ name, email, success: false, error: 'Name and Email are required' });
+                    
+                    const validation = validateMemberInput(name, email);
+                    if (!validation.valid) {
+                        results.push({ name, email, success: false, error: validation.error });
                         continue;
                     }
 
@@ -878,6 +912,11 @@ async function handleMemberships(
         const { templateId, memberName, memberEmail, memberPhoto, membershipNumber, slug, cardConfig, expiresAt: customExpiresAt, memberSince } = body;
         if (!templateId || !memberName || !memberEmail) {
             return res.status(400).json({ error: 'Missing required fields: templateId, memberName, memberEmail' });
+        }
+
+        const validation = validateMemberInput(memberName, memberEmail);
+        if (!validation.valid) {
+            return res.status(400).json({ error: validation.error });
         }
 
         const templateRecords = await db.select().from(membershipTemplates).where(eq(membershipTemplates.id, Number(templateId))).limit(1);
@@ -970,6 +1009,17 @@ async function handleMemberships(
         const existingMembership = records[0];
 
         const hasAccess = await checkIsClubAdmin(existingMembership.clubId);
+
+        // Input Validation
+        if (memberName !== undefined || memberEmail !== undefined) {
+            const nameToValidate = memberName !== undefined ? memberName : existingMembership.memberName;
+            const emailToValidate = memberEmail !== undefined ? memberEmail : existingMembership.memberEmail;
+            
+            const validation = validateMemberInput(nameToValidate, emailToValidate);
+            if (!validation.valid) {
+                return res.status(400).json({ error: validation.error });
+            }
+        }
 
         // Helper to check and cleanup replaced files in R2
         const checkAndCleanupReplacedFiles = async (
