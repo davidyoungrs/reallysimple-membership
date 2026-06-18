@@ -78,7 +78,7 @@ export function buildGoogleWalletMembershipObject(
     const stripUrl = getValidUrl(membership.stripImageUrl, undefined, undefined);
 
     const title = club.name.substring(0, 50);
-    const isVoided = membership.status === 'expired' || membership.status === 'revoked';
+    const isVoided = membership.status === 'expired' || membership.status === 'revoked' || club.isSuspended === true;
 
     const textModules: any[] = [
         { header: 'Member Name', body: membership.memberName, id: 'member_name' },

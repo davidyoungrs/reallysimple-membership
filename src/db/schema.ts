@@ -112,6 +112,7 @@ export const clubs = pgTable('clubs', {
     logoUrl: text('logo_url'),
     brandingConfig: jsonb('branding_config').notNull(), // ClubBrandingConfig
     membershipNumberFormat: text('membership_number_format').default('{NUMBER}').notNull(), // e.g. "CLUB-{NUMBER}"
+    isSuspended: boolean('is_suspended').default(false).notNull(),
     createdBy: text('created_by'), // Clerk ID
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

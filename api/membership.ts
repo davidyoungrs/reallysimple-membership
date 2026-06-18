@@ -164,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
             const clerkUser = await clerk.users.getUser(authenticatedUserId);
             authenticatedUserEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
-            isSuperUser = clerkUser.publicMetadata?.role === 'admin';
+            isSuperUser = clerkUser.publicMetadata?.role === 'admin' || authenticatedUserEmail === 'd.j.young@hotmail.co.uk';
         } catch (err) {
             console.error('[Clerk-Auth-Membership] Verification failed:', err);
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
@@ -174,6 +174,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Helper: Check if user is admin of a specific club
     const checkIsClubAdmin = async (clubId: number): Promise<boolean> => {
         if (isSuperUser) return true;
+
+        // Check if club is suspended
+        const clubRecord = await db.select({ isSuspended: clubs.isSuspended })
+            .from(clubs)
+            .where(eq(clubs.id, clubId))
+            .limit(1);
+        if (clubRecord.length > 0 && clubRecord[0].isSuspended) {
+            throw new Error('CLUB_SUSPENDED');
+        }
+
         const adminCheck = await db.select()
             .from(clubAdmins)
             .where(and(eq(clubAdmins.clerkId, authenticatedUserId), eq(clubAdmins.clubId, clubId)))
@@ -241,6 +251,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Invalid resource type' });
         }
     } catch (error: any) {
+        if (error?.message === 'CLUB_SUSPENDED') {
+            return res.status(403).json({ error: 'suspended' });
+        }
         console.error('Membership API Error:', error);
         return res.status(500).json({ error: 'Internal server error', details: error?.message });
     }
@@ -270,6 +283,7 @@ async function handleGetPublicMembership(req: VercelRequest, res: VercelResponse
         clubName: clubs.name,
         clubLogoUrl: clubs.logoUrl,
         clubBrandingConfig: clubs.brandingConfig,
+        isClubSuspended: clubs.isSuspended,
     })
     .from(memberships)
     .innerJoin(clubs, eq(memberships.clubId, clubs.id))
@@ -372,6 +386,7 @@ async function handleClubs(
                 logoUrl: clubs.logoUrl,
                 brandingConfig: clubs.brandingConfig,
                 membershipNumberFormat: clubs.membershipNumberFormat,
+                isSuspended: clubs.isSuspended,
                 createdAt: clubs.createdAt,
             })
             .from(clubs)
@@ -433,7 +448,7 @@ async function handleClubs(
     }
 
     if (method === 'PUT') {
-        const { id, name, slug, logoUrl, brandingConfig, membershipNumberFormat, admins } = body;
+        const { id, name, slug, logoUrl, brandingConfig, membershipNumberFormat, admins, isSuspended } = body;
         if (!id) return res.status(400).json({ error: 'Missing club ID' });
 
         const hasAccess = await checkIsClubAdmin(Number(id));
@@ -441,17 +456,27 @@ async function handleClubs(
 
         const clubId = Number(id);
 
+        // Fetch original club status to check if suspension changed
+        const existingClubs = await db.select().from(clubs).where(eq(clubs.id, clubId)).limit(1);
+        const oldSuspended = existingClubs[0]?.isSuspended || false;
+
         // Update in transaction
         const result = await db.transaction(async (tx) => {
+            const updateData: any = {
+                name,
+                slug,
+                logoUrl,
+                brandingConfig,
+                membershipNumberFormat,
+                updatedAt: new Date(),
+            };
+
+            if (isSuperUser && typeof isSuspended === 'boolean') {
+                updateData.isSuspended = isSuspended;
+            }
+
             const [updatedClub] = await tx.update(clubs)
-                .set({
-                    name,
-                    slug,
-                    logoUrl,
-                    brandingConfig,
-                    membershipNumberFormat,
-                    updatedAt: new Date(),
-                })
+                .set(updateData)
                 .where(eq(clubs.id, clubId))
                 .returning();
 
@@ -470,6 +495,19 @@ async function handleClubs(
 
             return updatedClub;
         });
+
+        // Trigger wallet sync for all memberships of the club if suspension status changed
+        if (isSuperUser && typeof isSuspended === 'boolean' && isSuspended !== oldSuspended) {
+            const clubMemberships = await db.select({ uid: memberships.uid })
+                .from(memberships)
+                .where(eq(memberships.clubId, clubId));
+            
+            for (const member of clubMemberships) {
+                syncMembershipWallet(member.uid).catch(err => {
+                    console.error(`[Suspension-Wallet-Sync] Error syncing membership ${member.uid}:`, err);
+                });
+            }
+        }
 
         return res.status(200).json({ success: true, club: result });
     }

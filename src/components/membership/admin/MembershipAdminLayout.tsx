@@ -12,6 +12,7 @@ export function MembershipAdminLayout() {
   const [club, setClub] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [isSuspended, setIsSuspended] = useState(false);
   
   const [members, setMembers] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
@@ -78,7 +79,19 @@ export function MembershipAdminLayout() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (res.status === 403 || res.status === 401) {
+        if (res.status === 403) {
+          const result = await res.json().catch(() => ({}));
+          if (result.error === 'suspended') {
+            setIsSuspended(true);
+            setLoading(false);
+            return;
+          }
+          setAuthorized(false);
+          setLoading(false);
+          return;
+        }
+
+        if (res.status === 401) {
           setAuthorized(false);
           setLoading(false);
           return;
@@ -105,6 +118,42 @@ export function MembershipAdminLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  // Render suspension screen
+  if (isSuspended) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full bg-slate-900 border border-red-500/25 rounded-3xl p-8 shadow-xl shadow-red-950/20 space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-red-950/50 border border-red-550/40 p-4 flex items-center justify-center mx-auto text-red-500 animate-pulse">
+            <Shield className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-xl font-black text-white uppercase tracking-wider">Workspace Suspended</h1>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Access to the dashboard for <span className="text-white font-extrabold">{clubSlug}</span> has been deactivated. This typically occurs due to an unpaid invoice or contract renewal issue.
+            </p>
+          </div>
+          <div className="pt-2 border-t border-slate-800/80 space-y-3">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              Need assistance?
+            </p>
+            <a
+              href="mailto:support@reallysimpleapps.com"
+              className="block w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all"
+            >
+              Contact Billing Support
+            </a>
+            <Link
+              to="/dashboard"
+              className="block w-full py-2.5 px-4 bg-red-650 hover:bg-red-750 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-red-950/25"
+            >
+              Back to Dashboard
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

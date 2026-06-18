@@ -14,6 +14,7 @@ interface PublicMembershipData {
   expiresAt: string;
   clubName: string;
   clubLogoUrl?: string;
+  isClubSuspended?: boolean;
   clubBrandingConfig: {
     primaryColor: string;
     secondaryColor: string;
@@ -86,6 +87,15 @@ export function MembershipPublicPage() {
   };
 
   const getStatusDetails = () => {
+    if (data.isClubSuspended) {
+      return {
+        icon: <XCircle className="w-6 h-6 text-red-500 animate-pulse" />,
+        bgColor: 'bg-red-950/35',
+        borderColor: 'border-red-500/50',
+        textColor: 'text-red-400',
+        label: 'CLUB SUSPENDED',
+      };
+    }
     switch (data.status) {
       case 'active':
         return {
@@ -175,10 +185,18 @@ export function MembershipPublicPage() {
 
         {/* Status indicator */}
         <div className="p-6">
-          <div className={`flex items-center justify-center gap-3 p-4 rounded-2xl border ${status.bgColor} ${status.borderColor} ${status.textColor} mb-6`}>
-            {status.icon}
-            <span className="font-extrabold text-sm uppercase tracking-wider">{status.label}</span>
+          <div className={`flex items-center justify-center gap-3 p-4 rounded-2xl border ${status?.bgColor} ${status?.borderColor} ${status?.textColor} mb-6`}>
+            {status?.icon}
+            <span className="font-extrabold text-sm uppercase tracking-wider">{status?.label}</span>
           </div>
+
+          {data.isClubSuspended && (
+            <div className="mb-6 p-4 bg-red-950/20 border border-red-500/30 rounded-2xl text-center">
+              <p className="text-[11px] text-red-400 leading-relaxed font-semibold">
+                This membership card is temporarily inactive because the issuing organization's account is suspended. Please contact the club administration.
+              </p>
+            </div>
+          )}
 
           {/* Member Meta Grid */}
           <div className="space-y-4 text-left">

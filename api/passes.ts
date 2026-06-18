@@ -720,7 +720,7 @@ export async function handleAppleMembershipPass(req: VercelRequest, res: VercelR
         const isHttps = !host.includes('localhost') && !host.includes('127.0.0.1');
         const protocol = isHttps ? 'https' : 'http';
 
-        const isVoided = membership.status === 'expired' || membership.status === 'revoked';
+        const isVoided = membership.status === 'expired' || membership.status === 'revoked' || club.isSuspended === true;
 
         let passLocations: any[] = [];
         const locIds = templateConfig?.locations || cardConfig.locations || [];

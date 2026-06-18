@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AdminMembershipClubs() {
   const { getToken } = useAuth();
+  const { user } = useUser();
+  const isSuperUser = user?.publicMetadata?.role === 'admin' || user?.primaryEmailAddress?.emailAddress === 'd.j.young@hotmail.co.uk';
   
   // Data lists
   const [clubs, setClubs] = useState<any[]>([]);
@@ -248,6 +250,42 @@ export function AdminMembershipClubs() {
     }
   };
 
+  const handleToggleSuspension = async (club: any) => {
+    const actionText = club.isSuspended ? 'activate' : 'suspend';
+    if (!window.confirm(`Are you sure you want to ${actionText} "${club.name}"?`)) return;
+
+    try {
+      const token = await getToken();
+      const payload = {
+        id: club.id,
+        name: club.name,
+        slug: club.slug,
+        logoUrl: club.logoUrl,
+        brandingConfig: club.brandingConfig,
+        membershipNumberFormat: club.membershipNumberFormat,
+        isSuspended: !club.isSuspended
+      };
+
+      const res = await fetch('/api/membership?resource=clubs', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.error || `Failed to ${actionText} club`);
+      }
+
+      fetchClubs();
+    } catch (err: any) {
+      alert(err.message || `Failed to ${actionText} club`);
+    }
+  };
+
   const getFormatPreview = (fmt: string) => {
     let result = fmt || '{NUMBER}';
     const cleanSlug = slug || 'london-golf';
@@ -295,11 +333,18 @@ export function AdminMembershipClubs() {
           <div key={club.id} className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 rounded-xl bg-slate-550 border border-slate-100 p-2 flex items-center justify-center">
-                  {club.logoUrl ? (
-                    <img src={club.logoUrl} alt="Logo" className="w-full h-full object-contain rounded" />
-                  ) : (
-                    <Shield className="w-6 h-6 text-slate-400" />
+                <div className="flex gap-2 items-center">
+                  <div className="w-12 h-12 rounded-xl bg-slate-550 border border-slate-100 p-2 flex items-center justify-center">
+                    {club.logoUrl ? (
+                      <img src={club.logoUrl} alt="Logo" className="w-full h-full object-contain rounded" />
+                    ) : (
+                      <Shield className="w-6 h-6 text-slate-400" />
+                    )}
+                  </div>
+                  {club.isSuspended && (
+                    <span className="px-2 py-0.5 text-[9px] font-black tracking-wider bg-red-50 text-red-755 border border-red-200 rounded-md uppercase">
+                      Suspended
+                    </span>
                   )}
                 </div>
                 
@@ -341,6 +386,18 @@ export function AdminMembershipClubs() {
               >
                 Dashboard <ExternalLink className="w-3.5 h-3.5" />
               </Link>
+              {isSuperUser && (
+                <button
+                  onClick={() => handleToggleSuspension(club)}
+                  className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
+                    club.isSuspended
+                      ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-250'
+                      : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-250'
+                  }`}
+                >
+                  {club.isSuspended ? 'Activate' : 'Suspend'}
+                </button>
+              )}
             </div>
           </div>
         ))}
