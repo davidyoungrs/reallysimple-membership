@@ -264,6 +264,18 @@ export function MembershipAdminLayout() {
           </div>
         </header>
 
+        {club?.isSuspended && (
+          <div className="bg-red-950/45 border-b border-red-500/25 px-8 py-3 text-red-200 text-xs font-semibold flex items-center justify-between shrink-0">
+            <span className="flex items-center gap-2">
+              <Shield className="w-4 h-4 animate-pulse text-red-500" />
+              <span>THIS WORKSPACE IS CURRENTLY SUSPENDED. ALL ACTIVE MEMBER CARDS ARE DEACTIVATED.</span>
+            </span>
+            <span className="text-[9px] bg-red-950/40 text-red-400 px-2 py-0.5 rounded border border-red-500/30 font-black uppercase tracking-wider">
+              Superuser View
+            </span>
+          </div>
+        )}
+
         <main className="flex-grow p-8 overflow-y-auto">
           <Outlet context={{ 
             club, 

@@ -164,7 +164,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
             const clerkUser = await clerk.users.getUser(authenticatedUserId);
             authenticatedUserEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
-            isSuperUser = clerkUser.publicMetadata?.role === 'admin' || authenticatedUserEmail === 'd.j.young@hotmail.co.uk';
+            const emails = clerkUser.emailAddresses?.map(e => e.emailAddress.toLowerCase()) || [];
+            isSuperUser = clerkUser.publicMetadata?.role === 'admin' || 
+                          emails.includes('d.j.young@hotmail.co.uk') ||
+                          authenticatedUserEmail.toLowerCase() === 'd.j.young@hotmail.co.uk';
         } catch (err) {
             console.error('[Clerk-Auth-Membership] Verification failed:', err);
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
@@ -461,6 +464,7 @@ async function handleClubs(
         const oldSuspended = existingClubs[0]?.isSuspended || false;
 
         // Update in transaction
+        console.log(`[PUT-Club] Updating club ${clubId}. isSuperUser: ${isSuperUser}, isSuspended sent: ${isSuspended}, type: ${typeof isSuspended}`);
         const result = await db.transaction(async (tx) => {
             const updateData: any = {
                 name,
@@ -473,6 +477,7 @@ async function handleClubs(
 
             if (isSuperUser && typeof isSuspended === 'boolean') {
                 updateData.isSuspended = isSuspended;
+                console.log(`[PUT-Club] Setting isSuspended = ${isSuspended} for club ${clubId}`);
             }
 
             const [updatedClub] = await tx.update(clubs)
@@ -502,11 +507,14 @@ async function handleClubs(
                 .from(memberships)
                 .where(eq(memberships.clubId, clubId));
             
-            for (const member of clubMemberships) {
+            console.log(`[Suspension-Wallet-Sync] Triggering sync for ${clubMemberships.length} memberships...`);
+            const syncPromises = clubMemberships.map(member => 
                 syncMembershipWallet(member.uid).catch(err => {
                     console.error(`[Suspension-Wallet-Sync] Error syncing membership ${member.uid}:`, err);
-                });
-            }
+                })
+            );
+            await Promise.all(syncPromises);
+            console.log(`[Suspension-Wallet-Sync] Completed syncing all memberships.`);
         }
 
         return res.status(200).json({ success: true, club: result });
