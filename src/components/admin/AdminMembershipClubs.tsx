@@ -353,15 +353,15 @@ export function AdminMembershipClubs() {
                 </div>
                 
                 {/* Actions */}
-                {isSuperUser && (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleOpenEdit(club)}
-                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-                      title="Edit Branding"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => handleOpenEdit(club)}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+                    title="Edit Branding"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  {isSuperUser && (
                     <button
                       onClick={() => handleDeleteClub(club.id)}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
@@ -369,8 +369,8 @@ export function AdminMembershipClubs() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               <h3 className="font-extrabold text-base text-slate-900 leading-snug">{club.name}</h3>
@@ -465,8 +465,9 @@ export function AdminMembershipClubs() {
                       required
                       placeholder="e.g. london-golf"
                       value={slug}
+                      disabled={!isSuperUser}
                       onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-                      className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm"
+                      className="w-full px-4 py-2 border border-slate-300 rounded-xl text-sm disabled:bg-slate-50 disabled:text-slate-500"
                     />
                   </div>
                   <div className="col-span-2 space-y-2">
@@ -789,40 +790,42 @@ export function AdminMembershipClubs() {
                 </div>
               </div>
 
-              {/* Club Administrators */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Club Administrators</h3>
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Clerk User ID"
-                      value={adminInput}
-                      onChange={(e) => setAdminInput(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddAdmin}
-                      className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800"
-                    >
-                      Add Admin
-                    </button>
-                  </div>
+              {/* Club Administrators (Super User only) */}
+              {isSuperUser && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Club Administrators</h3>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter Clerk User ID"
+                        value={adminInput}
+                        onChange={(e) => setAdminInput(e.target.value)}
+                        className="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddAdmin}
+                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800"
+                      >
+                        Add Admin
+                      </button>
+                    </div>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {adminsList.map((adminId) => (
-                      <span key={adminId} className="inline-flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-750 px-2.5 py-1 rounded-lg border border-slate-200">
-                        {adminId}
-                        <button type="button" onClick={() => handleRemoveAdmin(adminId)} className="text-slate-400 hover:text-red-500 font-bold">
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                    {adminsList.length === 0 && <span className="text-xs text-slate-400 italic">No custom administrators added. Only Super User can configure.</span>}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {adminsList.map((adminId) => (
+                        <span key={adminId} className="inline-flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-750 px-2.5 py-1 rounded-lg border border-slate-200">
+                          {adminId}
+                          <button type="button" onClick={() => handleRemoveAdmin(adminId)} className="text-slate-400 hover:text-red-500 font-bold">
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      {adminsList.length === 0 && <span className="text-xs text-slate-400 italic">No custom administrators added. Only Super User can configure.</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Submit Button */}
               <div className="pt-4 flex justify-end gap-3 shrink-0 bg-white">
