@@ -179,6 +179,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         isNull(clubAdmins.clerkId)
                     ));
 
+                if (pendingLinks.length > 0) {
                     await db.transaction(async (tx) => {
                         for (const link of pendingLinks) {
                             await tx.update(clubAdmins)
