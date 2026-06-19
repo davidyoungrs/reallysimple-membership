@@ -1,7 +1,159 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload, Lock } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload, Lock, GripVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+interface ClubCardProps {
+  club: any;
+  isSuperUser: boolean;
+  handleOpenEdit: (club: any) => void;
+  handleDeleteClub: (clubId: number) => void;
+  handleToggleSuspension: (club: any) => void;
+}
+
+function ClubCard({ club, isSuperUser, handleOpenEdit, handleDeleteClub, handleToggleSuspension }: ClubCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: club.id });
+
+  const style = {
+    transform: (CSS as any).Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : undefined,
+    zIndex: isDragging ? 20 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full"
+    >
+      <div>
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex gap-2 items-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 p-2 flex items-center justify-center">
+              {club.logoUrl ? (
+                <img src={club.logoUrl} alt="Logo" className="w-full h-full object-contain rounded" />
+              ) : (
+                <Shield className="w-6 h-6 text-slate-400" />
+              )}
+            </div>
+            {club.isSuspended && (
+              <span className="px-2 py-0.5 text-[9px] font-black tracking-wider bg-red-50 text-red-755 border border-red-200 rounded-md uppercase">
+                Suspended
+              </span>
+            )}
+          </div>
+          
+          {/* Actions */}
+          <div className="flex gap-1 items-center">
+            {/* Drag Handle */}
+            <button
+              type="button"
+              {...attributes}
+              {...listeners}
+              className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg cursor-grab active:cursor-grabbing transition-colors"
+              title="Drag to reorder"
+            >
+              <GripVertical className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenEdit(club)}
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+              title="Edit Branding"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+            {isSuperUser ? (
+              <button
+                type="button"
+                onClick={() => handleDeleteClub(club.id)}
+                className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
+                title="Delete Club"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="p-2 text-slate-200 cursor-not-allowed"
+                title="Only Super Users can delete clubs"
+              >
+                <Trash2 className="w-4 h-4 opacity-30" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <h3 className="font-extrabold text-base text-slate-900 leading-snug">{club.name}</h3>
+        <p className="text-xs text-slate-400 mt-0.5">/{club.slug}</p>
+        
+        {/* Branding Preview */}
+        <div className="flex items-center gap-1.5 mt-4">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theme:</span>
+          <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.primaryColor }} title="Primary" />
+          <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.secondaryColor }} title="Secondary" />
+          <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.backgroundColor }} title="Bg" />
+        </div>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-slate-100 flex gap-2">
+        <Link
+          to={`/membership-admin/${club.slug}`}
+          className="flex-1 py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition-colors border border-slate-200"
+        >
+          Dashboard <ExternalLink className="w-3.5 h-3.5" />
+        </Link>
+        {isSuperUser ? (
+          <button
+            type="button"
+            onClick={() => handleToggleSuspension(club)}
+            className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
+              club.isSuspended
+                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-250'
+                : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-250'
+            }`}
+          >
+            {club.isSuspended ? 'Activate' : 'Suspend'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="py-2 px-3 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-350 cursor-not-allowed"
+            title="Only Super Users can manage club suspension"
+          >
+            {club.isSuspended ? 'Suspended' : 'Active'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 export function AdminMembershipClubs() {
   const { getToken } = useAuth();
@@ -13,6 +165,53 @@ export function AdminMembershipClubs() {
   // Data lists
   const [clubs, setClubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Sensors for drag-and-drop reordering
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const saveNewOrder = async (reorderedClubs: any[]) => {
+    try {
+      const token = await getToken();
+      const orderPayload = reorderedClubs.map((club, index) => ({
+        id: club.id,
+        sortOrder: index + 1
+      }));
+
+      const res = await fetch('/api/membership?resource=clubs&action=reorder', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ order: orderPayload })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to save new order');
+      }
+    } catch (err) {
+      console.error('Failed to save new order:', err);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setClubs((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
+      const reordered = arrayMove(items, oldIndex, newIndex);
+      
+      saveNewOrder(reordered);
+      return reordered;
+    });
+  };
   
   // Modals / forms
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -340,107 +539,29 @@ export function AdminMembershipClubs() {
       </div>
 
       {/* Clubs Directory Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {clubs.map((club) => (
-          <div key={club.id} className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex gap-2 items-center">
-                  <div className="w-12 h-12 rounded-xl bg-slate-550 border border-slate-100 p-2 flex items-center justify-center">
-                    {club.logoUrl ? (
-                      <img src={club.logoUrl} alt="Logo" className="w-full h-full object-contain rounded" />
-                    ) : (
-                      <Shield className="w-6 h-6 text-slate-400" />
-                    )}
-                  </div>
-                  {club.isSuspended && (
-                    <span className="px-2 py-0.5 text-[9px] font-black tracking-wider bg-red-50 text-red-755 border border-red-200 rounded-md uppercase">
-                      Suspended
-                    </span>
-                  )}
-                </div>
-                
-                 {/* Actions */}
-                 <div className="flex gap-1">
-                  {isSuperUser ? (
-                    <button
-                      onClick={() => handleOpenEdit(club)}
-                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-                      title="Edit Branding"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="p-2 text-slate-300 cursor-not-allowed"
-                      title="Only Super Users can edit club settings"
-                    >
-                      <Edit2 className="w-4 h-4 opacity-50" />
-                    </button>
-                  )}
-                  {isSuperUser ? (
-                    <button
-                      onClick={() => handleDeleteClub(club.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
-                      title="Delete Club"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="p-2 text-slate-200 cursor-not-allowed"
-                      title="Only Super Users can delete clubs"
-                    >
-                      <Trash2 className="w-4 h-4 opacity-30" />
-                    </button>
-                  )}
-                 </div>
-               </div>
-
-              <h3 className="font-extrabold text-base text-slate-900 leading-snug">{club.name}</h3>
-              <p className="text-xs text-slate-400 mt-0.5">/{club.slug}</p>
-              
-              {/* Branding Preview */}
-              <div className="flex items-center gap-1.5 mt-4">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theme:</span>
-                <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.primaryColor }} title="Primary" />
-                <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.secondaryColor }} title="Secondary" />
-                <span className="w-4 h-4 rounded-full border border-white shadow-sm" style={{ backgroundColor: club.brandingConfig.backgroundColor }} title="Bg" />
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-100 flex gap-2">
-              <Link
-                to={`/membership-admin/${club.slug}`}
-                className="flex-1 py-2 px-3 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition-colors border border-slate-200"
-              >
-                Dashboard <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-              {isSuperUser ? (
-                <button
-                  onClick={() => handleToggleSuspension(club)}
-                  className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
-                    club.isSuspended
-                      ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-250'
-                      : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-250'
-                  }`}
-                >
-                  {club.isSuspended ? 'Activate' : 'Suspend'}
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="py-2 px-3 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-350 cursor-not-allowed"
-                  title="Only Super Users can manage club suspension"
-                >
-                  {club.isSuspended ? 'Suspended' : 'Active'}
-                </button>
-              )}
-            </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={clubs.map((c) => c.id)}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clubs.map((club) => (
+              <ClubCard
+                key={club.id}
+                club={club}
+                isSuperUser={isSuperUser}
+                handleOpenEdit={handleOpenEdit}
+                handleDeleteClub={handleDeleteClub}
+                handleToggleSuspension={handleToggleSuspension}
+              />
+            ))}
           </div>
-        ))}
+        </SortableContext>
+      </DndContext>
 
         {clubs.length === 0 && (
           <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200">
@@ -451,7 +572,7 @@ export function AdminMembershipClubs() {
             </button>
           </div>
         )}
-      </div>
+
 
       {/* CREATE / EDIT CLUB MODAL */}
       {showCreateModal && (

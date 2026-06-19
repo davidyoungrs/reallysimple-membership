@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
 import { clubs, membershipTemplates, memberships, clubAdmins, users, walletPushRegistrations } from '../src/db/schema.js';
-import { eq, and, or, sql, desc, inArray, lt } from 'drizzle-orm';
+import { eq, and, or, sql, desc, asc, inArray, lt } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
@@ -374,7 +374,7 @@ async function handleClubs(
         // List clubs
         if (isSuperUser) {
             // Super User gets everything
-            const allClubs = await db.select().from(clubs).orderBy(desc(clubs.createdAt));
+            const allClubs = await db.select().from(clubs).orderBy(asc(clubs.sortOrder), desc(clubs.createdAt));
             const normalizedClubs = allClubs.map(c => ({
                 ...c,
                 logoUrl: normalizeR2Url(c.logoUrl)
@@ -391,12 +391,13 @@ async function handleClubs(
                 brandingConfig: clubs.brandingConfig,
                 membershipNumberFormat: clubs.membershipNumberFormat,
                 isSuspended: clubs.isSuspended,
+                sortOrder: clubs.sortOrder,
                 createdAt: clubs.createdAt,
             })
             .from(clubs)
             .innerJoin(clubAdmins, eq(clubAdmins.clubId, clubs.id))
             .where(eq(clubAdmins.clerkId, userId))
-            .orderBy(desc(clubs.createdAt));
+            .orderBy(asc(clubs.sortOrder), desc(clubs.createdAt));
 
             const normalizedClubs = myClubs.map(c => ({
                 ...c,
@@ -452,6 +453,26 @@ async function handleClubs(
     }
 
     if (method === 'PUT') {
+        if (action === 'reorder') {
+            const { order } = body;
+            if (!Array.isArray(order)) return res.status(400).json({ error: 'Invalid order array' });
+
+            for (const item of order) {
+                const hasAccess = await checkIsClubAdmin(Number(item.id));
+                if (!hasAccess) return res.status(403).json({ error: `Forbidden: No access to club ${item.id}` });
+            }
+
+            await db.transaction(async (tx) => {
+                for (const item of order) {
+                    await tx.update(clubs)
+                        .set({ sortOrder: Number(item.sortOrder) })
+                        .where(eq(clubs.id, Number(item.id)));
+                }
+            });
+
+            return res.status(200).json({ success: true });
+        }
+
         const { id, name, slug, logoUrl, brandingConfig, membershipNumberFormat, admins, isSuspended } = body;
         if (!id) return res.status(400).json({ error: 'Missing club ID' });
 
