@@ -309,6 +309,10 @@ export function AdminSuperUser() {
     if (user.firstName || user.lastName) {
       return `${user.firstName || ''} ${user.lastName || ''}`.trim();
     }
+    const primaryEmail = user.emailAddresses?.[0]?.emailAddress;
+    if (primaryEmail) {
+      return primaryEmail.split('@')[0];
+    }
     return 'Unnamed User';
   };
 
