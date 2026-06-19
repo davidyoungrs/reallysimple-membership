@@ -17,13 +17,13 @@ This guide details the actionable tasks needed to set up a secure, private devel
 ---
 
 ## 🌿 2. Branching & Environments Setup (GitHub)
-- [ ] **Create the Staging Branch**:
+- [x] **Create the Staging Branch**:
   - Create a new branch named `development` locally or from GitHub:
     ```bash
     git checkout -b development
     git push origin development
     ```
-- [ ] **Align Local Workflow**:
+- [x] **Align Local Workflow**:
   - Set your local working directory to pull from `development` by default.
   - Avoid making direct edits on `main`. Work on feature branches or `development` first.
 
