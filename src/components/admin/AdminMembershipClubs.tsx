@@ -18,6 +18,7 @@ import {
   rectSortingStrategy,
   useSortable
 } from '@dnd-kit/sortable';
+import { CSS as DndCSS } from '@dnd-kit/utilities';
 interface ClubCardProps {
   club: any;
   isSuperUser: boolean;
@@ -37,7 +38,7 @@ function ClubCard({ club, isSuperUser, handleOpenEdit, handleDeleteClub, handleT
   } = useSortable({ id: club.id });
 
   const style = {
-    transform: (CSS as any).Transform.toString(transform),
+    transform: DndCSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : undefined,
     zIndex: isDragging ? 20 : undefined,
