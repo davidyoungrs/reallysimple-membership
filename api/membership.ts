@@ -227,6 +227,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     try {
+        // A. SYNC ROLE (GET /api/membership?action=sync_role)
+        if (action === 'sync_role') {
+            const adminCheck = await db.select()
+                .from(clubAdmins)
+                .where(eq(clubAdmins.clerkId, authenticatedUserId))
+                .limit(1);
+
+            return res.status(200).json({
+                success: true,
+                isLinked: adminCheck.length > 0 || isSuperUser
+            });
+        }
+
         // C. PRESIGNED R2 UPLOAD URL (GET or POST /api/membership?action=presign)
         if (action === 'presign') {
             const filename = query.filename as string || req.body?.filename;

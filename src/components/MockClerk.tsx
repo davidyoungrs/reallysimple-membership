@@ -36,6 +36,9 @@ export function useUser() {
       publicMetadata: {
         role: 'admin',
       },
+      reload: async () => {
+        console.log('Mock user reload called');
+      },
     },
   };
 }
