@@ -36,9 +36,18 @@ export default defineConfig({
                 pathOverride = apiPath.replace('v1/', '');
               }
 
-              const filePath = path.join(process.cwd(), 'api', `${filename}.ts`);
+              let filePath = path.join(process.cwd(), 'api', `${filename}.ts`);
+              if (!fs.existsSync(filePath)) {
+                const dirPath = path.join(process.cwd(), 'api', filename);
+                if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+                  const indexPath = path.join(dirPath, 'index.ts');
+                  if (fs.existsSync(indexPath)) {
+                    filePath = indexPath;
+                  }
+                }
+              }
 
-              if (fs.existsSync(filePath)) {
+              if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
                 // Query parsing
                 (req as any).query = Object.fromEntries(url.searchParams);
                 if (pathOverride !== null) {
