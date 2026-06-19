@@ -1,6 +1,6 @@
 import { db } from '../src/db/index.js';
 import { clubs, membershipTemplates, memberships, clubAdmins, users, walletPushRegistrations } from '../src/db/schema.js';
-import { eq, and, or, sql, desc, asc, inArray, lt } from 'drizzle-orm';
+import { eq, and, or, sql, desc, asc, inArray, lt, isNull } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { checkRateLimit, validatePayload } from './_utils/security.js';
@@ -164,11 +164,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
             const clerkUser = await clerk.users.getUser(authenticatedUserId);
             authenticatedUserEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
-            const emails = clerkUser.emailAddresses?.map(e => e.emailAddress.toLowerCase()) || [];
+            const emails = clerkUser.emailAddresses?.map(e => e.emailAddress.toLowerCase().trim()) || [];
             const superuserEmail = (process.env.SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk').toLowerCase();
             isSuperUser = clerkUser.publicMetadata?.role === 'super_admin' || 
                           emails.includes(superuserEmail) ||
                           authenticatedUserEmail.toLowerCase() === superuserEmail;
+
+            // Auto-link pending email-based admin invitations to this Clerk ID
+            if (emails.length > 0) {
+                const pendingLinks = await db.select()
+                    .from(clubAdmins)
+                    .where(and(
+                        inArray(clubAdmins.email, emails),
+                        isNull(clubAdmins.clerkId)
+                    ));
+
+                if (pendingLinks.length > 0) {
+                    await db.transaction(async (tx) => {
+                        for (const link of pendingLinks) {
+                            await tx.update(clubAdmins)
+                                .set({ clerkId: authenticatedUserId })
+                                .where(eq(clubAdmins.id, link.id));
+                        }
+                    });
+                    console.log(`[Clerk-Auto-Link] Auto-bound Clerk ID ${authenticatedUserId} to ${pendingLinks.length} clubs for verified email(s): ${emails.join(', ')}`);
+                }
+            }
         } catch (err) {
             console.error('[Clerk-Auth-Membership] Verification failed:', err);
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
@@ -437,12 +458,21 @@ async function handleClubs(
 
             // Insert admins if provided
             if (Array.isArray(admins) && admins.length > 0) {
-                for (const clerkId of admins) {
-                    await tx.insert(clubAdmins).values({
-                        clubId: newClub.id,
-                        clerkId,
-                        role: 'admin',
-                    });
+                for (const adminIdentifier of admins) {
+                    const trimmed = adminIdentifier.trim();
+                    if (trimmed.startsWith('user_')) {
+                        await tx.insert(clubAdmins).values({
+                            clubId: newClub.id,
+                            clerkId: trimmed,
+                            role: 'admin',
+                        });
+                    } else if (trimmed.includes('@')) {
+                        await tx.insert(clubAdmins).values({
+                            clubId: newClub.id,
+                            email: trimmed.toLowerCase(),
+                            role: 'admin',
+                        });
+                    }
                 }
             }
 
@@ -511,12 +541,21 @@ async function handleClubs(
             if (isSuperUser && Array.isArray(admins)) {
                 // Remove existing admins and re-insert
                 await tx.delete(clubAdmins).where(eq(clubAdmins.clubId, clubId));
-                for (const clerkId of admins) {
-                    await tx.insert(clubAdmins).values({
-                        clubId,
-                        clerkId,
-                        role: 'admin',
-                    });
+                for (const adminIdentifier of admins) {
+                    const trimmed = adminIdentifier.trim();
+                    if (trimmed.startsWith('user_')) {
+                        await tx.insert(clubAdmins).values({
+                            clubId,
+                            clerkId: trimmed,
+                            role: 'admin',
+                        });
+                    } else if (trimmed.includes('@')) {
+                        await tx.insert(clubAdmins).values({
+                            clubId,
+                            email: trimmed.toLowerCase(),
+                            role: 'admin',
+                        });
+                    }
                 }
             }
 

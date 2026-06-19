@@ -158,7 +158,8 @@ export const memberships = pgTable('memberships', {
 export const clubAdmins = pgTable('club_admins', {
     id: serial('id').primaryKey(),
     clubId: integer('club_id').references(() => clubs.id, { onDelete: 'cascade' }).notNull(),
-    clerkId: text('clerk_id').notNull(), // Clerk user ID
+    clerkId: text('clerk_id'), // Nullable to support pending email invites
+    email: text('email'), // Nullable email address
     role: text('role').default('admin').notNull(), // 'admin' or 'super_admin'
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });

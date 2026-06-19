@@ -362,7 +362,7 @@ export function AdminMembershipClubs() {
       });
       const result = await res.json();
       if (result.success && result.admins) {
-        setAdminsList(result.admins.map((a: any) => a.clerkId));
+        setAdminsList(result.admins.map((a: any) => a.clerkId || a.email));
       }
     } catch (err) {
       console.error(err);
@@ -954,7 +954,7 @@ export function AdminMembershipClubs() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Enter Clerk User ID"
+                        placeholder="Enter Clerk User ID (user_...) or Email Address"
                         value={adminInput}
                         onChange={(e) => setAdminInput(e.target.value)}
                         className="flex-1 px-4 py-2 border border-slate-300 rounded-xl text-sm"
@@ -971,7 +971,7 @@ export function AdminMembershipClubs() {
                     <div className="flex flex-wrap gap-2 pt-1">
                       {adminsList.map((adminId) => (
                         <span key={adminId} className="inline-flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-750 px-2.5 py-1 rounded-lg border border-slate-200">
-                          {adminId}
+                          {adminId.includes('@') ? `${adminId} (Pending)` : adminId}
                           <button type="button" onClick={() => handleRemoveAdmin(adminId)} className="text-slate-400 hover:text-red-500 font-bold">
                             ×
                           </button>
