@@ -453,7 +453,7 @@ async function handleClubs(
     }
 
     if (method === 'PUT') {
-        if (action === 'reorder') {
+        if (query.action === 'reorder') {
             const { order } = body;
             if (!Array.isArray(order)) return res.status(400).json({ error: 'Invalid order array' });
 
