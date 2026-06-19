@@ -179,7 +179,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         isNull(clubAdmins.clerkId)
                     ));
 
-                if (pendingLinks.length > 0) {
                     await db.transaction(async (tx) => {
                         for (const link of pendingLinks) {
                             await tx.update(clubAdmins)
@@ -188,6 +187,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         }
                     });
                     console.log(`[Clerk-Auto-Link] Auto-bound Clerk ID ${authenticatedUserId} to ${pendingLinks.length} clubs for verified email(s): ${emails.join(', ')}`);
+
+                    // Promote Clerk metadata role to 'admin' so they pass frontend layout guards
+                    const currentRole = clerkUser.publicMetadata?.role;
+                    if (currentRole !== 'super_admin' && currentRole !== 'admin') {
+                        await clerk.users.updateUserMetadata(authenticatedUserId, {
+                            publicMetadata: {
+                                role: 'admin'
+                            }
+                        });
+                        console.log(`[Clerk-Auto-Link] Automatically set Clerk role to 'admin' for user ${authenticatedUserId}`);
+                    }
                 }
             }
         } catch (err) {
