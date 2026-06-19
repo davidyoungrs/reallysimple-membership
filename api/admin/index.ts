@@ -267,6 +267,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         role: 'admin'
                     });
                 }
+
+                // Automatically promote to admin role in Clerk if they are not already admin/super_admin
+                try {
+                    const clerkUser = await clerkClient.users.getUser(userId);
+                    const currentRole = clerkUser.publicMetadata?.role;
+                    if (currentRole !== 'super_admin' && currentRole !== 'admin') {
+                        await clerkClient.users.updateUser(userId, {
+                            publicMetadata: {
+                                ...clerkUser.publicMetadata,
+                                role: 'admin'
+                            }
+                        });
+                        console.log(`[Admin-Assign] Automatically set Clerk role to 'admin' for user ${userId} on club assignment`);
+                    }
+                } catch (err) {
+                    console.error('[Admin-Assign] Failed to automatically promote user role:', err);
+                }
+
                 return res.status(200).json({ success: true });
             }
 

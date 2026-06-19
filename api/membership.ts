@@ -120,6 +120,42 @@ export async function syncMembershipWallet(membershipUid: string) {
     }
 }
 
+async function resolveAndPromoteAdmin(
+    adminIdentifier: string,
+    clerk: any
+): Promise<{ clerkId: string | null; email: string | null }> {
+    const trimmed = adminIdentifier.trim();
+    if (trimmed.startsWith('user_')) {
+        try {
+            await clerk.users.updateUser(trimmed, {
+                publicMetadata: { role: 'admin' }
+            });
+            console.log(`[Clerk-Invite] Promoted direct Clerk ID ${trimmed} to admin role`);
+        } catch (err) {
+            console.error(`[Clerk-Invite] Failed to promote direct Clerk ID ${trimmed}:`, err);
+        }
+        return { clerkId: trimmed, email: null };
+    } else if (trimmed.includes('@')) {
+        const cleanEmail = trimmed.toLowerCase();
+        try {
+            const usersList = await clerk.users.getUserList({ emailAddress: [cleanEmail] });
+            const clerkUsers = Array.isArray(usersList) ? usersList : (usersList as any)?.data || [];
+            if (clerkUsers.length > 0) {
+                const clerkUser = clerkUsers[0];
+                await clerk.users.updateUser(clerkUser.id, {
+                    publicMetadata: { role: 'admin' }
+                });
+                console.log(`[Clerk-Invite] Found existing Clerk user for email ${cleanEmail}. Bound to ${clerkUser.id} and promoted to admin.`);
+                return { clerkId: clerkUser.id, email: cleanEmail };
+            }
+        } catch (err) {
+            console.error(`[Clerk-Invite] Error searching/updating Clerk user for email ${cleanEmail}:`, err);
+        }
+        return { clerkId: null, email: cleanEmail };
+    }
+    return { clerkId: null, email: null };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!checkRateLimit(req, res)) return;
     if (!validatePayload(req, res)) return;
@@ -192,7 +228,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     // Promote Clerk metadata role to 'admin' so they pass frontend layout guards
                     const currentRole = clerkUser.publicMetadata?.role;
                     if (currentRole !== 'super_admin' && currentRole !== 'admin') {
-                        await clerk.users.updateUserMetadata(authenticatedUserId, {
+                        await clerk.users.updateUser(authenticatedUserId, {
                             publicMetadata: {
                                 role: 'admin'
                             }
@@ -467,6 +503,18 @@ async function handleClubs(
             return res.status(400).json({ error: 'Club slug already taken' });
         }
 
+        // Resolve admins before transaction to avoid holding database locks
+        const resolvedAdmins = [];
+        if (Array.isArray(admins) && admins.length > 0) {
+            const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+            for (const adminIdentifier of admins) {
+                const resolved = await resolveAndPromoteAdmin(adminIdentifier, clerk);
+                if (resolved.clerkId || resolved.email) {
+                    resolvedAdmins.push(resolved);
+                }
+            }
+        }
+
         // Create club in a transaction
         const result = await db.transaction(async (tx) => {
             const [newClub] = await tx.insert(clubs)
@@ -480,24 +528,14 @@ async function handleClubs(
                 })
                 .returning();
 
-            // Insert admins if provided
-            if (Array.isArray(admins) && admins.length > 0) {
-                for (const adminIdentifier of admins) {
-                    const trimmed = adminIdentifier.trim();
-                    if (trimmed.startsWith('user_')) {
-                        await tx.insert(clubAdmins).values({
-                            clubId: newClub.id,
-                            clerkId: trimmed,
-                            role: 'admin',
-                        });
-                    } else if (trimmed.includes('@')) {
-                        await tx.insert(clubAdmins).values({
-                            clubId: newClub.id,
-                            email: trimmed.toLowerCase(),
-                            role: 'admin',
-                        });
-                    }
-                }
+            // Insert resolved admins
+            for (const admin of resolvedAdmins) {
+                await tx.insert(clubAdmins).values({
+                    clubId: newClub.id,
+                    clerkId: admin.clerkId,
+                    email: admin.email,
+                    role: 'admin',
+                });
             }
 
             return newClub;
@@ -539,6 +577,18 @@ async function handleClubs(
         const existingClubs = await db.select().from(clubs).where(eq(clubs.id, clubId)).limit(1);
         const oldSuspended = existingClubs[0]?.isSuspended || false;
 
+        // Resolve admins before transaction to avoid holding database locks
+        const resolvedAdmins = [];
+        if (isSuperUser && Array.isArray(admins)) {
+            const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+            for (const adminIdentifier of admins) {
+                const resolved = await resolveAndPromoteAdmin(adminIdentifier, clerk);
+                if (resolved.clerkId || resolved.email) {
+                    resolvedAdmins.push(resolved);
+                }
+            }
+        }
+
         // Update in transaction
         console.log(`[PUT-Club] Updating club ${clubId}. isSuperUser: ${isSuperUser}, isSuspended sent: ${isSuspended}, type: ${typeof isSuspended}`);
         const result = await db.transaction(async (tx) => {
@@ -565,21 +615,13 @@ async function handleClubs(
             if (isSuperUser && Array.isArray(admins)) {
                 // Remove existing admins and re-insert
                 await tx.delete(clubAdmins).where(eq(clubAdmins.clubId, clubId));
-                for (const adminIdentifier of admins) {
-                    const trimmed = adminIdentifier.trim();
-                    if (trimmed.startsWith('user_')) {
-                        await tx.insert(clubAdmins).values({
-                            clubId,
-                            clerkId: trimmed,
-                            role: 'admin',
-                        });
-                    } else if (trimmed.includes('@')) {
-                        await tx.insert(clubAdmins).values({
-                            clubId,
-                            email: trimmed.toLowerCase(),
-                            role: 'admin',
-                        });
-                    }
+                for (const admin of resolvedAdmins) {
+                    await tx.insert(clubAdmins).values({
+                        clubId,
+                        clerkId: admin.clerkId,
+                        email: admin.email,
+                        role: 'admin',
+                    });
                 }
             }
 
