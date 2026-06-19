@@ -13,3 +13,10 @@
 - [ ] **Pass Install & Active Tracking**: Provide analytics showing how many issued passes are active in Apple Wallet vs. how many have been deleted or never downloaded.
 - [ ] **Membership Tier Analytics**: Visual charts (via Recharts) showing members registered over time, breakdown by tier/type, and retention metrics.
 
+## 🛡️ Security & Role Governance
+- [x] **Super User Admin Panel**: Implement dedicated privilege manager console to manage clerk roles and geofenced club assignments.
+- [ ] **Application-Wide Tooltips**: Deploy lightweight `<Tooltip />` wrapper triggers across all main dashboards, fields, and controls.
+- [ ] **Dynamic QR Code Barcodes**: Support rotating barcodes to prevent screenshot-sharing fraud.
+- [ ] **Pass Validation Scanner**: Create camera-based scan page at `/scan` for receptionist verification.
+
+

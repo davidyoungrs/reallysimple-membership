@@ -165,9 +165,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const clerkUser = await clerk.users.getUser(authenticatedUserId);
             authenticatedUserEmail = clerkUser.emailAddresses?.[0]?.emailAddress || '';
             const emails = clerkUser.emailAddresses?.map(e => e.emailAddress.toLowerCase()) || [];
-            isSuperUser = clerkUser.publicMetadata?.role === 'admin' || 
-                          emails.includes('d.j.young@hotmail.co.uk') ||
-                          authenticatedUserEmail.toLowerCase() === 'd.j.young@hotmail.co.uk';
+            const superuserEmail = (process.env.SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk').toLowerCase();
+            isSuperUser = clerkUser.publicMetadata?.role === 'super_admin' || 
+                          emails.includes(superuserEmail) ||
+                          authenticatedUserEmail.toLowerCase() === superuserEmail;
         } catch (err) {
             console.error('[Clerk-Auth-Membership] Verification failed:', err);
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });

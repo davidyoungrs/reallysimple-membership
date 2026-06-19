@@ -1,5 +1,5 @@
 import { db } from '../../src/db/index.js';
-import { users, businessCards, cardViews, cardClicks, systemSettings, securityEvents, apiLogs, walletPushRegistrations } from '../../src/db/schema.js';
+import { users, businessCards, cardViews, cardClicks, systemSettings, securityEvents, apiLogs, walletPushRegistrations, clubs, clubAdmins } from '../../src/db/schema.js';
 import { count, eq, sql, desc, ilike, or, and, gte, inArray } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClerkClient, verifyToken } from '@clerk/backend';
@@ -33,12 +33,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // 1. Verify token & get claims
         const verifiedToken = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
 
-        // 2. Ideally, check claims, but to be sure we fetch the User object
+        // 2. Fetch User object
         const user = await clerkClient.users.getUser(verifiedToken.sub);
-
+ 
         // 3. Verify Admin Role
-        const isAdmin = user.publicMetadata?.role === 'admin';
-
+        const superuserEmail = (process.env.SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk').toLowerCase();
+        const emails = user.emailAddresses?.map(e => e.emailAddress.toLowerCase()) || [];
+        const isPrimarySuperUser = emails.includes(superuserEmail);
+        const isSuperUser = isPrimarySuperUser || user.publicMetadata?.role === 'super_admin';
+        const isAdmin = user.publicMetadata?.role === 'admin' || isSuperUser;
+ 
         if (!isAdmin) {
             return res.status(403).json({ error: 'Forbidden: Admin access required' });
         }
@@ -185,15 +189,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const userId = req.query.id as string;
             if (!userId) return res.status(400).json({ error: 'Missing user ID' });
 
-            const [clerkUser, userCards, localUser] = await Promise.all([
+            const [clerkUser, userCards, localUser, assignedClubs] = await Promise.all([
                 clerkClient.users.getUser(userId),
                 db.select().from(businessCards).where(eq(businessCards.userId, userId)),
-                db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, userId)).limit(1)
+                db.select({ tier: users.tier }).from(users).where(eq(users.clerkId, userId)).limit(1),
+                db.select({
+                    id: clubs.id,
+                    name: clubs.name,
+                    slug: clubs.slug
+                })
+                .from(clubAdmins)
+                .innerJoin(clubs, eq(clubAdmins.clubId, clubs.id))
+                .where(eq(clubAdmins.clerkId, userId))
             ]);
 
             return res.status(200).json({
                 user: { ...clerkUser, tier: localUser[0]?.tier || 'starter' },
-                cards: userCards
+                cards: userCards,
+                assignedClubs
             });
         }
 
@@ -202,6 +215,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             const { action, userId, value } = req.body;
             if (!userId || !action) return res.status(400).json({ error: 'Missing parameters' });
+
+            // Restrict role & assignment modifications to superusers
+            if (['toggle_admin_role', 'toggle_super_admin_role', 'assign_club', 'unassign_club'].includes(action)) {
+                if (!isSuperUser) {
+                    return res.status(403).json({ error: 'Forbidden: Super User access required' });
+                }
+            }
+
+            if (action === 'toggle_admin_role') {
+                const { role } = value;
+                const userObj = await clerkClient.users.getUser(userId);
+                const currentMetadata = userObj.publicMetadata || {};
+                await clerkClient.users.updateUser(userId, {
+                    publicMetadata: {
+                        ...currentMetadata,
+                        role: role === 'admin' ? 'admin' : null
+                    }
+                });
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'toggle_super_admin_role') {
+                if (!isPrimarySuperUser) {
+                    return res.status(403).json({ error: 'Forbidden: Only the primary Super User can delegate super admin rights' });
+                }
+                const { role } = value;
+                const userObj = await clerkClient.users.getUser(userId);
+                const currentMetadata = userObj.publicMetadata || {};
+                await clerkClient.users.updateUser(userId, {
+                    publicMetadata: {
+                        ...currentMetadata,
+                        role: role === 'super_admin' ? 'super_admin' : null
+                    }
+                });
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'assign_club') {
+                const { clubId } = value;
+                if (!clubId) return res.status(400).json({ error: 'Missing clubId' });
+                const existingAssignment = await db.select()
+                    .from(clubAdmins)
+                    .where(and(eq(clubAdmins.clubId, Number(clubId)), eq(clubAdmins.clerkId, userId)))
+                    .limit(1);
+                
+                if (existingAssignment.length === 0) {
+                    await db.insert(clubAdmins).values({
+                        clubId: Number(clubId),
+                        clerkId: userId,
+                        role: 'admin'
+                    });
+                }
+                return res.status(200).json({ success: true });
+            }
+
+            if (action === 'unassign_club') {
+                const { clubId } = value;
+                if (!clubId) return res.status(400).json({ error: 'Missing clubId' });
+                await db.delete(clubAdmins).where(and(
+                    eq(clubAdmins.clubId, Number(clubId)),
+                    eq(clubAdmins.clerkId, userId)
+                ));
+                return res.status(200).json({ success: true });
+            }
 
             if (action === 'toggle_status') {
                 // Toggle isActive in publicMetadata

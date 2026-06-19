@@ -1,18 +1,27 @@
-import { Settings, ShieldAlert, LogOut, Shield } from 'lucide-react';
+import { Settings, ShieldAlert, LogOut, Shield, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useClerk } from '@clerk/clerk-react';
+import { useClerk, useUser } from '@clerk/clerk-react';
 
 export function AdminSidebar() {
     const location = useLocation();
     const { signOut } = useClerk();
+    const { user } = useUser();
 
     const isActive = (path: string) => location.pathname === path;
+
+    const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+    const isSuperUser = user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase() || 
+                        user?.publicMetadata?.role === 'super_admin';
 
     const navItems = [
         { icon: Shield, label: 'Membership Clubs', path: '/admin' },
         { icon: ShieldAlert, label: 'Security', path: '/admin/security' },
         { icon: Settings, label: 'Settings', path: '/admin/settings' },
     ];
+
+    if (isSuperUser) {
+        navItems.push({ icon: Users, label: 'Super User', path: '/admin/superuser' });
+    }
 
     return (
         <div className="w-64 bg-slate-900 h-screen fixed left-0 top-0 text-white flex flex-col">

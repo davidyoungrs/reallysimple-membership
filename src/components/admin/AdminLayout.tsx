@@ -19,10 +19,10 @@ export function AdminLayout() {
         return <Navigate to="/sign-in" />;
     }
 
-    // Check for admin role in publicMetadata
-    // IMPORTANT: Ideally this should be a custom claim or synced to session, 
-    // but publicMetadata works for client-side gating.
-    const isAdmin = user?.publicMetadata?.role === 'admin';
+    const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+    const isSuperUser = user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase() || 
+                        user?.publicMetadata?.role === 'super_admin';
+    const isAdmin = user?.publicMetadata?.role === 'admin' || isSuperUser;
 
     if (!isAdmin) {
         return <AdminUnauthorized />;

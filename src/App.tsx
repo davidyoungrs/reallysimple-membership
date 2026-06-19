@@ -19,6 +19,7 @@ const MembershipAdminDashboard = lazy(() => import('./components/membership/admi
 const MembershipAdminMembers = lazy(() => import('./components/membership/admin/MembershipAdminMembers').then(module => ({ default: module.MembershipAdminMembers })));
 const MembershipAdminTemplates = lazy(() => import('./components/membership/admin/MembershipAdminTemplates').then(module => ({ default: module.MembershipAdminTemplates })));
 const AdminMembershipClubs = lazy(() => import('./components/admin/AdminMembershipClubs').then(module => ({ default: module.AdminMembershipClubs })));
+const AdminSuperUser = lazy(() => import('./components/admin/AdminSuperUser').then(module => ({ default: module.AdminSuperUser })));
 
 function App() {
   const [settings, setSettings] = useState<Record<string, boolean>>({});
@@ -50,7 +51,10 @@ function App() {
   if (settings['maintenance_mode']) {
     // Allow admins to bypass (checking Clerk metadata if available, though simple client-side check is weak security, 
     // real protection is at API level. For UI, this is enough to stop regular users).
-    const isAdmin = user?.publicMetadata?.role === 'admin';
+    const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+    const isSuperUser = user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase() || 
+                        user?.publicMetadata?.role === 'super_admin';
+    const isAdmin = user?.publicMetadata?.role === 'admin' || isSuperUser;
 
     if (!isAdmin && !window.location.pathname.startsWith('/sign-in') && !window.location.pathname.startsWith('/admin')) {
       return (
@@ -118,6 +122,7 @@ function App() {
               <Route index element={<AdminMembershipClubs />} />
               <Route path="security" element={<AdminSecurity />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="superuser" element={<AdminSuperUser />} />
             </Route>
 
             {/* Club Admin Routes */}
