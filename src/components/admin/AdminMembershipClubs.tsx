@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom';
 export function AdminMembershipClubs() {
   const { getToken } = useAuth();
   const { user } = useUser();
-  const isSuperUser = user?.publicMetadata?.role === 'admin' || user?.primaryEmailAddress?.emailAddress === 'd.j.young@hotmail.co.uk';
+  const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+  const isSuperUser = user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase() || 
+                      user?.publicMetadata?.role === 'super_admin';
   
   // Data lists
   const [clubs, setClubs] = useState<any[]>([]);
@@ -319,12 +321,14 @@ export function AdminMembershipClubs() {
           <h1 className="text-2xl font-black text-slate-900">Membership Clubs</h1>
           <p className="text-sm text-slate-500">Manage multi-club membership templates, branding, and administrators.</p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
-        >
-          <Plus className="w-4 h-4" /> Create Club
-        </button>
+        {isSuperUser && (
+          <button
+            onClick={handleOpenCreate}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
+          >
+            <Plus className="w-4 h-4" /> Create Club
+          </button>
+        )}
       </div>
 
       {/* Clubs Directory Grid */}
@@ -349,22 +353,24 @@ export function AdminMembershipClubs() {
                 </div>
                 
                 {/* Actions */}
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleOpenEdit(club)}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-                    title="Edit Branding"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClub(club.id)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
-                    title="Delete Club"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {isSuperUser && (
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleOpenEdit(club)}
+                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+                      title="Edit Branding"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClub(club.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
+                      title="Delete Club"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <h3 className="font-extrabold text-base text-slate-900 leading-snug">{club.name}</h3>
