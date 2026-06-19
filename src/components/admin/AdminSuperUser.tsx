@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
 import {
   Shield,
   ShieldAlert,
@@ -51,6 +52,11 @@ export function AdminSuperUser() {
   // Authentication configuration
   const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
   const isPrimarySuperUser = currentUser?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase();
+  const isSuperUser = isPrimarySuperUser || currentUser?.publicMetadata?.role === 'super_admin';
+
+  if (currentUser && !isSuperUser) {
+    return <Navigate to="/admin/no-access" replace />;
+  }
 
   // Directory lists state
   const [users, setUsers] = useState<ClerkUser[]>([]);

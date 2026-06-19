@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AdminMembershipClubs() {
@@ -321,12 +321,20 @@ export function AdminMembershipClubs() {
           <h1 className="text-2xl font-black text-slate-900">Membership Clubs</h1>
           <p className="text-sm text-slate-500">Manage multi-club membership templates, branding, and administrators.</p>
         </div>
-        {isSuperUser && (
+        {isSuperUser ? (
           <button
             onClick={handleOpenCreate}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
           >
             <Plus className="w-4 h-4" /> Create Club
+          </button>
+        ) : (
+          <button
+            disabled
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold cursor-not-allowed"
+            title="Only Super Users can create new clubs"
+          >
+            <Lock className="w-4.5 h-4.5 text-slate-450" /> Create Club
           </button>
         )}
       </div>
@@ -352,16 +360,26 @@ export function AdminMembershipClubs() {
                   )}
                 </div>
                 
-                {/* Actions */}
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleOpenEdit(club)}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-                    title="Edit Branding"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  {isSuperUser && (
+                 {/* Actions */}
+                 <div className="flex gap-1">
+                  {isSuperUser ? (
+                    <button
+                      onClick={() => handleOpenEdit(club)}
+                      className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+                      title="Edit Branding"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="p-2 text-slate-300 cursor-not-allowed"
+                      title="Only Super Users can edit club settings"
+                    >
+                      <Edit2 className="w-4 h-4 opacity-50" />
+                    </button>
+                  )}
+                  {isSuperUser ? (
                     <button
                       onClick={() => handleDeleteClub(club.id)}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
@@ -369,9 +387,17 @@ export function AdminMembershipClubs() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="p-2 text-slate-200 cursor-not-allowed"
+                      title="Only Super Users can delete clubs"
+                    >
+                      <Trash2 className="w-4 h-4 opacity-30" />
+                    </button>
                   )}
-                </div>
-              </div>
+                 </div>
+               </div>
 
               <h3 className="font-extrabold text-base text-slate-900 leading-snug">{club.name}</h3>
               <p className="text-xs text-slate-400 mt-0.5">/{club.slug}</p>
@@ -392,7 +418,7 @@ export function AdminMembershipClubs() {
               >
                 Dashboard <ExternalLink className="w-3.5 h-3.5" />
               </Link>
-              {isSuperUser && (
+              {isSuperUser ? (
                 <button
                   onClick={() => handleToggleSuspension(club)}
                   className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
@@ -402,6 +428,14 @@ export function AdminMembershipClubs() {
                   }`}
                 >
                   {club.isSuspended ? 'Activate' : 'Suspend'}
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="py-2 px-3 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-350 cursor-not-allowed"
+                  title="Only Super Users can manage club suspension"
+                >
+                  {club.isSuspended ? 'Suspended' : 'Active'}
                 </button>
               )}
             </div>
