@@ -1262,7 +1262,6 @@ async function handleMemberships(
             .set({ 
                 memberName: 'Deleted Member',
                 memberEmail: 'deleted@example.com',
-                memberPhone: null,
                 memberPhoto: null,
                 stripImageUrl: null,
                 status: 'revoked', 

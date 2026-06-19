@@ -10,6 +10,7 @@ This document tracks all recent feature updates, architectural improvements, and
 * **Feature**: Super Users can assign club admin rights to email addresses before the user registers a Clerk account.
 * **Database**: Altered the `club_admins` table to make `clerk_id` nullable and added a text-based `email` column.
 * **Sync Logic**: Added auto-linking middleware that binds any pending email assignments to the user's `clerkId` on their first successful sign-in.
+* **JWT Caching Latency Fix**: Integrated dynamic role checks in `AdminLayout.tsx` that hit `/api/membership?action=sync_role` to check database linkages on login, bypassing Clerk's local session JWT refresh delays to prevent "Access Denied" screens on first login.
 * **UI**: Super Users can input standard email addresses or Clerk IDs when configuring clubs, and pending users show a `(Pending)` badge.
 
 ### 2. Multi-Environment Staging Workflow (`development` branch)

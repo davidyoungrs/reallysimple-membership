@@ -9,11 +9,12 @@ export function AdminLayout() {
     const { user, isLoaded, isSignedIn } = useUser();
     const { getToken } = useAuth();
     const [checkingPermissions, setCheckingPermissions] = useState(true);
+    const [hasDatabaseAdminAccess, setHasDatabaseAdminAccess] = useState(false);
 
     const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
     const isSuperUser = user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase() || 
                         user?.publicMetadata?.role === 'super_admin';
-    const isAdmin = user?.publicMetadata?.role === 'admin' || isSuperUser;
+    const isAdmin = user?.publicMetadata?.role === 'admin' || isSuperUser || hasDatabaseAdminAccess;
 
     useEffect(() => {
         if (!isLoaded) return;
@@ -36,8 +37,9 @@ export function AdminLayout() {
                 });
                 const data = await res.json();
                 if (data.success && data.isLinked) {
+                    setHasDatabaseAdminAccess(true);
                     // Force-refresh Clerk user profile to sync publicMetadata.role locally
-                    await user?.reload();
+                    await user?.reload().catch(() => {});
                 }
             } catch (err) {
                 console.error('[AdminLayout] Failed to sync permissions:', err);
