@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Navigate } from 'react-router-dom';
+import { Tooltip } from '../Tooltip';
 import {
   Shield,
   ShieldAlert,
@@ -340,10 +341,12 @@ export function AdminSuperUser() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
+        <Tooltip content="You are logged in as the Super User. You have root-level permissions to delegate roles and assign geofenced club access." position="bottom">
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
             <Shield className="w-7 h-7 text-blue-600" />
             Super User Console
           </h1>
+        </Tooltip>
           <p className="text-sm text-slate-500 mt-1">
             Manage admin credentials, delegate permissions, and configure geofenced club scopes.
           </p>
@@ -491,15 +494,19 @@ export function AdminSuperUser() {
                       {/* Club Assignments */}
                       <td className="px-6 py-4 text-center">
                         {isUserSuper ? (
-                          <span className="text-xs text-slate-400 font-semibold italic">Bypasses Geofencing</span>
+                          <Tooltip content="Super Admins possess root-level authorization and bypass geofencing. They can view all clubs automatically." position="top">
+                            <span className="text-xs text-slate-400 font-semibold italic">Bypasses Geofencing</span>
+                          </Tooltip>
                         ) : (
-                          <button
-                            onClick={() => openClubManagement(user)}
-                            className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5 transition-all"
-                          >
-                            <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                            Manage Clubs
-                          </button>
+                          <Tooltip content="Configure which geofenced clubs this administrator is authorized to view and manage." position="top">
+                            <button
+                              onClick={() => openClubManagement(user)}
+                              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5 transition-all"
+                            >
+                              <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                              Manage Clubs
+                            </button>
+                          </Tooltip>
                         )}
                       </td>
 
@@ -523,26 +530,29 @@ export function AdminSuperUser() {
                           </button>
 
                           {/* Toggle Super Admin Button (Primary Superuser delegated only) */}
-                          <button
-                            onClick={() => handleToggleSuperAdminRole(user)}
-                            disabled={!isPrimarySuperUser}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
-                              !isPrimarySuperUser
-                                ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed'
-                                : isUserSuper
-                                ? 'bg-rose-50 hover:bg-rose-100 text-rose-750 border-rose-250'
-                                : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
-                            }`}
-                            title={
-                              !isPrimarySuperUser 
-                                ? 'Only the Primary Superuser can manage super admin role' 
-                                : isUserSuper 
-                                ? 'Revoke Super Admin privileges' 
-                                : 'Delegate Super Admin'
-                            }
-                          >
-                            {isUserSuper ? 'Revoke Super' : 'Make Super'}
-                          </button>
+                          {!isPrimarySuperUser ? (
+                            <Tooltip content="Only the primary platform owner can delegate or revoke Super Admin privileges." position="top">
+                              <button
+                                onClick={() => handleToggleSuperAdminRole(user)}
+                                disabled={true}
+                                className="px-3 py-1.5 text-xs font-bold rounded-2xl border bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"
+                              >
+                                {isUserSuper ? 'Revoke Super' : 'Make Super'}
+                              </button>
+                            </Tooltip>
+                          ) : (
+                            <button
+                              onClick={() => handleToggleSuperAdminRole(user)}
+                              className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
+                                isUserSuper
+                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-750 border-rose-250'
+                                  : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                              }`}
+                              title={isUserSuper ? 'Revoke Super Admin privileges' : 'Delegate Super Admin'}
+                            >
+                              {isUserSuper ? 'Revoke Super' : 'Make Super'}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Settings, Power, UserX, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
+import { Tooltip } from '../Tooltip';
 
 export function AdminSettings() {
     const { getToken } = useAuth();
@@ -60,12 +61,14 @@ export function AdminSettings() {
         label,
         description,
         settingKey,
-        icon: Icon
+        icon: Icon,
+        tooltip
     }: {
         label: string,
         description: string,
         settingKey: string,
-        icon: any
+        icon: any,
+        tooltip?: string
     }) => {
         const isEnabled = settings[settingKey] === 'true';
 
@@ -76,7 +79,14 @@ export function AdminSettings() {
                         <Icon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900">{label}</h3>
+                        <div className="flex items-center gap-1.5">
+                            <h3 className="text-lg font-medium text-gray-900">{label}</h3>
+                            {tooltip && (
+                                <Tooltip content={tooltip} position="bottom">
+                                    <span className="text-[10px] text-gray-400 border border-gray-300 px-1.5 py-0.5 rounded-full font-bold cursor-help bg-gray-50 hover:bg-gray-100 hover:text-gray-600 transition-colors">?</span>
+                                </Tooltip>
+                            )}
+                        </div>
                         <p className="text-sm text-gray-500 mt-1">{description}</p>
                     </div>
                 </div>
@@ -127,6 +137,7 @@ export function AdminSettings() {
                     description="Enable to prevent non-admin users from accessing the application. Useful during upgrades."
                     settingKey="maintenance_mode"
                     icon={Power}
+                    tooltip="Block all non-admin users from accessing the app. Useful during system upgrades and database migrations."
                 />
 
                 <Toggle
@@ -134,6 +145,7 @@ export function AdminSettings() {
                     description="Prevent new users from signing up. Existing users can still log in."
                     settingKey="disable_registrations"
                     icon={UserX}
+                    tooltip="Stop new users from signing up. Existing administrators can log in normally."
                 />
             </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link, useParams } from 'react-router-dom';
 import { Users, Award, ShieldAlert, PlusCircle, FileSpreadsheet, Loader2, ArrowRight } from 'lucide-react';
+import { Tooltip } from '../../Tooltip';
 
 export function MembershipAdminDashboard() {
   const { clubSlug } = useParams<{ clubSlug: string }>();
@@ -71,15 +72,17 @@ export function MembershipAdminDashboard() {
         </div>
 
         {/* Expired Cards */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Expired Cards</span>
-            <span className="text-3xl font-black text-amber-500 mt-1 block">{stats.expired}</span>
+        <Tooltip content="Total count of members whose pass expiration dates have passed. Expiry dates are validated by Apple/Google Wallet." position="bottom" className="block h-full">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between h-full">
+            <div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Expired Cards</span>
+              <span className="text-3xl font-black text-amber-500 mt-1 block">{stats.expired}</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-amber-950/40 border border-amber-500/20 flex items-center justify-center text-amber-500">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-950/40 border border-amber-500/20 flex items-center justify-center text-amber-500">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
         {/* Revoked Cards */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">

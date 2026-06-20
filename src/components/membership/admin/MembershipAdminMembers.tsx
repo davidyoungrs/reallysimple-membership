@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
+import { Tooltip } from '../../Tooltip';
 import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload, Share2, Mail, Copy } from 'lucide-react';
 
 export function MembershipAdminMembers() {
@@ -420,16 +421,18 @@ export function MembershipAdminMembers() {
         </div>
         
         <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setShowImportView(!showImportView);
-              handleResetImport();
-            }}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all border border-slate-700"
-          >
-            <FileSpreadsheet className="w-4 h-4" /> 
-            {showImportView ? 'View Directory' : 'Bulk CSV Import'}
-          </button>
+          <Tooltip content="Bulk issue membership passes by uploading a spreadsheet. Download our template below to get started." position="top">
+            <button
+              onClick={() => {
+                setShowImportView(!showImportView);
+                handleResetImport();
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all border border-slate-700"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> 
+              {showImportView ? 'View Directory' : 'Bulk CSV Import'}
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -502,22 +505,24 @@ export function MembershipAdminMembers() {
                         {new Date(member.expiresAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <select
-                          value={member.status}
-                          disabled={changingStatusId === member.id}
-                          onChange={(e) => handleStatusChange(member, e.target.value)}
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border outline-none cursor-pointer transition-all disabled:opacity-50 ${
-                            member.status === 'active'
-                              ? 'bg-emerald-950/45 border-emerald-500/30 text-emerald-400 focus:ring-1 focus:ring-emerald-500'
-                              : member.status === 'expired'
-                              ? 'bg-amber-950/45 border-amber-500/30 text-amber-500 focus:ring-1 focus:ring-amber-500'
-                              : 'bg-red-950/45 border-red-500/30 text-red-500 focus:ring-1 focus:ring-red-500'
-                          }`}
-                        >
-                          <option value="active">Active</option>
-                          <option value="expired">Expired</option>
-                          <option value="revoked">Revoked</option>
-                        </select>
+                        <Tooltip content="Active: Pass is valid. Expired: Expiration date has passed. Revoked: Access blocked." position="top" className="block w-fit">
+                          <select
+                            value={member.status}
+                            disabled={changingStatusId === member.id}
+                            onChange={(e) => handleStatusChange(member, e.target.value)}
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border outline-none cursor-pointer transition-all disabled:opacity-50 ${
+                              member.status === 'active'
+                                ? 'bg-emerald-950/45 border-emerald-500/30 text-emerald-400 focus:ring-1 focus:ring-emerald-500'
+                                : member.status === 'expired'
+                                ? 'bg-amber-950/45 border-amber-500/30 text-amber-500 focus:ring-1 focus:ring-amber-500'
+                                : 'bg-red-950/45 border-red-500/30 text-red-500 focus:ring-1 focus:ring-red-500'
+                            }`}
+                          >
+                            <option value="active">Active</option>
+                            <option value="expired">Expired</option>
+                            <option value="revoked">Revoked</option>
+                          </select>
+                        </Tooltip>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-1">

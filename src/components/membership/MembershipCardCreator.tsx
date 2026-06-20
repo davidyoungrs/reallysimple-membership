@@ -6,6 +6,7 @@ import { MembershipStripDesigner } from './MembershipStripDesigner.jsx';
 import { type MembershipCardConfig } from '../../types/membershipTypes.js';
 import { type StripConfig } from '../../types.js';
 import { Loader2, Upload, Sparkles, CreditCard, Check, Bell } from 'lucide-react';
+import { Tooltip } from '../Tooltip';
 
 export function MembershipCardCreator() {
   const { getToken } = useAuth();
@@ -889,19 +890,21 @@ export function MembershipCardCreator() {
                 </button>
 
                 {editId && (
-                  <button
-                    type="button"
-                    onClick={handlePushUpdate}
-                    disabled={pushingUpdate}
-                    className="sm:col-span-2 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all text-xs border border-blue-500/30"
-                  >
-                    {pushingUpdate ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Bell className="w-4 h-4" />
-                    )}
-                    {pushingUpdate ? 'Pushing Update...' : 'Push Update to Installed Cards'}
-                  </button>
+                  <Tooltip content="Push real-time updates to all active Apple Wallet passes on user devices. Uses Apple Push Notification Service (APNs)." position="top" className="sm:col-span-2">
+                    <button
+                      type="button"
+                      onClick={handlePushUpdate}
+                      disabled={pushingUpdate}
+                      className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold transition-all text-xs border border-blue-500/30"
+                    >
+                      {pushingUpdate ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Bell className="w-4 h-4" />
+                      )}
+                      {pushingUpdate ? 'Pushing Update...' : 'Push Update to Installed Cards'}
+                    </button>
+                  </Tooltip>
                 )}
               </div>
             </div>

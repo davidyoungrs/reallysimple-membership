@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Loader2, Plus, Trash2, Edit2, Shield, ExternalLink, ShieldAlert, Upload, Lock, GripVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Tooltip } from '../Tooltip';
 import {
   DndContext,
   closestCenter,
@@ -128,28 +129,35 @@ function ClubCard({ club, isSuperUser, handleOpenEdit, handleDeleteClub, handleT
         >
           Dashboard <ExternalLink className="w-3.5 h-3.5" />
         </Link>
-        {isSuperUser ? (
-          <button
-            type="button"
-            onClick={() => handleToggleSuspension(club)}
-            className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
-              club.isSuspended
-                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-250'
-                : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-250'
-            }`}
-          >
-            {club.isSuspended ? 'Activate' : 'Suspend'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="py-2 px-3 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-350 cursor-not-allowed"
-            title="Only Super Users can manage club suspension"
-          >
-            {club.isSuspended ? 'Suspended' : 'Active'}
-          </button>
-        )}
+        <Tooltip 
+          content={isSuperUser 
+            ? "Suspend or activate this club. Suspended clubs lock out club admins and render warning messages on public wallet cards." 
+            : "Only Super Users can manage club suspension. Suspended clubs lock out club admins and render warning messages on public wallet cards."
+          } 
+          position="top"
+        >
+          {isSuperUser ? (
+            <button
+              type="button"
+              onClick={() => handleToggleSuspension(club)}
+              className={`py-2 px-3 text-xs font-bold rounded-xl transition-colors border ${
+                club.isSuspended
+                  ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-250'
+                  : 'bg-red-50 hover:bg-red-100 text-red-700 border-red-250'
+              }`}
+            >
+              {club.isSuspended ? 'Activate' : 'Suspend'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="py-2 px-3 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-350 cursor-not-allowed"
+            >
+              {club.isSuspended ? 'Suspended' : 'Active'}
+            </button>
+          )}
+        </Tooltip>
       </div>
     </div>
   );
@@ -723,7 +731,9 @@ export function AdminMembershipClubs() {
                     )}
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Membership ID Format</label>
+                    <Tooltip content="Rule to auto-generate membership IDs (e.g. {CLUB}-{YYYY}-{NUMBER}). Click badges below to append dynamic tokens." position="top" className="block w-fit">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Membership ID Format</label>
+                    </Tooltip>
                     <input
                       type="text"
                       required
@@ -853,7 +863,9 @@ export function AdminMembershipClubs() {
               {/* Master Geofenced Locations */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b pb-1">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Master Geofenced Locations</h3>
+                  <Tooltip content="Assign physical geofences to this club. Apple Wallet passes will trigger lock screen notifications when members walk within range." position="top">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Master Geofenced Locations</h3>
+                  </Tooltip>
                   <button
                     type="button"
                     onClick={() => {

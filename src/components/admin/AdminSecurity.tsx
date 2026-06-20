@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Shield, Activity, Lock, CheckCircle, RefreshCw, AlertOctagon, Timer, FileWarning } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Tooltip as HelpTooltip } from '../Tooltip';
 
 export function AdminSecurity() {
     const [stats, setStats] = useState<any>(null);
@@ -223,7 +224,9 @@ export function AdminSecurity() {
             {activeTab === 'sanitization' && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-900">Input Sanitization Log</h2>
+                        <HelpTooltip content="Log of user inputs that exceeded length limits or contained unsafe characters and were automatically cleaned before saving." position="top" className="block w-fit">
+                            <h2 className="text-lg font-bold text-gray-900">Input Sanitization Log</h2>
+                        </HelpTooltip>
                         <p className="text-gray-500 text-sm mt-1">Automatically cleaned malicious inputs</p>
                     </div>
                     <div className="overflow-x-auto">
