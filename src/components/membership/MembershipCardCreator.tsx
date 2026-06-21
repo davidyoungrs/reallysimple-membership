@@ -216,6 +216,12 @@ export function MembershipCardCreator() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 1 * 1024 * 1024) {
+      setFeedback({ type: 'error', message: 'Avatar image must be less than 1MB.' });
+      e.target.value = ''; // Reset input so user can choose again
+      return;
+    }
+
     try {
       setUploading(true);
       const token = await getToken();
