@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-21 (Session 27) | `main` |
+| 2026-06-21 (Session 28) | `main` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -14,21 +14,32 @@
 
 The platform is in a **production-ready, secure, clean, and fully-optimized** state. We have implemented substantial enhancements:
 
-1. **Abuse Protection & Bot Filtering**: Introduced a bot/scraper detection filter blocking automated scripting clients (`curl`, `scrapy`, `axios`, etc.) with a `403` status while allowing SEO/sharing crawlers.
-2. **Hybrid Rate Limiting**: Added persistent, database-backed global rate limiting (max 20 requests/minute) for sensitive write/generation operations like passes and membership mutations, while protecting public endpoints with fast in-memory rate limiting.
-3. **Response Logging Middleware**: Integrated an automatic monkey-patched request logging interceptor that records all query latencies, endpoints, and statuses directly to the database `api_logs` table.
-4. **Exempted Stripe Webhooks**: Ensured Stripe payments proceed without delay by bypassing rate limits on Stripe webhook endpoints while still logging request events.
-5. **Avatar Upload Limit & Warning**: Added a 1MB file size upload limit in the card creator, warning the user and resetting input if a larger photo is selected.
-6. **Avatar Upload UI Fix**: Hid the "Photo Loaded ✓" status indicator while a new avatar is actively loading.
-7. **Visual Club Reordering via Drag-and-Drop**: Integrated `@dnd-kit/core` and `@dnd-kit/sortable` to support visual reordering of clubs on the Super User dashboard, persisted in the database via a `sortOrder` column.
-8. **Email-Based Admin Pre-Authorization**: Allowed pre-authorizing club admins by email before Clerk signup. The system automatically links pre-authorizations to their Clerk accounts upon first login.
-9. **Codebase Cleanup & Purge**: Purged 34+ dead codebase files, legacy developer scratch scripts, and unused npm dependencies (`react-easy-crop` and `vcard-creator`) to minimize package bundle sizes.
-10. **Application-wide Contextual Tooltips**: Added inline, zero-dependency contextual help tooltips across 7 administrator panel views.
-11. **Lighthouse Performance Optimizations**: Eliminated a render-blocking 404 preload for `homepage-mockup.webp`, aligned Google Fonts payloads to load exactly the 4 active fonts used (`Inter`, `Outfit`, `Roboto`, `Playfair Display`), and deferred non-critical Leaflet map CSS to unblock initial rendering.
+1. **Card Issuance Strip Image Fix**: Solved the bug where strip images were not saved to the database on first issue by destructuring and saving the `stripImageUrl` in the backend single card creation `POST` request.
+2. **Main Panel Redirection**: Updated the sidebar "Main Panel" link in the club workspaces sidebar layout from `/dashboard` to `/admin` to direct users back to the correct platform console root.
+3. **Expiry Date & Custom Range Filters**: Added dropdown and inline start/end date calendar filters to the members directory panel for quick filtering by expiry days (<30, 30-60, 60-90 days, or custom date picker bounds).
+4. **Typography & Rhythm Standardization**: Standardized global fonts to **Inter** with a line-height of **1.55**, and resolved uneven spacing in the dashboard grid to align layout elements cleanly.
+5. **Abuse Protection & Bot Filtering**: Introduced a bot/scraper detection filter blocking automated scripting clients (`curl`, `scrapy`, `axios`, etc.) with a `403` status while allowing SEO/sharing crawlers.
+6. **Hybrid Rate Limiting**: Added persistent, database-backed global rate limiting (max 20 requests/minute) for sensitive write/generation operations like passes and membership mutations, while protecting public endpoints with fast in-memory rate limiting.
+7. **Response Logging Middleware**: Integrated an automatic monkey-patched request logging interceptor that records all query latencies, endpoints, and statuses directly to the database `api_logs` table.
+8. **Exempted Stripe Webhooks**: Ensured Stripe payments proceed without delay by bypassing rate limits on Stripe webhook endpoints while still logging request events.
+9. **Avatar Upload Limit & Warning**: Added a 1MB file size upload limit in the card creator, warning the user and resetting input if a larger photo is selected.
+10. **Avatar Upload UI Fix**: Hid the "Photo Loaded ✓" status indicator while a new avatar is actively loading.
+11. **Visual Club Reordering via Drag-and-Drop**: Integrated `@dnd-kit/core` and `@dnd-kit/sortable` to support visual reordering of clubs on the Super User dashboard, persisted in the database via a `sortOrder` column.
+12. **Email-Based Club Admin Pre-Authorization**: Allowed pre-authorizing club admins by email before Clerk signup. The system automatically links pre-authorizations to their Clerk accounts upon first login.
+13. **Codebase Cleanup & Purge**: Purged 34+ dead codebase files, legacy developer scratch scripts, and unused npm dependencies (`react-easy-crop` and `vcard-creator`) to minimize package bundle sizes.
+14. **Application-wide Contextual Tooltips**: Added inline, zero-dependency contextual help tooltips across 7 administrator panel views.
+15. **Lighthouse Performance Optimizations**: Eliminated a render-blocking 404 preload for `homepage-mockup.webp`, aligned Google Fonts payloads to load exactly the 4 active fonts used (`Inter`, `Outfit`, `Roboto`, `Playfair Display`), and deferred non-critical Leaflet map CSS to unblock initial rendering.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Card Issuance, Sidebar Routing, Expiry Filters & Spacing Updates (Session 28)
+- [x] **Strip Image URL Preservation**: Save the generated and uploaded `stripImageUrl` to the database on first card issuance (POST request).
+- [x] **Main Panel Redirection**: Redirect the sidebar "Main Panel" link to target `/admin` for all club workspace views.
+- [x] **Expiry Date Filters**: Support filtering members list by expirations (< 30 days, 30-60 days, 60-90 days, or custom date range picker).
+- [x] **Typography & Vertical Spacing**: Set primary font to Inter with a line-height of 1.55, and unified dashboard margins/paddings.
+- [x] **Full Production Build Verification**: Ran `npm run build` successfully with zero TypeScript compilation errors.
 
 ### Security, Abuse Protection & Upload Optimization (Session 27)
 - [x] **Bot & Scraper Blocker**: Filter out known scripting user-agents from accessing backend serverless endpoints.
@@ -82,11 +93,15 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
+| `api/membership.ts` | 2026-06-21 | Added `stripImageUrl` destructuring and DB insertion logic in card creation POST handler. |
+| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-21 | Updated sidebar "Main Panel" navigation destination to route to `/admin`. |
+| `src/components/membership/admin/MembershipAdminMembers.tsx` | 2026-06-21 | Added expiration dropdown filter and custom inline date range calendar inputs. |
+| `src/components/membership/admin/MembershipAdminDashboard.tsx` | 2026-06-21 | Refactored vertical layout spaces and grid gaps to a consistent `6` step value. |
+| `src/index.css` | 2026-06-21 | Configured Inter as default font-sans and set body line-height to 1.55. |
 | `src/components/membership/MembershipCardCreator.tsx` | 2026-06-21 | Added 1MB avatar size validation and hid the 'Photo Loaded' text during active uploads. |
 | `api/_utils/security.ts` | 2026-06-20 | Added bot filtering, monkey-patched logging middleware, and global db rate-limiting queries. |
 | `api/public.ts` | 2026-06-20 | Bound response logging, bot checks, and public in-memory rate limiting. |
 | `api/passes.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
-| `api/membership.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
 | `api/admin/index.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
 | `api/apple-webhook.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
 | `api/webhooks/stripe.ts` | 2026-06-21 | Removed rate-limiting call to protect payments while keeping latency response logs. |
