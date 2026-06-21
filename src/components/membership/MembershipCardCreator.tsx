@@ -787,7 +787,7 @@ export function MembershipCardCreator() {
                         <Upload className="w-4 h-4" /> Upload Avatar
                       </label>
                       {uploading && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
-                      {memberPhoto && <span className="text-xs text-green-600 font-bold">Photo Loaded ✓</span>}
+                      {memberPhoto && !uploading && <span className="text-xs text-green-600 font-bold">Photo Loaded ✓</span>}
                     </div>
                   </div>
 
