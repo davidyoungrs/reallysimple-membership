@@ -1060,7 +1060,7 @@ async function handleMemberships(
         }
 
         // B. SINGLE CARD CREATION
-        const { templateId, memberName, memberEmail, memberPhoto, membershipNumber, slug, cardConfig, expiresAt: customExpiresAt, memberSince } = body;
+        const { templateId, memberName, memberEmail, memberPhoto, stripImageUrl, membershipNumber, slug, cardConfig, expiresAt: customExpiresAt, memberSince } = body;
         if (!templateId || !memberName || !memberEmail) {
             return res.status(400).json({ error: 'Missing required fields: templateId, memberName, memberEmail' });
         }
@@ -1131,6 +1131,7 @@ async function handleMemberships(
                 memberName,
                 memberEmail,
                 memberPhoto,
+                stripImageUrl: stripImageUrl || null,
                 membershipNumber: finalNumber,
                 membershipType: template.membershipType,
                 cardConfig: cardConfig || template.cardConfig,
