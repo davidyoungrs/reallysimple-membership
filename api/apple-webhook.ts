@@ -3,11 +3,17 @@ import { walletPushRegistrations, businessCards, memberships } from '../src/db/s
 import { eq, and, gte } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { handleApplePass, handleAppleMembershipPass } from './passes.js';
-import { checkRateLimit, validatePayload } from './_utils/security.js';
+import { checkRateLimit, validatePayload, isBot, setupResponseLogging } from './_utils/security.js';
 
 // Apple passes all requests to /api/v1/... which we rewrite to /api/apple-webhook?path=...
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (!checkRateLimit(req, res)) return;
+    setupResponseLogging(req, res);
+
+    if (isBot(req)) {
+        return res.status(403).json({ error: 'Access Denied: Automated tools are blocked.' });
+    }
+
+    if (!(await checkRateLimit(req, res))) return;
     if (!validatePayload(req, res)) return;
 
     let fullPath = req.query.path as string || '';

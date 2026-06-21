@@ -4,7 +4,7 @@ import { inArray, eq } from 'drizzle-orm';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
-import { checkRateLimit, validatePayload } from './_utils/security.js';
+import { checkRateLimit, validatePayload, isBot, setupResponseLogging } from './_utils/security.js';
 
 export function normalizeR2Url(url: string | null | undefined): string | null {
     if (!url) return null;
@@ -32,7 +32,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).end();
     }
 
-    if (!checkRateLimit(req, res)) return;
+    setupResponseLogging(req, res);
+
+    if (isBot(req)) {
+        return res.status(403).json({ error: 'Access Denied: Automated tools are blocked.' });
+    }
+
+    if (!(await checkRateLimit(req, res))) return;
     if (!validatePayload(req, res)) return;
 
     if (req.method !== 'GET') {

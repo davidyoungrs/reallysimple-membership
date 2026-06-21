@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { checkRateLimit, validatePayload } from './_utils/security.js';
+import { checkRateLimit, validatePayload, isBot, setupResponseLogging } from './_utils/security.js';
 
 // Polyfill __dirname in ES module scope
 const __filename = fileURLToPath(import.meta.url);
@@ -149,7 +149,13 @@ function cleanColorToRgb(color: string | undefined | null, defaultColor: string)
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (!checkRateLimit(req, res)) return;
+    setupResponseLogging(req, res);
+
+    if (isBot(req)) {
+        return res.status(403).json({ error: 'Access Denied: Automated tools are blocked.' });
+    }
+
+    if (!(await checkRateLimit(req, res))) return;
     if (!validatePayload(req, res)) return;
 
     if (req.method !== 'GET') {
