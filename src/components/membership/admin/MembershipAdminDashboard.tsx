@@ -41,7 +41,7 @@ export function MembershipAdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-6 text-left">
       <div>
         <h1 className="text-2xl font-black text-white">Dashboard Overview</h1>
         <p className="text-slate-400 text-sm">Real-time metrics and administration controls for {club.name}.</p>
@@ -97,7 +97,7 @@ export function MembershipAdminDashboard() {
       </div>
 
       {/* Quick Actions Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
           <h3 className="font-extrabold text-sm text-white uppercase tracking-wider">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
