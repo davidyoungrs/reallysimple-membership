@@ -236,7 +236,7 @@ export function MembershipAdminLayout() {
 
         <div className="p-4 border-t border-slate-800 space-y-2">
           <Link
-            to="/dashboard"
+            to="/admin"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-850 hover:text-white font-semibold text-xs uppercase tracking-wider transition-colors w-full"
           >
             <ChevronLeft className="w-4 h-4 shrink-0" />
