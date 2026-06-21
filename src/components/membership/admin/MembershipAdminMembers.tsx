@@ -27,6 +27,9 @@ export function MembershipAdminMembers() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [expiryFilter, setExpiryFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Status change
   const [changingStatusId, setChangingStatusId] = useState<number | null>(null);
@@ -67,8 +70,34 @@ export function MembershipAdminMembers() {
       m.membershipNumber.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
+
+    // Expiry Filter Logic
+    let matchesExpiry = true;
+    if (m.expiresAt) {
+      const expiryDate = new Date(m.expiresAt);
+      const now = new Date();
+      const diffTime = expiryDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (expiryFilter === 'less_30') {
+        matchesExpiry = diffDays <= 30;
+      } else if (expiryFilter === '30_60') {
+        matchesExpiry = diffDays > 30 && diffDays <= 60;
+      } else if (expiryFilter === '60_90') {
+        matchesExpiry = diffDays > 60 && diffDays <= 90;
+      } else if (expiryFilter === 'custom') {
+        const expiryTime = expiryDate.getTime();
+        const matchesStart = !startDate || expiryTime >= new Date(startDate).setHours(0, 0, 0, 0);
+        const matchesEnd = !endDate || expiryTime <= new Date(endDate).setHours(23, 59, 59, 999);
+        matchesExpiry = matchesStart && matchesEnd;
+      }
+    } else {
+      if (expiryFilter !== 'all') {
+        matchesExpiry = false;
+      }
+    }
     
-    return matchesQuery && matchesStatus;
+    return matchesQuery && matchesStatus && matchesExpiry;
   });
 
   // Action: Delete (Scrub & Hide)
@@ -451,19 +480,66 @@ export function MembershipAdminMembers() {
               />
             </div>
             
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full sm:w-44 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-350 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full sm:w-40 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-350 focus:ring-1 focus:ring-blue-500 outline-none"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="expired">Expired</option>
                 <option value="revoked">Revoked</option>
               </select>
+
+              <select
+                value={expiryFilter}
+                onChange={(e) => setExpiryFilter(e.target.value)}
+                className="w-full sm:w-44 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-350 focus:ring-1 focus:ring-blue-500 outline-none"
+              >
+                <option value="all">All Expirations</option>
+                <option value="less_30">Expiring &lt; 30 Days</option>
+                <option value="30_60">Expiring 30 - 60 Days</option>
+                <option value="60_90">Expiring 60 - 90 Days</option>
+                <option value="custom">Custom Date Range...</option>
+              </select>
             </div>
           </div>
+
+          {expiryFilter === 'custom' && (
+            <div className="flex flex-wrap items-center gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800/80 animate-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start Date:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">End Date:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              {(startDate || endDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                  className="text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors uppercase tracking-wider ml-auto sm:ml-0"
+                >
+                  Clear Range
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Directory Table */}
           <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
