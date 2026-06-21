@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-15 (Session 26) | `main` |
+| 2026-06-21 (Session 27) | `main` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -12,54 +12,39 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is now in a **secure, optimized, cleaned-up, and feature-rich** state. We have completed several major upgrades:
+The platform is in a **production-ready, secure, clean, and fully-optimized** state. We have implemented substantial enhancements:
 
-1. **Secret Scanning & Security Cleanup**: Scanned the codebase for hardcoded keys, passwords, and tokens. Removed sensitive Apple Wallet certs and APNs private keys from Git tracking to ensure zero credentials are exposed or committed.
-2. **Custom Multi-level Numbering System**: Designed and implemented a dynamic serial/numbering generator supporting segment tokens like `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` (e.g. `{NUMBER:4}` for 4-digit auto-incrementing padding). Built a live preview builder component in the admin club dashboard settings.
-3. **"Member Since" Header Slot**: Added a database column `member_since` (Neon Postgres), integrated it into Apple Wallet pass generation (`headerFields` top-right slot), updated member creation/editing forms, CSV bulk registration mappings, and rendered the preview on the design/creator cards.
-4. **Transition Speed & Fetching Loop Fixes**: Fixed severe screen flickering and Vercel query floods (rate limiting) by removing unstable Clerk `getToken` references and redundant `useEffect` hooks in dashboard sub-screens. Layout context caching now handles data loading stably.
-5. **Class A & B Storage Optimization**: Optimized Cloudflare R2 bucket transactions by automatically deleting replaced images from storage during membership updates (Garbage Collection) and executing frontend dirty checks to skip regenerating strip images if styles/fields are unchanged.
-6. **Interactive Avatar Cropping & Alignment**: Added direct-canvas dragging (mouse and touch events) and scroll-to-zoom on the profile crop circle within the Strip Image Designer, accompanied by secondary offset and scale range slider controls. Synchronized this math with the final canvas PNG generator.
-7. **Guided Link Builder for Pass Back**: Implemented a guided UI that splits simple text fields from web links on the back-of-card settings, enabling admins to input Link Text and Link URL independently. Under the hood, these are stored in standard Markdown and compiled to native links for Apple and Google Wallet passes.
-8. **Template Custom Strip Background**: Integrated custom options in templates allowing administrators to select "Match Pass Background", "Custom Solid Color", or upload a custom image (uploaded directly to R2) for the strip banner. Enabled the on-the-fly canvas rendering engine to pull, filter, and draw template background images dynamically.
-9. **Template Deletion & Cascade Handler**: Integrated template deletion support with confirmation warning dialogs and backend handlers to clean up templates safely.
-10. **Full-Width Controls Layout**: Redesigned the Strip Designer modal controls into a vertically stacked, full-width column layout (`w-full`) with a fixed, non-scrolling preview workspace on the left (desktop) or top (mobile).
-11. **Deleted Member Filtering**: Filtered out logically deleted/scrubbed member records from the dashboard layout state so that they no longer skew metrics like "TOTAL REGISTERED", "Revoked Cards", or appear in "Recent Members" lists.
+1. **Abuse Protection & Bot Filtering**: Introduced a bot/scraper detection filter blocking automated scripting clients (`curl`, `scrapy`, `axios`, etc.) with a `403` status while allowing SEO/sharing crawlers.
+2. **Hybrid Rate Limiting**: Added persistent, database-backed global rate limiting (max 20 requests/minute) for sensitive write/generation operations like passes and membership mutations, while protecting public endpoints with fast in-memory rate limiting.
+3. **Response Logging Middleware**: Integrated an automatic monkey-patched request logging interceptor that records all query latencies, endpoints, and statuses directly to the database `api_logs` table.
+4. **Exempted Stripe Webhooks**: Ensured Stripe payments proceed without delay by bypassing rate limits on Stripe webhook endpoints while still logging request events.
+5. **Avatar Upload Limit & Warning**: Added a 1MB file size upload limit in the card creator, warning the user and resetting input if a larger photo is selected.
+6. **Avatar Upload UI Fix**: Hid the "Photo Loaded ✓" status indicator while a new avatar is actively loading.
+7. **Visual Club Reordering via Drag-and-Drop**: Integrated `@dnd-kit/core` and `@dnd-kit/sortable` to support visual reordering of clubs on the Super User dashboard, persisted in the database via a `sortOrder` column.
+8. **Email-Based Admin Pre-Authorization**: Allowed pre-authorizing club admins by email before Clerk signup. The system automatically links pre-authorizations to their Clerk accounts upon first login.
+9. **Codebase Cleanup & Purge**: Purged 34+ dead codebase files, legacy developer scratch scripts, and unused npm dependencies (`react-easy-crop` and `vcard-creator`) to minimize package bundle sizes.
+10. **Application-wide Contextual Tooltips**: Added inline, zero-dependency contextual help tooltips across 7 administrator panel views.
 
 ---
 
 ## ✅ COMPLETED WORK
 
-### Advanced Media, Deletions, and UI Polish (Session 26)
+### Security, Abuse Protection & Upload Optimization (Session 27)
+- [x] **Bot & Scraper Blocker**: Filter out known scripting user-agents from accessing backend serverless endpoints.
+- [x] **Global Database Rate Limiting**: Count log records in the Neon `api_logs` table under a sliding 1-minute window to throttle concurrent serverless attacks globally.
+- [x] **Express Response Logging Interceptor**: Automatically patch response handlers to calculate query latency and insert logs to the database.
+- [x] **Stripe Webhook Exemption**: Bypassed rate limiting on Stripe webhook signature validations to guarantee payment events process without delay.
+- [x] **Avatar Upload File Size Guard**: Implemented a 1MB file size limit in the card creator, blocking files exceeding 1MB and displaying a warning.
+- [x] **Avatar Loading UI Refinement**: Hid the "Photo Loaded ✓" badge during active avatar uploads.
+- [x] **Full Production Build Verification**: Ran `npm run build` successfully with zero TypeScript compilation errors.
 
-- [x] **Interactive Avatar Panning & Scaling**: Programmed mouse drag, touch pan, and scroll-to-zoom actions directly on the designer canvas to dynamically position profile photos within the crop circle. Integrated with standard controls (scale, pan offset sliders, position reset).
-- [x] **Pass Back-of-Card Guided Link Builder**: Added a wizard interface separating plain text fields from interactive web/contact links (asking for Link Text & Link URL separately). Standardizes storage via Markdown formatting and automatically parses it back.
-- [x] **Template Deletion**: Integrated confirmation dialogs and API request handlers to support deleting obsolete templates.
-- [x] **Full-Width Stacked Designer Layout**: Updated the modal layouts to ensure the controls panel occupies the full width of its column (`w-full`) and stacks the Background Settings and Layout & Overlays cards vertically.
-- [x] **Elevator Pitch PM Copy**: Crafted a professional product elevator pitch and saved it to [ELEVATOR_PITCH.md](file:///Volumes/Untitled/contact-tree-membership/ELEVATOR_PITCH.md).
-- [x] **Verify Build Health**: Executed `npm run build` and confirmed the project builds without errors.
-
-### Advanced Features & Performance Optimization (Session 25)
-
-- [x] **Resolved Infinite Request Loops (429 & Screen Flickering)**: Discovered that `getToken` reference instability and redundant `useEffect` checks in sub-screens (`MembershipAdminDashboard`, `MembershipAdminMembers`, and `MembershipAdminTemplates`) caused excessive database query floods. Removed redundant checks to let parent layout manage fetches.
-- [x] **Optimized Cloudflare Usage (Class A & Class B Plans)**: Cleaned up R2 storage by automatically garbage collecting old images during updates. Added dirty state checks to reuse existing card strip images if styling/fields have not changed, reducing operations.
-- [x] **Custom Template Strip Background**: Added UI selection options to templates enabling custom colors, custom image uploads (persisted to R2), or matching pass background. Mapped the canvas-based strip rendering engine to dynamically fetch, filter, and draw template background images on the fly.
-- [x] **Deleted Member Dashboard Filtering**: Filtered out deleted/scrubbed member profiles from the dashboard and layout context to prevent deleted entries from skewing "TOTAL REGISTERED" and "Revoked Cards" counts.
-- [x] **Verify Build Health:** Verified compilation with `npm run build` and committed all changes.
-
-### Security & Git Cleanup (Session 24)
-
-- [x] **Ignored *.p8 Certificate Format**: Updated `.gitignore` to block `.p8` files, ensuring APNs private keys are never committed.
-- [x] **Untracked Sensitive Certificates**: Removed `apns.p8`, `signerKey.pem`, `wwdrKey.pem`, `signerCert.pem`, `wwdr.pem`, and `AppleWWDRCAG4.cer` from Git tracking.
-- [x] **Configured Environment Variable Fallbacks**: Verified that the backend code successfully loads cert/key details from `APPLE_APNS_AUTH_KEY`, `WALLET_WWDR_CERT`, `WALLET_SIGNER_CERT`, and `WALLET_SIGNER_KEY` variables when local files are deleted.
-
-### Advanced Features & Performance Optimization (Session 23)
-
-- [x] **Multi-level Numbering System**: Added `{CLUB}`, `{TYPE}`, `{YYYY}`, `{YY}`, `{MM}`, and `{NUMBER:X}` tokens, updated membership API routes, and built a live preview config editor in [AdminMembershipClubs.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/admin/AdminMembershipClubs.tsx).
-- [x] **"Member Since" Integration**: Added `member_since` to [schema.ts](file:///Volumes/Untitled/contact-tree-membership/src/db/schema.ts), mapped CSV bulk uploads/manual creation, and configured top-right Apple Wallet pass header mapping.
-- [x] **Menu Transitions Cache**: Refactored [MembershipAdminLayout.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/membership/admin/MembershipAdminLayout.tsx) to cache data and share it using Outlet context, eliminating page-to-page database queries.
-- [x] **Bulk Import Template Download**: Embedded CSV template generation in [MembershipAdminMembers.tsx](file:///Volumes/Untitled/contact-tree-membership/src/components/membership/admin/MembershipAdminMembers.tsx) for self-service downloads.
-- [x] **Decommissioning Legacy Code**: Removed 34 unused files across components, admin panels, and api endpoints to simplify maintenance.
+### Visual Reordering, Tooltips & Cleanups (Session 26)
+- [x] **Visual Club Reordering (D&D)**: Integrated drag-and-drop handles for sorting clubs with persistent order updating.
+- [x] **Restored Edit Branding**: Allowed standard admins to edit branding on assigned clubs without exposing creation/deletion triggers.
+- [x] **Super User Routing Fallback**: Created a premium Access Denied redirect page to gracefully route unauthorized dashboard attempts.
+- [x] **Email-Based Pre-Authorization**: Configured DB and auto-linking logic to bind pending email invitations to Clerk accounts on signup.
+- [x] **Codebase Dead Code Purging**: Purged unused files, developer scratch scripts, and obsolete frontend views.
+- [x] **Application-wide Tooltips**: Added contextual tooltips using a custom, lightweight CSS-and-React popup component.
 
 ---
 
@@ -73,12 +58,20 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
         MembershipAdminLayout.tsx    ← Handles database queries cache and context propagation
         MembershipAdminMembers.tsx   ← Directory, template CSV exporter, and CSV upload parsing
         MembershipAdminTemplates.tsx ← Club templates layout with custom strip background config, upload, delete, backFields
-      MembershipCardCreator.tsx      ← Card designer interface with "Member Since" and dynamic strip rendering
+      MembershipCardCreator.tsx      ← Card designer interface with "Member Since", avatar upload size guard, and dynamic strip rendering
       MembershipCardPreview.tsx      ← Real-time visual SVG preview of front and back wallet passes
       MembershipStripDesigner.tsx    ← Visual banner editor with full-width stacked cards & interactive canvas cropping
+    Tooltip.tsx                      ← Lightweight, zero-dependency helper component for admin panels
 /api
-  membership.ts                      ← Custom numbering system, CSV import, and PUT image garbage collection
+  /admin
+    index.ts                         ← Security-logged, bot-blocked admin statistics and metadata handler
+  /_utils
+    security.ts                      ← Hybrid rate limiting, bot blocker filters, and monkey-patched response logger
+  membership.ts                      ← Custom numbering, CSV imports, and PUT image garbage collection
   passes.ts                          ← Apple Wallet pass compiler & APNs push trigger endpoints
+  apple-webhook.ts                   ← Apple Wallet registration and callback endpoints
+  /webhooks
+    stripe.ts                        ← Stripe payment checkout and renewal webhook event handler
 ```
 
 ---
@@ -87,12 +80,14 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `src/components/membership/MembershipStripDesigner.tsx` | 2026-06-15 | Stacked controls, made cards full width, added mouse/touch drag coordinates & scroll zoom. |
-| `src/components/membership/admin/MembershipAdminTemplates.tsx` | 2026-06-15 | Integrated Guided Link Builder UI inputs and template deletion trigger with cascades. |
-| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-15 | Unified avatar cropping math with interactive drag/zoom coords. |
-| `api/passes.ts` | 2026-06-15 | Compiled backFields Markdown strings to attributed value links for Apple Wallet. |
-| `api/_utils/googleWallet.ts` | 2026-06-15 | Mapped backFields Markdown strings into text module data for Google Wallet. |
-| `ELEVATOR_PITCH.md` | 2026-06-15 | Created PM elevator pitch document for club digital card solutions. |
+| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-21 | Added 1MB avatar size validation and hid the 'Photo Loaded' text during active uploads. |
+| `api/_utils/security.ts` | 2026-06-20 | Added bot filtering, monkey-patched logging middleware, and global db rate-limiting queries. |
+| `api/public.ts` | 2026-06-20 | Bound response logging, bot checks, and public in-memory rate limiting. |
+| `api/passes.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
+| `api/membership.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
+| `api/admin/index.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
+| `api/apple-webhook.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
+| `api/webhooks/stripe.ts` | 2026-06-21 | Removed rate-limiting call to protect payments while keeping latency response logs. |
 
 ---
 
@@ -105,12 +100,11 @@ The platform is now in a **secure, optimized, cleaned-up, and feature-rich** sta
    - `WALLET_SIGNER_KEY` (Contents of `signerKey.pem`)
 2. **Verify Build Health:** `npm run build`
 3. **Launch Local Server:** `npm run dev -- --port 5173`
-4. **Verify CSV Template & Import:** Check if the CSV template download matches the expected import headers.
 
 ---
 
 ## 💡 DESIGN PRINCIPLES
 
-- **Caching over Round-Trips** — Avoid calling backend routes repeatedly on simple admin page navigation.
-- **Strict Validations** — Hard rules like "max 6 templates per club" must be enforced on both client interfaces and server APIs.
-- **Dynamic Configs** — Standard formatting engines (like membership serial numbers) should be flexible and predictable.
+- **Security By Default** — Shield Vercel functions from crawlers, bot sweeps, and brute force requests natively.
+- **Fail Closed for Auth, Fail Open for Payments** — Webhooks should bypass rate limits to avoid customer payment failure delays.
+- **Optimized Assets** — Restrict file upload sizes early on the client-side to save bandwidth and Cloudflare storage.
