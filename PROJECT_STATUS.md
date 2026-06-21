@@ -24,6 +24,7 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 8. **Email-Based Admin Pre-Authorization**: Allowed pre-authorizing club admins by email before Clerk signup. The system automatically links pre-authorizations to their Clerk accounts upon first login.
 9. **Codebase Cleanup & Purge**: Purged 34+ dead codebase files, legacy developer scratch scripts, and unused npm dependencies (`react-easy-crop` and `vcard-creator`) to minimize package bundle sizes.
 10. **Application-wide Contextual Tooltips**: Added inline, zero-dependency contextual help tooltips across 7 administrator panel views.
+11. **Lighthouse Performance Optimizations**: Eliminated a render-blocking 404 preload for `homepage-mockup.webp`, aligned Google Fonts payloads to load exactly the 4 active fonts used (`Inter`, `Outfit`, `Roboto`, `Playfair Display`), and deferred non-critical Leaflet map CSS to unblock initial rendering.
 
 ---
 
@@ -36,6 +37,7 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 - [x] **Stripe Webhook Exemption**: Bypassed rate limiting on Stripe webhook signature validations to guarantee payment events process without delay.
 - [x] **Avatar Upload File Size Guard**: Implemented a 1MB file size limit in the card creator, blocking files exceeding 1MB and displaying a warning.
 - [x] **Avatar Loading UI Refinement**: Hid the "Photo Loaded ✓" badge during active avatar uploads.
+- [x] **Lighthouse Core Web Vitals Optimization**: Removed 404 preload link, optimized Google Font payload weights, and deferred Leaflet map CSS.
 - [x] **Full Production Build Verification**: Ran `npm run build` successfully with zero TypeScript compilation errors.
 
 ### Visual Reordering, Tooltips & Cleanups (Session 26)
