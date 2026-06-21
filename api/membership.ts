@@ -705,13 +705,14 @@ async function handleTemplates(
     }
 
     if (method === 'POST') {
-        // Super user only can create templates
-        if (!isSuperUser) return res.status(403).json({ error: 'Forbidden: Super User access required' });
-
         const { clubId, name, membershipType, cardConfig, durationMonths, isActive } = body;
         if (!clubId || !name || !membershipType || !cardConfig) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
+
+        // Verify that the current user has admin access to this club
+        const hasAccess = await checkIsClubAdmin(Number(clubId));
+        if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
         // Limit maximum templates per club to 6
         const existingTemplates = await db.select().from(membershipTemplates).where(eq(membershipTemplates.clubId, Number(clubId)));
@@ -735,10 +736,18 @@ async function handleTemplates(
     }
 
     if (method === 'PUT') {
-        if (!isSuperUser) return res.status(403).json({ error: 'Forbidden: Super User access required' });
-
         const { id, name, membershipType, cardConfig, durationMonths, isActive } = body;
         if (!id) return res.status(400).json({ error: 'Missing template ID' });
+
+        // Verify that the current user has admin access to the template's club
+        const records = await db.select({ clubId: membershipTemplates.clubId })
+            .from(membershipTemplates)
+            .where(eq(membershipTemplates.id, Number(id)))
+            .limit(1);
+        if (records.length === 0) return res.status(404).json({ error: 'Template not found' });
+        
+        const hasAccess = await checkIsClubAdmin(records[0].clubId);
+        if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
         const [updatedTemplate] = await db.update(membershipTemplates)
             .set({
@@ -756,9 +765,18 @@ async function handleTemplates(
     }
 
     if (method === 'DELETE') {
-        if (!isSuperUser) return res.status(403).json({ error: 'Forbidden: Super User access required' });
         const id = Number(query.id);
         if (!id) return res.status(400).json({ error: 'Missing template ID' });
+
+        // Verify that the current user has admin access to the template's club
+        const records = await db.select({ clubId: membershipTemplates.clubId })
+            .from(membershipTemplates)
+            .where(eq(membershipTemplates.id, id))
+            .limit(1);
+        if (records.length === 0) return res.status(404).json({ error: 'Template not found' });
+
+        const hasAccess = await checkIsClubAdmin(records[0].clubId);
+        if (!hasAccess) return res.status(403).json({ error: 'Forbidden: Access denied' });
 
         await db.delete(membershipTemplates).where(eq(membershipTemplates.id, id));
         return res.status(200).json({ success: true, message: 'Template deleted successfully' });
