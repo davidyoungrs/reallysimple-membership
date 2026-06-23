@@ -180,8 +180,8 @@ export function MembershipAdminLayout() {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Overview', path: `/membership-admin/${clubSlug}` },
-    { icon: Users, label: 'Members', path: `/membership-admin/${clubSlug}/members` },
     { icon: Layers, label: 'Templates', path: `/membership-admin/${clubSlug}/templates` },
+    { icon: Users, label: 'Members', path: `/membership-admin/${clubSlug}/members` },
     { icon: PlusCircle, label: 'Issue Card', path: `/membership-admin/${clubSlug}/create` },
   ];
 
