@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-21 (Session 28) | `main` |
+| 2026-06-23 (Session 29) | `main` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -33,6 +33,10 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 ---
 
 ## ✅ COMPLETED WORK
+
+### Sidebar Navigation Reordering (Session 29)
+- [x] **Sidebar Menu Order**: Moved the "Templates" menu item to be directly under "Overview" in the left-hand workspace sidebar.
+- [x] **Full Production Build Verification**: Ran `npm run build` successfully with zero TypeScript compilation errors.
 
 ### Card Issuance, Sidebar Routing, Expiry Filters & Spacing Updates (Session 28)
 - [x] **Strip Image URL Preservation**: Save the generated and uploaded `stripImageUrl` to the database on first card issuance (POST request).
@@ -93,8 +97,8 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
+| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-23 | Moved Templates under Overview in the sidebar layout. |
 | `api/membership.ts` | 2026-06-21 | Added `stripImageUrl` destructuring and DB insertion logic in card creation POST handler. |
-| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-21 | Updated sidebar "Main Panel" navigation destination to route to `/admin`. |
 | `src/components/membership/admin/MembershipAdminMembers.tsx` | 2026-06-21 | Added expiration dropdown filter and custom inline date range calendar inputs. |
 | `src/components/membership/admin/MembershipAdminDashboard.tsx` | 2026-06-21 | Refactored vertical layout spaces and grid gaps to a consistent `6` step value. |
 | `src/index.css` | 2026-06-21 | Configured Inter as default font-sans and set body line-height to 1.55. |
