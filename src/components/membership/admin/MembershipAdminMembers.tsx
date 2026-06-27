@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { Tooltip } from '../../Tooltip';
-import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload, Share2, Mail, Copy, HelpCircle } from 'lucide-react';
+import { Loader2, Search, Trash2, Edit, FileSpreadsheet, X, Check, Upload, Share2, Mail, Copy } from 'lucide-react';
 
 export function MembershipAdminMembers() {
   const { 
@@ -460,20 +460,25 @@ export function MembershipAdminMembers() {
           <p className="text-slate-400 text-sm">List, search, filter, and issue membership passes.</p>
         </div>
         
-        <div className="flex gap-2">
-          <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="top">
-            <button
-              onClick={handleToggleTooltips}
-              className={`flex items-center justify-center p-2.5 rounded-xl text-xs font-bold transition-all border ${
-                tooltipsEnabled 
-                  ? 'bg-blue-600 border-blue-500 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20' 
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
-              }`}
-              aria-label="Toggle Tooltips"
-            >
-              <HelpCircle className="w-4 h-4" />
-            </button>
-          </Tooltip>
+        <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+            <span className="text-xs font-bold text-slate-400">ToolTips</span>
+            <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="top">
+              <button
+                onClick={handleToggleTooltips}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none focus:ring-1 focus:ring-blue-500 ${
+                  tooltipsEnabled ? 'bg-blue-600' : 'bg-slate-700'
+                }`}
+                aria-label="Toggle Tooltips"
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    tooltipsEnabled ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </Tooltip>
+          </div>
 
           <Tooltip content="Bulk issue membership passes by uploading a spreadsheet. Download our template below to get started." position="top">
             <button
