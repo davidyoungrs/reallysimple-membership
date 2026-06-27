@@ -1,8 +1,6 @@
 # 📋 PROJECT STATUS — Really Simple Apps (reallysimple-membership)
 
-| Date | Head Commit |
-| --- | --- |
-| 2026-06-27 (Session 30) | `d867d40` |
+| 2026-06-27 (Session 30) | `5a2f860` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -19,6 +17,7 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 ## ✅ COMPLETED WORK
 
 ### Full Security Audit & Hardening (Session 30)
+- [x] **Pass Validation Scanner**: Built a browser-native WebRTC camera viewfinder scanner screen (`/admin/scan`) and backend verification controller (`api/membership.ts?action=verify`) with dynamic success/failure overlays and auto-resets. Added an on-card validation banner for logged-in admins.
 - [x] **Expanded Membership ID Formats**: Added badge helpers for `{NUMBER:6}`, `{NUMBER:7}`, and `{NUMBER:8}` in the Club settings UI, and updated token replacement logic to cleanly swap out existing number formats.
 - [x] **User Manual**: Created a comprehensive text-only user guide (`/admin/manual`) with full navigation from the admin sidebar.
 - [x] **Superuser-only Menu Items**: Hidden Security and Settings nav links from standard admins in `AdminSidebar.tsx`.
@@ -103,12 +102,11 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 | `api/public.ts` | 2026-06-27 | Removed `details: error?.message` from 500 response in `handleSystemStatus`. |
 | `api/passes.ts` | 2026-06-27 | Restricted CORS `Access-Control-Allow-Origin` from `*` to `VITE_APP_URL` on both Google Wallet handlers. |
 | `api/cron/expiry-alerts.ts` | 2026-06-27 | Added `CRON_SECRET` Bearer token authorization check to prevent external triggering. |
-| `src/components/admin/AdminSidebar.tsx` | 2026-06-27 | Hidden Security and Settings links from non-superuser admins; added User Manual link. |
-| `src/components/admin/AdminSecurity.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
-| `src/components/admin/AdminSettings.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
-| `src/components/admin/AdminManual.tsx` | 2026-06-27 | New component — full user guide rendered at `/admin/manual`. |
-| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-27 | Fixed `isSuperUser` role check from `'admin'` → `'super_admin'`; unlocks strip image designer for superusers. |
-| `src/components/membership/admin/MembershipAdminTemplates.tsx` | 2026-06-27 | Fixed `isSuperUser` role check from `'admin'` → `'super_admin'`; restores template create/edit/delete for superusers. |
+| `src/components/admin/AdminScan.tsx` | 2026-06-27 | New component — browser camera scan view for real-time QR pass verification. |
+| `src/components/membership/MembershipPublicPage.tsx` | 2026-06-27 | Added floating admin verification and check-in banner for logged-in club admins. |
+| `api/membership.ts` | 2026-06-27 | Implemented `action === 'verify'` handler to support check-in verification request validation. |
+| `src/components/admin/AdminSidebar.tsx` | 2026-06-27 | Added Scan Passes sidebar menu item with QrCode icon. |
+| `src/App.tsx` | 2026-06-27 | Registered /admin/scan lazy loader route. |
 | `LAUNCH_CHECKLIST.md` | 2026-06-27 | New file — 9-phase go-live checklist for custom domain deployment. |
 
 ---
