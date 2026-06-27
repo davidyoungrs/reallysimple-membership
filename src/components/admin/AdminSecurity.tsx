@@ -61,13 +61,15 @@ export function AdminSecurity() {
                     <h1 className="text-3xl font-bold text-gray-900">Security & System Health</h1>
                     <p className="text-gray-500 mt-2">Monitor system security, performance, and automated protections.</p>
                 </div>
-                <button
-                    onClick={fetchSecurityStats}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                    <RefreshCw className="w-4 h-4" />
-                    Refresh
-                </button>
+                <HelpTooltip content="Fetch the latest real-time sanitization logs, firewall block events, and rate limiting status." position="bottom">
+                    <button
+                        onClick={fetchSecurityStats}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        Refresh
+                    </button>
+                </HelpTooltip>
             </div>
 
             {/* Navigation Tabs */}

@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Loader2, Plus, Edit2, Layers, X, ShieldAlert, Upload, Trash2 } from 'lucide-react';
 import { type ClubBrandingConfig } from '../../../types/membershipTypes.js';
+import { Tooltip } from '../../Tooltip';
 
 export function MembershipAdminTemplates() {
   const { club, branding, templates, fetchTemplates, loadingTemplates } = useOutletContext<{
@@ -372,18 +373,19 @@ export function MembershipAdminTemplates() {
           </p>
         </div>
         {isSuperUser && (
-          <button
-            onClick={handleOpenCreate}
-            disabled={templates.length >= 6}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
-              templates.length >= 6 
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none border border-slate-750' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/10'
-            }`}
-            title={templates.length >= 6 ? 'Maximum limit of 6 templates reached' : undefined}
-          >
-            <Plus className="w-4 h-4" /> Create Template {templates.length >= 6 && '(Limit Reached)'}
-          </button>
+          <Tooltip content={templates.length >= 6 ? 'Maximum limit of 6 templates reached. Delete an existing template to create a new one.' : 'Create a new membership card design template.'} position="left">
+            <button
+              onClick={handleOpenCreate}
+              disabled={templates.length >= 6}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
+                templates.length >= 6 
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none border border-slate-750' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/10'
+              }`}
+            >
+              <Plus className="w-4 h-4" /> Create Template {templates.length >= 6 && '(Limit Reached)'}
+            </button>
+          </Tooltip>
         )}
       </div>
 
@@ -424,20 +426,23 @@ export function MembershipAdminTemplates() {
 
             {isSuperUser && (
               <div className="mt-6 pt-4 border-t border-slate-850 flex gap-2">
-                <button
-                  onClick={() => handleOpenEdit(t)}
-                  className="flex-1 py-2 bg-slate-850 hover:bg-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-200"
-                >
-                  <Edit2 className="w-3.5 h-3.5" /> Configure
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteTemplate(t)}
-                  className="px-3 py-2 bg-slate-900 hover:bg-red-950/20 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-900/50 cursor-pointer"
-                  title="Delete Template"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <Tooltip content="Configure styling, colors, strip imagery, and back-of-pass fields." position="top" className="flex-1">
+                  <button
+                    onClick={() => handleOpenEdit(t)}
+                    className="w-full py-2 bg-slate-850 hover:bg-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-200"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" /> Configure
+                  </button>
+                </Tooltip>
+                <Tooltip content="Permanently delete this card template and any associated designs." position="top">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTemplate(t)}
+                    className="px-3 py-2 bg-slate-900 hover:bg-red-950/20 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-900/50 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -894,14 +899,16 @@ export function MembershipAdminTemplates() {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Save Template
-                </button>
+                <Tooltip content="Save all configuration and card design adjustments to the database." position="top">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    Save Template
+                  </button>
+                </Tooltip>
               </div>
             </form>
           </div>

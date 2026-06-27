@@ -101,31 +101,35 @@ export function MembershipAdminDashboard() {
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
           <h3 className="font-extrabold text-sm text-white uppercase tracking-wider">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              to={`/membership-admin/${clubSlug}/create`}
-              className="p-4 bg-slate-950 hover:bg-slate-850 rounded-2xl border border-slate-800 text-left transition-colors flex items-center gap-3 group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-blue-950/50 flex items-center justify-center text-blue-400">
-                <PlusCircle className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="block font-bold text-xs text-white">Single Issue</span>
-                <span className="text-[10px] text-slate-500 font-semibold group-hover:text-slate-400">Issue individual card</span>
-              </div>
-            </Link>
+            <Tooltip content="Issue a membership card for a single member." position="top">
+              <Link
+                to={`/membership-admin/${clubSlug}/create`}
+                className="p-4 bg-slate-950 hover:bg-slate-850 rounded-2xl border border-slate-800 text-left transition-colors flex items-center gap-3 group h-full"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-950/50 flex items-center justify-center text-blue-400">
+                  <PlusCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block font-bold text-xs text-white">Single Issue</span>
+                  <span className="text-[10px] text-slate-500 font-semibold group-hover:text-slate-400">Issue individual card</span>
+                </div>
+              </Link>
+            </Tooltip>
 
-            <Link
-              to={`/membership-admin/${clubSlug}/members?import=true`}
-              className="p-4 bg-slate-950 hover:bg-slate-850 rounded-2xl border border-slate-800 text-left transition-colors flex items-center gap-3 group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-emerald-950/50 flex items-center justify-center text-emerald-400">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="block font-bold text-xs text-white">CSV Import</span>
-                <span className="text-[10px] text-slate-500 font-semibold group-hover:text-slate-400">Bulk card generation</span>
-              </div>
-            </Link>
+            <Tooltip content="Bulk issue membership passes using a CSV spreadsheet upload." position="top">
+              <Link
+                to={`/membership-admin/${clubSlug}/members?import=true`}
+                className="p-4 bg-slate-950 hover:bg-slate-850 rounded-2xl border border-slate-800 text-left transition-colors flex items-center gap-3 group h-full"
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-950/50 flex items-center justify-center text-emerald-400">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="block font-bold text-xs text-white">CSV Import</span>
+                  <span className="text-[10px] text-slate-500 font-semibold group-hover:text-slate-400">Bulk card generation</span>
+                </div>
+              </Link>
+            </Tooltip>
           </div>
         </div>
 
