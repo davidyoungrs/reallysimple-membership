@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TooltipProps {
   content: string;
@@ -9,6 +9,20 @@ interface TooltipProps {
 
 export function Tooltip({ content, children, position = 'top', className = '' }: TooltipProps) {
   const [active, setActive] = useState(false);
+  const [enabled, setEnabled] = useState(() => {
+    return localStorage.getItem('tooltips-enabled') !== 'false';
+  });
+
+  useEffect(() => {
+    const handleToggleEvent = () => {
+      setEnabled(localStorage.getItem('tooltips-enabled') !== 'false');
+    };
+
+    window.addEventListener('tooltips-changed', handleToggleEvent);
+    return () => {
+      window.removeEventListener('tooltips-changed', handleToggleEvent);
+    };
+  }, []);
 
   const positionClasses = {
     top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
@@ -33,7 +47,7 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
       onBlur={() => setActive(false)}
     >
       {children}
-      {active && (
+      {active && enabled && (
         <div 
           className={`absolute z-[9999] w-max max-w-[200px] sm:max-w-xs px-3 py-1.5 bg-slate-900 text-white text-[10.5px] font-semibold rounded-xl shadow-xl transition-all duration-150 transform scale-100 animate-in fade-in zoom-in-95 duration-100 whitespace-normal text-center leading-relaxed ${positionClasses[position]}`}
           role="tooltip"
@@ -45,3 +59,4 @@ export function Tooltip({ content, children, position = 'top', className = '' }:
     </div>
   );
 }
+
