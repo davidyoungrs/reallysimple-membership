@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation, Outlet, Navigate } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { Shield, Users, Layers, PlusCircle, LayoutDashboard, ChevronLeft, Loader2 } from 'lucide-react';
+import { Tooltip } from '../../Tooltip';
 
 export function MembershipAdminLayout() {
   const { clubSlug } = useParams<{ clubSlug: string }>();
@@ -18,6 +19,28 @@ export function MembershipAdminLayout() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(() => {
+    return localStorage.getItem('tooltips-enabled') !== 'false';
+  });
+
+  const handleToggleTooltips = () => {
+    const nextValue = !tooltipsEnabled;
+    setTooltipsEnabled(nextValue);
+    localStorage.setItem('tooltips-enabled', String(nextValue));
+    window.dispatchEvent(new Event('tooltips-changed'));
+  };
+
+  useEffect(() => {
+    const handleToggleEvent = () => {
+      setTooltipsEnabled(localStorage.getItem('tooltips-enabled') !== 'false');
+    };
+
+    window.addEventListener('tooltips-changed', handleToggleEvent);
+    return () => {
+      window.removeEventListener('tooltips-changed', handleToggleEvent);
+    };
+  }, []);
 
   const fetchMembers = async () => {
     if (!club) return;
@@ -256,10 +279,31 @@ export function MembershipAdminLayout() {
               {clubSlug}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400 font-semibold">{user?.fullName}</span>
-            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
-              <img src={user?.imageUrl} alt="Profile" className="w-full h-full object-cover" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+              <span className="text-xs font-bold text-slate-400">ToolTips</span>
+              <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="bottom">
+                <button
+                  onClick={handleToggleTooltips}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none focus:ring-1 focus:ring-blue-500 ${
+                    tooltipsEnabled ? 'bg-blue-600' : 'bg-slate-700'
+                  }`}
+                  aria-label="Toggle Tooltips"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      tooltipsEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </Tooltip>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400 font-semibold">{user?.fullName}</span>
+              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+                <img src={user?.imageUrl} alt="Profile" className="w-full h-full object-cover" />
+              </div>
             </div>
           </div>
         </header>

@@ -48,17 +48,6 @@ export function MembershipAdminMembers() {
   const [autoGenerateBadges, setAutoGenerateBadges] = useState(true);
   const [badgeUploadProgress, setBadgeUploadProgress] = useState<string | null>(null);
 
-  const [tooltipsEnabled, setTooltipsEnabled] = useState(() => {
-    return localStorage.getItem('tooltips-enabled') !== 'false';
-  });
-
-  const handleToggleTooltips = () => {
-    const nextValue = !tooltipsEnabled;
-    setTooltipsEnabled(nextValue);
-    localStorage.setItem('tooltips-enabled', String(nextValue));
-    window.dispatchEvent(new Event('tooltips-changed'));
-  };
-
 
   useEffect(() => {
     if (templates.length > 0 && !selectedTemplateId) {
@@ -460,26 +449,7 @@ export function MembershipAdminMembers() {
           <p className="text-slate-400 text-sm">List, search, filter, and issue membership passes.</p>
         </div>
         
-        <div className="flex gap-2 items-center">
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
-            <span className="text-xs font-bold text-slate-400">ToolTips</span>
-            <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="top">
-              <button
-                onClick={handleToggleTooltips}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none focus:ring-1 focus:ring-blue-500 ${
-                  tooltipsEnabled ? 'bg-blue-600' : 'bg-slate-700'
-                }`}
-                aria-label="Toggle Tooltips"
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                    tooltipsEnabled ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </Tooltip>
-          </div>
-
+        <div className="flex gap-2">
           <Tooltip content="Bulk issue membership passes by uploading a spreadsheet. Download our template below to get started." position="top">
             <button
               onClick={() => {
