@@ -12,7 +12,9 @@ export function MembershipCardCreator() {
   const { getToken } = useAuth();
   const { user } = useUser();
   const { clubSlug } = useParams<{ clubSlug?: string }>();
-  const isSuperUser = user?.publicMetadata?.role === 'admin';
+  const superuserEmail = (import.meta.env.VITE_SUPERUSER_EMAIL || '').toLowerCase();
+  const isSuperUser = user?.publicMetadata?.role === 'super_admin' ||
+    (superuserEmail !== '' && user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const editId = searchParams.get('edit');
