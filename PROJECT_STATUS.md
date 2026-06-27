@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-27 (Session 30) | `4116a21` |
+| 2026-06-27 (Session 30) | `d867d40` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -19,6 +19,7 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 ## ✅ COMPLETED WORK
 
 ### Full Security Audit & Hardening (Session 30)
+- [x] **Expanded Membership ID Formats**: Added badge helpers for `{NUMBER:6}`, `{NUMBER:7}`, and `{NUMBER:8}` in the Club settings UI, and updated token replacement logic to cleanly swap out existing number formats.
 - [x] **User Manual**: Created a comprehensive text-only user guide (`/admin/manual`) with full navigation from the admin sidebar.
 - [x] **Superuser-only Menu Items**: Hidden Security and Settings nav links from standard admins in `AdminSidebar.tsx`.
 - [x] **Client-side Route Guards**: Added superuser redirect checks in `AdminSecurity.tsx` and `AdminSettings.tsx` — direct URL entry redirects to `/admin/no-access`.
