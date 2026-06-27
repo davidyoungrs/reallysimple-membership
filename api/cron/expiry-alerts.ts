@@ -9,6 +9,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Protect against external callers — Vercel injects this header automatically on cron triggers
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
         console.log('[Cron] Starting expiry alerts check...');
 
