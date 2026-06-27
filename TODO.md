@@ -16,7 +16,13 @@
 ## 🛡️ Security & Role Governance
 - [x] **Super User Admin Panel**: Implement dedicated privilege manager console to manage clerk roles and geofenced club assignments.
 - [x] **Application-Wide Tooltips**: Deploy lightweight `<Tooltip />` wrapper triggers across all main dashboards, fields, and controls.
+- [x] **Security Hardening & Audit**: Ran full security audit, closed unauthenticated push test, locked backend API controllers, and protected cron endpoints.
+- [x] **Expanded Membership ID Formats**: Added 6, 7, and 8-digit membership numbers with dynamic auto-replacement UI support in club settings.
 - [ ] **Dynamic QR Code Barcodes**: Support rotating barcodes to prevent screenshot-sharing fraud.
 - [ ] **Pass Validation Scanner**: Create camera-based scan page at `/scan` for receptionist verification.
+
+## 📖 Product Education
+- [x] **User Manual & Guide**: Embedded a comprehensive, beginner-friendly administrator guide accessible at `/admin/manual`.
+
 
 
