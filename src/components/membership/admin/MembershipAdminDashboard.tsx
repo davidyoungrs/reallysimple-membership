@@ -50,26 +50,30 @@ export function MembershipAdminDashboard() {
       {/* Metrics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Members */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Total Registered</span>
-            <span className="text-3xl font-black text-white mt-1 block">{stats.total}</span>
+        <Tooltip content="Total number of members registered in this club's database." position="bottom" className="block h-full">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between h-full">
+            <div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Total Registered</span>
+              <span className="text-3xl font-black text-white mt-1 block">{stats.total}</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-blue-950/40 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Users className="w-6 h-6" />
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-950/40 border border-blue-500/20 flex items-center justify-center text-blue-400">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
         {/* Active Cards */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Active Passes</span>
-            <span className="text-3xl font-black text-emerald-400 mt-1 block">{stats.active}</span>
+        <Tooltip content="Total number of members holding a valid, active, non-expired, and non-revoked pass." position="bottom" className="block h-full">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between h-full">
+            <div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Active Passes</span>
+              <span className="text-3xl font-black text-emerald-400 mt-1 block">{stats.active}</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Award className="w-6 h-6" />
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-950/40 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <Award className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
         {/* Expired Cards */}
         <Tooltip content="Total count of members whose pass expiration dates have passed. Expiry dates are validated by Apple/Google Wallet." position="bottom" className="block h-full">
@@ -85,15 +89,17 @@ export function MembershipAdminDashboard() {
         </Tooltip>
 
         {/* Revoked Cards */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Revoked Cards</span>
-            <span className="text-3xl font-black text-red-500 mt-1 block">{stats.revoked}</span>
+        <Tooltip content="Total number of memberships that have been manually cancelled or revoked." position="bottom" className="block h-full">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex items-center justify-between h-full">
+            <div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Revoked Cards</span>
+              <span className="text-3xl font-black text-red-500 mt-1 block">{stats.revoked}</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-red-950/40 border border-red-500/20 flex items-center justify-center text-red-500">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-red-950/40 border border-red-500/20 flex items-center justify-center text-red-500">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
       </div>
 
       {/* Quick Actions Panel */}

@@ -916,44 +916,50 @@ export function AdminMembershipClubs() {
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase">Latitude</label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={loc.latitude}
-                            onChange={(e) => {
-                              const newLocs = [...locations];
-                              newLocs[idx].latitude = parseFloat(e.target.value) || 0;
-                              setLocations(newLocs);
-                            }}
-                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
-                          />
+                          <Tooltip content="GPS latitude of the club location (e.g. 51.5074). Apple/Google Wallet triggers lock-screen card alerts when nearby." position="top" className="w-full">
+                            <input
+                              type="number"
+                              step="any"
+                              value={loc.latitude}
+                              onChange={(e) => {
+                                const newLocs = [...locations];
+                                newLocs[idx].latitude = parseFloat(e.target.value) || 0;
+                                setLocations(newLocs);
+                              }}
+                              className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                            />
+                          </Tooltip>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase">Longitude</label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={loc.longitude}
-                            onChange={(e) => {
-                              const newLocs = [...locations];
-                              newLocs[idx].longitude = parseFloat(e.target.value) || 0;
-                              setLocations(newLocs);
-                            }}
-                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
-                          />
+                          <Tooltip content="GPS longitude of the club location (e.g. -0.1278). Apple/Google Wallet triggers lock-screen card alerts when nearby." position="top" className="w-full">
+                            <input
+                              type="number"
+                              step="any"
+                              value={loc.longitude}
+                              onChange={(e) => {
+                                const newLocs = [...locations];
+                                newLocs[idx].longitude = parseFloat(e.target.value) || 0;
+                                setLocations(newLocs);
+                              }}
+                              className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                            />
+                          </Tooltip>
                         </div>
                         <div className="col-span-2">
                           <label className="block text-[10px] font-bold text-slate-500 uppercase">Lock-screen Notification Message</label>
-                          <input
-                            type="text"
-                            value={loc.relevantText}
-                            onChange={(e) => {
-                              const newLocs = [...locations];
-                              newLocs[idx].relevantText = e.target.value;
-                              setLocations(newLocs);
-                            }}
-                            className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
-                          />
+                          <Tooltip content="The message displayed on the member's lock-screen when they walk near this location (e.g. 'Welcome to London Gym!')." position="top" className="w-full">
+                            <input
+                              type="text"
+                              value={loc.relevantText}
+                              onChange={(e) => {
+                                const newLocs = [...locations];
+                                newLocs[idx].relevantText = e.target.value;
+                                setLocations(newLocs);
+                              }}
+                              className="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                            />
+                          </Tooltip>
                         </div>
                       </div>
                     </div>

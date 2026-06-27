@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { type StripConfig } from '../../types.js';
 import { Upload, X, RotateCcw } from 'lucide-react';
+import { Tooltip } from '../Tooltip';
 
 interface MembershipStripDesignerProps {
   memberName: string;
@@ -485,20 +486,22 @@ export function MembershipStripDesigner({
           {/* Left / Top Side: Sticky Preview Panel */}
           <div className="w-full lg:w-1/2 p-6 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-gray-200 shrink-0 bg-gray-50/50">
             <div className="w-full max-w-[500px] lg:max-w-none bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-              <div className="relative w-full aspect-[1125/369] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
-                <canvas 
-                  ref={canvasRef} 
-                  className={`w-full h-full object-contain ${profileImage && config.photoConfig?.show ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleMouseUp}
-                  onWheel={handleWheel}
-                />
-              </div>
+              <Tooltip content="Reposition the member photo by dragging directly on the canvas, or scroll to zoom." position="bottom" className="w-full">
+                <div className="relative w-full aspect-[1125/369] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
+                  <canvas 
+                    ref={canvasRef} 
+                    className={`w-full h-full object-contain ${profileImage && config.photoConfig?.show ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleMouseUp}
+                    onWheel={handleWheel}
+                  />
+                </div>
+              </Tooltip>
               <p className="text-center text-[10px] text-gray-400 mt-2 font-medium">
                 High Resolution Retina Canvas (1125 x 369)
               </p>
@@ -521,24 +524,26 @@ export function MembershipStripDesigner({
                   </h3>
 
                   <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfig(prev => ({ ...prev, bgType: 'color' }))}
-                      className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
-                        config.bgType === 'color' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Solid Color
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
-                      className={`flex-1 py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
-                        config.bgType === 'image' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Faded Image
-                    </button>
+                    <Tooltip content="Use a solid background color behind the member profile photo." position="top" className="flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, bgType: 'color' }))}
+                        className="w-full py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer bg-blue-600 text-white border-blue-600 style-override"
+                        style={config.bgType === 'color' ? {} : { backgroundColor: 'white', color: '#374151', borderColor: '#d1d5db' }}
+                      >
+                        Solid Color
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Upload and use a background image with a gradient fade behind the member photo." position="top" className="flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
+                        className="w-full py-2 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer bg-blue-600 text-white border-blue-600 style-override"
+                        style={config.bgType === 'image' ? {} : { backgroundColor: 'white', color: '#374151', borderColor: '#d1d5db' }}
+                      >
+                        Faded Image
+                      </button>
+                    </Tooltip>
                   </div>
 
                   {config.bgType === 'color' && (
@@ -903,12 +908,14 @@ export function MembershipStripDesigner({
           >
             Cancel
           </button>
-          <button
-            onClick={handleSave}
-            className="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-semibold shadow-md shadow-blue-600/10"
-          >
-            Save Strip Design
-          </button>
+          <Tooltip content="Render the canvas composition and update the strip banner design." position="top">
+            <button
+              onClick={handleSave}
+              className="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-semibold shadow-md shadow-blue-600/10"
+            >
+              Save Strip Design
+            </button>
+          </Tooltip>
         </div>
       </div>
     </div>

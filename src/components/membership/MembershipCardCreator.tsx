@@ -688,21 +688,23 @@ export function MembershipCardCreator() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card Template</label>
-                <select
-                  value={selectedTemplate?.id || ''}
-                  onChange={(e) => {
-                    const t = templates.find(temp => temp.id === Number(e.target.value));
-                    setSelectedTemplate(t || null);
-                  }}
-                  disabled={templates.length === 0}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm font-semibold disabled:bg-gray-100 disabled:text-gray-400 text-gray-900"
-                >
-                  {templates.length > 0 ? (
-                    templates.map(t => <option key={t.id} value={t.id}>{t.name} ({t.membershipType})</option>)
-                  ) : (
-                    <option>No Templates Available</option>
-                  )}
-                </select>
+                <Tooltip content="Select which template styling, branding colors, and fields will apply to this card pass." position="top" className="w-full">
+                  <select
+                    value={selectedTemplate?.id || ''}
+                    onChange={(e) => {
+                      const t = templates.find(temp => temp.id === Number(e.target.value));
+                      setSelectedTemplate(t || null);
+                    }}
+                    disabled={templates.length === 0}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm font-semibold disabled:bg-gray-100 disabled:text-gray-400 text-gray-900"
+                  >
+                    {templates.length > 0 ? (
+                      templates.map(t => <option key={t.id} value={t.id}>{t.name} ({t.membershipType})</option>)
+                    ) : (
+                      <option>No Templates Available</option>
+                    )}
+                  </select>
+                </Tooltip>
               </div>
             </div>
 
@@ -810,13 +812,15 @@ export function MembershipCardCreator() {
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-gray-700 mb-1">Expiration Date</label>
-                        <input
-                          type="date"
-                          required
-                          value={expiresAt}
-                          onChange={(e) => setExpiresAt(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-900 bg-white"
-                        />
+                        <Tooltip content="Sets the expiration date of the card. Apple/Google Wallet will automatically invalidate the pass at this time." position="top" className="w-full">
+                          <input
+                            type="date"
+                            required
+                            value={expiresAt}
+                            onChange={(e) => setExpiresAt(e.target.value)}
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-900 bg-white"
+                          />
+                        </Tooltip>
                       </div>
                     </div>
                   )}
