@@ -657,13 +657,15 @@ export function MembershipCardCreator() {
               </p>
             </div>
             {editId && selectedClub && (
-              <button
-                type="button"
-                onClick={() => navigate(`/membership-admin/${selectedClub.slug}/members`)}
-                className="text-xs font-bold text-gray-600 hover:text-gray-950 bg-gray-100 hover:bg-gray-250 px-3 py-1.5 rounded-xl transition-all border border-gray-200"
-              >
-                ← Back to Directory
-              </button>
+              <Tooltip content="Return to the club's member directory list." position="bottom">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/membership-admin/${selectedClub.slug}/members`)}
+                  className="text-xs font-bold text-gray-600 hover:text-gray-950 bg-gray-100 hover:bg-gray-250 px-3 py-1.5 rounded-xl transition-all border border-gray-200"
+                >
+                  ← Back to Directory
+                </button>
+              </Tooltip>
             )}
           </div>
 
@@ -822,29 +824,33 @@ export function MembershipCardCreator() {
                   {/* Strip Banner Design trigger */}
                   {cardConfig?.stripConfig && (
                     <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowStripDesigner(true)}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-all"
-                      >
-                        {isSuperUser || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)
-                          ? '🎨 Customize Strip Banner & Background'
-                          : '👁️ View Strip Banner'}
-                      </button>
+                      <Tooltip content="Customize the background strip image and template colors for this club's passes." position="top">
+                        <button
+                          type="button"
+                          onClick={() => setShowStripDesigner(true)}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-all"
+                        >
+                          {isSuperUser || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)
+                            ? '🎨 Customize Strip Banner & Background'
+                            : '👁️ View Strip Banner'}
+                        </button>
+                      </Tooltip>
                     </div>
                   )}
                 </div>
 
                 {/* Save action button */}
                 <div className="pt-6 border-t border-gray-100">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all text-sm shadow-md shadow-blue-600/10 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {editId ? 'Save Changes' : 'Generate Membership Card'}
-                  </button>
+                  <Tooltip content={editId ? "Save updates to member record and update digital wallet passes." : "Create member record and generate Apple & Google Wallet passes."} position="top" className="w-full">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all text-sm shadow-md shadow-blue-600/10 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {editId ? 'Save Changes' : 'Generate Membership Card'}
+                    </button>
+                  </Tooltip>
                 </div>
               </>
             ) : (
@@ -861,12 +867,14 @@ export function MembershipCardCreator() {
             }`}>
               <span>{feedback.message}</span>
               {editId && selectedClub && feedback.type === 'success' && (
-                <button
-                  onClick={() => navigate(`/membership-admin/${selectedClub.slug}/members`)}
-                  className="px-3 py-1.5 bg-green-650 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all text-center self-start sm:self-auto shadow-sm"
-                >
-                  Return to Members
-                </button>
+                <Tooltip content="Return to the club's member directory list." position="top">
+                  <button
+                    onClick={() => navigate(`/membership-admin/${selectedClub.slug}/members`)}
+                    className="px-3 py-1.5 bg-green-650 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all text-center self-start sm:self-auto shadow-sm"
+                  >
+                    Return to Members
+                  </button>
+                </Tooltip>
               )}
             </div>
           )}
@@ -879,21 +887,25 @@ export function MembershipCardCreator() {
                 Wallet passes are ready!
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <a
-                  href={generatedPasses?.appleUrl}
-                  download={`membership_${membershipNumber || 'card'}.pkpass`}
-                  className="flex items-center justify-center gap-2 py-3 bg-black border border-neutral-700 hover:bg-neutral-900 rounded-xl font-bold transition-all text-xs text-white"
-                >
-                  <CreditCard className="w-4 h-4 text-white" />
-                  Add to Apple Wallet
-                </a>
-                <button
-                  onClick={downloadGoogleWallet}
-                  className="flex items-center justify-center gap-2 py-3 bg-black border border-neutral-700 hover:bg-neutral-900 rounded-xl font-bold transition-all text-xs"
-                >
-                  <CreditCard className="w-4 h-4 text-white" />
-                  Save to Google Pay
-                </button>
+                <Tooltip content="Download the PKPASS file and add it to your local Apple Wallet app." position="top">
+                  <a
+                    href={generatedPasses?.appleUrl}
+                    download={`membership_${membershipNumber || 'card'}.pkpass`}
+                    className="flex items-center justify-center gap-2 py-3 bg-black border border-neutral-700 hover:bg-neutral-900 rounded-xl font-bold transition-all text-xs text-white w-full"
+                  >
+                    <CreditCard className="w-4 h-4 text-white" />
+                    Add to Apple Wallet
+                  </a>
+                </Tooltip>
+                <Tooltip content="Save the generated pass link to your Google Wallet account." position="top">
+                  <button
+                    onClick={downloadGoogleWallet}
+                    className="flex items-center justify-center gap-2 py-3 bg-black border border-neutral-700 hover:bg-neutral-900 rounded-xl font-bold transition-all text-xs w-full"
+                  >
+                    <CreditCard className="w-4 h-4 text-white" />
+                    Save to Google Pay
+                  </button>
+                </Tooltip>
 
                 {editId && (
                   <Tooltip content="Push real-time updates to all active Apple Wallet passes on user devices. Uses Apple Push Notification Service (APNs)." position="top" className="sm:col-span-2">
