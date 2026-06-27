@@ -514,20 +514,24 @@ export function AdminSuperUser() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex gap-2 justify-end items-center">
                           {/* Toggle Admin Button */}
-                          <button
-                            onClick={() => handleToggleAdminRole(user)}
-                            disabled={isUserSuper}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
-                              isUserSuper
-                                ? 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
-                                : isUserAdmin
-                                ? 'bg-slate-50 hover:bg-red-50 hover:text-red-750 hover:border-red-200 text-slate-700 border-slate-200'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:shadow-sm hover:shadow-blue-500/10'
-                            }`}
-                            title={isUserSuper ? 'Remove Super Admin privileges first' : isUserAdmin ? 'Demote to regular User' : 'Promote to Admin'}
+                          <Tooltip 
+                            content={isUserSuper ? "Remove Super Admin privileges first" : isUserAdmin ? "Revoke administrator privileges and demote to regular user" : "Grant administrator privileges to manage clubs"}
+                            position="top"
                           >
-                            {isUserAdmin ? 'Demote Admin' : 'Make Admin'}
-                          </button>
+                            <button
+                              onClick={() => handleToggleAdminRole(user)}
+                              disabled={isUserSuper}
+                              className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
+                                isUserSuper
+                                  ? 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
+                                  : isUserAdmin
+                                  ? 'bg-slate-50 hover:bg-red-50 hover:text-red-750 hover:border-red-200 text-slate-700 border-slate-200'
+                                  : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:shadow-sm hover:shadow-blue-500/10'
+                              }`}
+                            >
+                              {isUserAdmin ? 'Demote Admin' : 'Make Admin'}
+                            </button>
+                          </Tooltip>
 
                           {/* Toggle Super Admin Button (Primary Superuser delegated only) */}
                           {!isPrimarySuperUser ? (
@@ -541,17 +545,21 @@ export function AdminSuperUser() {
                               </button>
                             </Tooltip>
                           ) : (
-                            <button
-                              onClick={() => handleToggleSuperAdminRole(user)}
-                              className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
-                                isUserSuper
-                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-750 border-rose-250'
-                                  : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
-                              }`}
-                              title={isUserSuper ? 'Revoke Super Admin privileges' : 'Delegate Super Admin'}
+                            <Tooltip
+                              content={isUserSuper ? "Revoke root-level Super Admin privileges" : "Delegate root-level Super Admin privileges with all-club access"}
+                              position="top"
                             >
-                              {isUserSuper ? 'Revoke Super' : 'Make Super'}
-                            </button>
+                              <button
+                                onClick={() => handleToggleSuperAdminRole(user)}
+                                className={`px-3 py-1.5 text-xs font-bold rounded-2xl border transition-all ${
+                                  isUserSuper
+                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-750 border-rose-250'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                }`}
+                              >
+                                {isUserSuper ? 'Revoke Super' : 'Make Super'}
+                              </button>
+                            </Tooltip>
                           )}
                         </div>
                       </td>
@@ -688,13 +696,15 @@ export function AdminSuperUser() {
 
             {/* Modal Footer */}
             <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedUser(null)}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-2xl transition-all shadow-sm"
-              >
-                Done
-              </button>
+              <Tooltip content="Save changes and close permissions console." position="top">
+                <button
+                  type="button"
+                  onClick={() => setSelectedUser(null)}
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-2xl transition-all shadow-sm"
+                >
+                  Done
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
