@@ -346,7 +346,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(403).json({ error: 'suspended' });
         }
         console.error('Membership API Error:', error);
-        return res.status(500).json({ error: 'Internal server error', details: error?.message });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
 

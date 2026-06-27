@@ -488,7 +488,7 @@ async function handleGooglePass(req: VercelRequest, res: VercelResponse, slug: s
 
     // CORS headers for Google Pay Button interaction if needed
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', process.env.VITE_APP_URL || 'https://reallysimple-membership.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -976,7 +976,7 @@ export async function handleGoogleMembershipPass(req: VercelRequest, res: Vercel
     }
 
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', process.env.VITE_APP_URL || 'https://reallysimple-membership.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
