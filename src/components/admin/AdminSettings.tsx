@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Settings, Power, UserX, CheckCircle, AlertTriangle } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
 import { Tooltip } from '../Tooltip';
 
 export function AdminSettings() {
+    const { user: currentUser } = useUser();
+    const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+    const isPrimarySuperUser = currentUser?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase();
+    const isSuperUser = isPrimarySuperUser || currentUser?.publicMetadata?.role === 'super_admin';
+
+    if (currentUser && !isSuperUser) {
+        return <Navigate to="/admin/no-access" replace />;
+    }
+
     const { getToken } = useAuth();
     const [settings, setSettings] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);

@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
 import { Shield, Activity, Lock, CheckCircle, RefreshCw, AlertOctagon, Timer, FileWarning } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Tooltip as HelpTooltip } from '../Tooltip';
 
 export function AdminSecurity() {
+    const { user: currentUser } = useUser();
+    const superuserEmail = import.meta.env.VITE_SUPERUSER_EMAIL || 'd.j.young@hotmail.co.uk';
+    const isPrimarySuperUser = currentUser?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail.toLowerCase();
+    const isSuperUser = isPrimarySuperUser || currentUser?.publicMetadata?.role === 'super_admin';
+
+    if (currentUser && !isSuperUser) {
+        return <Navigate to="/admin/no-access" replace />;
+    }
+
     const [stats, setStats] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'firewall' | 'performance' | 'sanitization'>('overview');
 
