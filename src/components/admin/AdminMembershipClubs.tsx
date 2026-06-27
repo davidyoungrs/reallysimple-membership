@@ -80,14 +80,15 @@ function ClubCard({ club, isSuperUser, handleOpenEdit, handleDeleteClub, handleT
             >
               <GripVertical className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => handleOpenEdit(club)}
-              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-              title="Edit Branding"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
+            <Tooltip content="Edit club branding, template fields, and metadata settings." position="top">
+              <button
+                type="button"
+                onClick={() => handleOpenEdit(club)}
+                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
             {isSuperUser ? (
               <button
                 type="button"
