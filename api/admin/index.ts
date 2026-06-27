@@ -49,8 +49,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const isSuperUser = isPrimarySuperUser || user.publicMetadata?.role === 'super_admin';
         const isAdmin = user.publicMetadata?.role === 'admin' || isSuperUser;
  
-        if (!isAdmin) {
-            return res.status(403).json({ error: 'Forbidden: Admin access required' });
+        if (!isSuperUser) {
+            return res.status(403).json({ error: 'Forbidden: Super User access required' });
         }
 
         if (req.method === 'DELETE') {
