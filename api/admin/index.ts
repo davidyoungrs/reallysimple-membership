@@ -19,10 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!(await checkRateLimit(req, res))) return;
     if (!validatePayload(req, res)) return;
 
-    // push_test can be called without admin auth for the simulator
-    if (req.method === 'POST' && (req.query.resource as string) === 'push_test') {
-        return handlePushTest(req, res);
-    }
 
     if (req.method !== 'GET' && req.method !== 'DELETE' && req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -55,6 +51,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (req.method === 'DELETE') {
             return handleDelete(req, res, isAdmin);
+        }
+
+        // push_test requires superuser auth (was previously unauthenticated — security fix)
+        if (req.method === 'POST' && (req.query.resource as string) === 'push_test') {
+            return handlePushTest(req, res);
         }
 
         const resource = (req.query.resource as string) || 'stats';
