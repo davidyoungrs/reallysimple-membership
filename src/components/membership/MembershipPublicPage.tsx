@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2, CheckCircle, AlertTriangle, XCircle, Calendar, ShieldCheck } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, XCircle, Calendar, ShieldCheck, Check } from 'lucide-react';
+import { useUser, useAuth } from '@clerk/clerk-react';
 
 interface PublicMembershipData {
   memberName: string;
@@ -26,9 +27,17 @@ interface PublicMembershipData {
 
 export function MembershipPublicPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PublicMembershipData | null>(null);
+  
+  // Admin-specific check-in states
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [checkInStatus, setCheckInStatus] = useState<'success' | 'failed' | null>(null);
 
   useEffect(() => {
     async function fetchMembership() {
@@ -54,6 +63,61 @@ export function MembershipPublicPage() {
     }
     fetchMembership();
   }, [slug]);
+
+  // Check if current logged-in user is an admin of this club
+  useEffect(() => {
+    async function checkAdminAccess() {
+      if (!user || !slug) return;
+      try {
+        const token = await getToken();
+        if (!token) return;
+
+        const res = await fetch(`/api/membership?action=verify&slug=${slug}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (res.ok) {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error('Error verifying admin authorization:', err);
+      }
+    }
+    checkAdminAccess();
+  }, [user, slug, getToken]);
+
+  const handleManualCheckIn = async () => {
+    if (!slug) return;
+    try {
+      setCheckingIn(true);
+      setCheckInStatus(null);
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch(`/api/membership?action=verify&slug=${slug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ slug })
+      });
+
+      const result = await res.json();
+      if (res.ok && result.valid) {
+        setCheckInStatus('success');
+      } else {
+        setCheckInStatus('failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setCheckInStatus('failed');
+    } finally {
+      setCheckingIn(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -131,6 +195,43 @@ export function MembershipPublicPage() {
       className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-950 transition-all text-white relative overflow-hidden"
       style={{ fontFamily: `${branding.fontFamily}, sans-serif` }}
     >
+      {/* Floating Admin Banner */}
+      {isAdmin && (
+        <div className="w-full max-w-md mb-4 bg-blue-950/80 border border-blue-500/30 backdrop-blur-xl p-4 rounded-2xl flex flex-col gap-2 relative z-20 text-center shadow-lg animate-in slide-in-from-top-4 duration-200">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-widest">
+            <ShieldCheck className="w-4 h-4" />
+            Club Administrator Panel
+          </div>
+          <p className="text-[11px] text-blue-200 font-medium">
+            You are logged in as an authorized administrator. Click below to register an entry scan log for this member.
+          </p>
+          <button
+            onClick={handleManualCheckIn}
+            disabled={checkingIn}
+            className="w-full mt-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-950/30 cursor-pointer"
+          >
+            {checkingIn ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                RECORDING ENTRY...
+              </>
+            ) : checkInStatus === 'success' ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                CHECK-IN RECORDED SUCCESSFULLY ✓
+              </>
+            ) : checkInStatus === 'failed' ? (
+              <>
+                <XCircle className="w-3.5 h-3.5 text-red-300" />
+                CHECK-IN FAILED - TRY AGAIN
+              </>
+            ) : (
+              'MANUAL VERIFICATION CHECK-IN'
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Dynamic Background Blurs */}
       <div 
         className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full blur-[120px] opacity-20 pointer-events-none" 

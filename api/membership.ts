@@ -298,6 +298,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ uploadUrl, publicUrl, key });
         }
 
+        // C2. VERIFY MEMBERSHIP PASS (GET or POST /api/membership?action=verify)
+        if (action === 'verify') {
+            const slugVal = (query.slug as string) || req.body?.slug;
+            if (!slugVal) {
+                return res.status(400).json({ error: 'Missing membership slug' });
+            }
+
+            // Find membership
+            const membershipRecords = await db.select()
+                .from(memberships)
+                .where(eq(memberships.slug, slugVal))
+                .limit(1);
+
+            if (membershipRecords.length === 0) {
+                return res.status(404).json({ valid: false, error: 'Membership pass not found' });
+            }
+
+            const membershipRecord = membershipRecords[0];
+
+            // Security: Verify current user is admin of this membership's club
+            const hasAccess = await checkIsClubAdmin(membershipRecord.clubId);
+            if (!hasAccess) {
+                return res.status(403).json({ error: 'Forbidden: You are not authorized to verify passes for this club.' });
+            }
+
+            const clubRecords = await db.select().from(clubs).where(eq(clubs.id, membershipRecord.clubId)).limit(1);
+            const clubRecord = clubRecords[0];
+
+            const now = new Date();
+            const isExpired = now > new Date(membershipRecord.expiresAt);
+            const isValid = membershipRecord.status === 'active' && !isExpired && !clubRecord.isSuspended;
+
+            let statusMessage = 'active';
+            if (clubRecord.isSuspended) {
+                statusMessage = 'club_suspended';
+            } else if (membershipRecord.status === 'revoked') {
+                statusMessage = 'revoked';
+            } else if (isExpired || membershipRecord.status === 'expired') {
+                statusMessage = 'expired';
+            }
+
+            return res.status(200).json({
+                valid: isValid,
+                status: statusMessage,
+                membership: {
+                    id: membershipRecord.id,
+                    memberName: membershipRecord.memberName,
+                    memberEmail: membershipRecord.memberEmail,
+                    memberPhoto: membershipRecord.memberPhoto,
+                    membershipNumber: membershipRecord.membershipNumber,
+                    membershipType: membershipRecord.membershipType,
+                    status: membershipRecord.status,
+                    expiresAt: membershipRecord.expiresAt,
+                    memberSince: membershipRecord.memberSince,
+                    slug: membershipRecord.slug
+                },
+                club: {
+                    name: clubRecord.name,
+                    slug: clubRecord.slug
+                }
+            });
+        }
+
         // D. PROXY UPLOAD TO R2 (POST /api/membership?action=upload)
         if (action === 'upload') {
             const filename = (query.filename as string) || req.body?.filename;

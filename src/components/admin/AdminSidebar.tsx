@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, ShieldAlert, LogOut, Shield, Users, BookOpen } from 'lucide-react';
+import { Settings, ShieldAlert, LogOut, Shield, Users, BookOpen, QrCode } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { Tooltip } from '../Tooltip';
@@ -39,6 +39,7 @@ export function AdminSidebar() {
 
     const navItems = [
         { icon: Shield, label: 'Membership Clubs', path: '/admin', tooltip: 'Manage your membership clubs, template designs, and issued passes.' },
+        { icon: QrCode, label: 'Scan Passes', path: '/admin/scan', tooltip: 'Verify member passes in real-time using your device camera.' },
     ];
 
     if (isSuperUser) {

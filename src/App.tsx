@@ -22,6 +22,7 @@ const AdminMembershipClubs = lazy(() => import('./components/admin/AdminMembersh
 const AdminSuperUser = lazy(() => import('./components/admin/AdminSuperUser').then(module => ({ default: module.AdminSuperUser })));
 const AdminNoAccess = lazy(() => import('./components/admin/AdminNoAccess').then(module => ({ default: module.AdminNoAccess })));
 const AdminManual = lazy(() => import('./components/admin/AdminManual').then(module => ({ default: module.AdminManual })));
+const AdminScan = lazy(() => import('./components/admin/AdminScan').then(module => ({ default: module.AdminScan })));
 
 
 function App() {
@@ -128,6 +129,7 @@ function App() {
               <Route path="superuser" element={<AdminSuperUser />} />
               <Route path="no-access" element={<AdminNoAccess />} />
               <Route path="manual" element={<AdminManual />} />
+              <Route path="scan" element={<AdminScan />} />
             </Route>
 
             {/* Club Admin Routes */}
