@@ -16,7 +16,9 @@ export function MembershipAdminTemplates() {
   
   const { getToken } = useAuth();
   const { user } = useUser();
-  const isSuperUser = user?.publicMetadata?.role === 'admin';
+  const superuserEmail = (import.meta.env.VITE_SUPERUSER_EMAIL || '').toLowerCase();
+  const isSuperUser = user?.publicMetadata?.role === 'super_admin' ||
+    (superuserEmail !== '' && user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail);
 
   // Edit / Create Form States
   const [showFormModal, setShowFormModal] = useState(false);
