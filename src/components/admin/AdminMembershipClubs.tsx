@@ -90,23 +90,25 @@ function ClubCard({ club, isSuperUser, handleOpenEdit, handleDeleteClub, handleT
               </button>
             </Tooltip>
             {isSuperUser ? (
-              <button
-                type="button"
-                onClick={() => handleDeleteClub(club.id)}
-                className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
-                title="Delete Club"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <Tooltip content="Permanently delete this club and all its templates and members." position="top">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteClub(club.id)}
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </Tooltip>
             ) : (
-              <button
-                type="button"
-                disabled
-                className="p-2 text-slate-200 cursor-not-allowed"
-                title="Only Super Users can delete clubs"
-              >
-                <Trash2 className="w-4 h-4 opacity-30" />
-              </button>
+              <Tooltip content="Only Super Users can delete clubs" position="top">
+                <button
+                  type="button"
+                  disabled
+                  className="p-2 text-slate-200 cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4 opacity-30" />
+                </button>
+              </Tooltip>
             )}
           </div>
         </div>
@@ -531,20 +533,23 @@ export function AdminMembershipClubs() {
           <p className="text-sm text-slate-500">Manage multi-club membership templates, branding, and administrators.</p>
         </div>
         {isSuperUser ? (
-          <button
-            onClick={handleOpenCreate}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
-          >
-            <Plus className="w-4 h-4" /> Create Club
-          </button>
+          <Tooltip content="Create a new membership club space with custom branding and templates." position="bottom">
+            <button
+              onClick={handleOpenCreate}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-blue-600/10"
+            >
+              <Plus className="w-4 h-4" /> Create Club
+            </button>
+          </Tooltip>
         ) : (
-          <button
-            disabled
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold cursor-not-allowed"
-            title="Only Super Users can create new clubs"
-          >
-            <Lock className="w-4.5 h-4.5 text-slate-450" /> Create Club
-          </button>
+          <Tooltip content="Only Super Users can create new clubs" position="bottom">
+            <button
+              disabled
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold cursor-not-allowed"
+            >
+              <Lock className="w-4.5 h-4.5 text-slate-450" /> Create Club
+            </button>
+          </Tooltip>
         )}
       </div>
 
@@ -1005,14 +1010,16 @@ export function AdminMembershipClubs() {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors text-xs font-bold shadow-md disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Save Club
-                </button>
+                <Tooltip content="Commit changes and save club configurations to the database." position="top">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors text-xs font-bold shadow-md disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    Save Club
+                  </button>
+                </Tooltip>
               </div>
             </form>
           </div>
