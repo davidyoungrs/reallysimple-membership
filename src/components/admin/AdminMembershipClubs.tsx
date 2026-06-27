@@ -771,14 +771,18 @@ export function AdminMembershipClubs() {
                           { token: '{NUMBER:3}', label: '# (001)' },
                           { token: '{NUMBER:4}', label: '# (0001)' },
                           { token: '{NUMBER:5}', label: '# (00001)' },
+                          { token: '{NUMBER:6}', label: '# (000001)' },
+                          { token: '{NUMBER:7}', label: '# (0000001)' },
+                          { token: '{NUMBER:8}', label: '# (00000001)' },
                         ].map(({ token, label }) => (
                           <button
                             key={token}
                             type="button"
                             onClick={() => {
                               setMembershipNumberFormat(prev => {
-                                if (prev.includes('{NUMBER}') && token.startsWith('{NUMBER:')) {
-                                  return prev.replace('{NUMBER}', token);
+                                const hasNumberToken = /\{NUMBER(?::\d+)?\}/.test(prev);
+                                if (hasNumberToken && token.startsWith('{NUMBER')) {
+                                  return prev.replace(/\{NUMBER(?::\d+)?\}/, token);
                                 }
                                 return prev + token;
                               });
