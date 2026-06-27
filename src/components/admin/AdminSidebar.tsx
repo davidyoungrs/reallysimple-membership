@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, ShieldAlert, LogOut, Shield, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk, useUser } from '@clerk/clerk-react';
