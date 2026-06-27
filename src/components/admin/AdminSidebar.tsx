@@ -39,10 +39,16 @@ export function AdminSidebar() {
 
     const navItems = [
         { icon: Shield, label: 'Membership Clubs', path: '/admin', tooltip: 'Manage your membership clubs, template designs, and issued passes.' },
-        { icon: ShieldAlert, label: 'Security', path: '/admin/security', tooltip: 'Monitor rate limits, bot blocks, input sanitization records, and API performance.' },
-        { icon: Settings, label: 'Settings', path: '/admin/settings', tooltip: 'Configure profile settings and global configurations.' },
-        { icon: BookOpen, label: 'User Manual', path: '/admin/manual', tooltip: 'Access the comprehensive user guide and product workflows.' },
     ];
+
+    if (isSuperUser) {
+        navItems.push(
+            { icon: ShieldAlert, label: 'Security', path: '/admin/security', tooltip: 'Monitor rate limits, bot blocks, input sanitization records, and API performance.' },
+            { icon: Settings, label: 'Settings', path: '/admin/settings', tooltip: 'Configure profile settings and global configurations.' }
+        );
+    }
+
+    navItems.push({ icon: BookOpen, label: 'User Manual', path: '/admin/manual', tooltip: 'Access the comprehensive user guide and product workflows.' });
 
     if (isSuperUser) {
         navItems.push({ icon: Users, label: 'Super User', path: '/admin/superuser', tooltip: 'Access root-level privileges to delegate roles and assign geofenced club access.' });
