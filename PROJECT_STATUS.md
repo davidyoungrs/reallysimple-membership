@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-23 (Session 29) | `main` |
+| 2026-06-27 (Session 30) | `d80a57b` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -12,27 +12,24 @@
 
 ## 🟢 CURRENT STATE — Where We Are Right Now
 
-The platform is in a **production-ready, secure, clean, and fully-optimized** state. We have implemented substantial enhancements:
-
-1. **Card Issuance Strip Image Fix**: Solved the bug where strip images were not saved to the database on first issue by destructuring and saving the `stripImageUrl` in the backend single card creation `POST` request.
-2. **Main Panel Redirection**: Updated the sidebar "Main Panel" link in the club workspaces sidebar layout from `/dashboard` to `/admin` to direct users back to the correct platform console root.
-3. **Expiry Date & Custom Range Filters**: Added dropdown and inline start/end date calendar filters to the members directory panel for quick filtering by expiry days (<30, 30-60, 60-90 days, or custom date picker bounds).
-4. **Typography & Rhythm Standardization**: Standardized global fonts to **Inter** with a line-height of **1.55**, and resolved uneven spacing in the dashboard grid to align layout elements cleanly.
-5. **Abuse Protection & Bot Filtering**: Introduced a bot/scraper detection filter blocking automated scripting clients (`curl`, `scrapy`, `axios`, etc.) with a `403` status while allowing SEO/sharing crawlers.
-6. **Hybrid Rate Limiting**: Added persistent, database-backed global rate limiting (max 20 requests/minute) for sensitive write/generation operations like passes and membership mutations, while protecting public endpoints with fast in-memory rate limiting.
-7. **Response Logging Middleware**: Integrated an automatic monkey-patched request logging interceptor that records all query latencies, endpoints, and statuses directly to the database `api_logs` table.
-8. **Exempted Stripe Webhooks**: Ensured Stripe payments proceed without delay by bypassing rate limits on Stripe webhook endpoints while still logging request events.
-9. **Avatar Upload Limit & Warning**: Added a 1MB file size upload limit in the card creator, warning the user and resetting input if a larger photo is selected.
-10. **Avatar Upload UI Fix**: Hid the "Photo Loaded ✓" status indicator while a new avatar is actively loading.
-11. **Visual Club Reordering via Drag-and-Drop**: Integrated `@dnd-kit/core` and `@dnd-kit/sortable` to support visual reordering of clubs on the Super User dashboard, persisted in the database via a `sortOrder` column.
-12. **Email-Based Club Admin Pre-Authorization**: Allowed pre-authorizing club admins by email before Clerk signup. The system automatically links pre-authorizations to their Clerk accounts upon first login.
-13. **Codebase Cleanup & Purge**: Purged 34+ dead codebase files, legacy developer scratch scripts, and unused npm dependencies (`react-easy-crop` and `vcard-creator`) to minimize package bundle sizes.
-14. **Application-wide Contextual Tooltips**: Added inline, zero-dependency contextual help tooltips across 7 administrator panel views.
-15. **Lighthouse Performance Optimizations**: Eliminated a render-blocking 404 preload for `homepage-mockup.webp`, aligned Google Fonts payloads to load exactly the 4 active fonts used (`Inter`, `Outfit`, `Roboto`, `Playfair Display`), and deferred non-critical Leaflet map CSS to unblock initial rendering.
+The platform is in a **production-ready, secure, clean, and fully-optimized** state. It has passed a comprehensive security audit with all identified vulnerabilities patched. A full launch checklist (`LAUNCH_CHECKLIST.md`) is in the project root covering all steps required for custom domain go-live.
 
 ---
 
 ## ✅ COMPLETED WORK
+
+### Full Security Audit & Hardening (Session 30)
+- [x] **User Manual**: Created a comprehensive text-only user guide (`/admin/manual`) with full navigation from the admin sidebar.
+- [x] **Superuser-only Menu Items**: Hidden Security and Settings nav links from standard admins in `AdminSidebar.tsx`.
+- [x] **Client-side Route Guards**: Added superuser redirect checks in `AdminSecurity.tsx` and `AdminSettings.tsx` — direct URL entry redirects to `/admin/no-access`.
+- [x] **Server-side API Guard**: Updated `/api/admin` to check `isSuperUser` instead of `isAdmin` — standard admins receive `403` even on direct API calls.
+- [x] **Unauthenticated push_test Fixed**: Moved `push_test` route inside the superuser auth guard — was previously callable by anyone.
+- [x] **CLERK_BYPASS_AUTH Production Guard**: Added `NODE_ENV !== 'production'` check so the auth bypass flag can never activate in Vercel production.
+- [x] **Cron Endpoint Auth Guard**: Added `CRON_SECRET` Bearer token check to `/api/cron/expiry-alerts` to prevent email abuse.
+- [x] **Error Detail Leakage Fixed**: Removed `details: error?.message` from 500 responses in `membership.ts` and `public.ts`.
+- [x] **CORS Restricted on Pass Endpoints**: Replaced wildcard `*` CORS with `VITE_APP_URL` env var on both Google Wallet pass handlers.
+- [x] **Launch Checklist Created**: Wrote `LAUNCH_CHECKLIST.md` covering all 9 phases of custom domain go-live.
+- [x] **Full Production Build Verification**: All builds compile successfully with zero TypeScript errors across all sessions.
 
 ### Sidebar Navigation Reordering (Session 29)
 - [x] **Sidebar Menu Order**: Moved the "Templates" menu item to be directly under "Overview" in the left-hand workspace sidebar.
@@ -97,30 +94,31 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 
 | File | Last Changed | Summary |
 | --- | --- | --- |
-| `src/components/membership/admin/MembershipAdminLayout.tsx` | 2026-06-23 | Moved Templates under Overview in the sidebar layout. |
-| `api/membership.ts` | 2026-06-21 | Added `stripImageUrl` destructuring and DB insertion logic in card creation POST handler. |
-| `src/components/membership/admin/MembershipAdminMembers.tsx` | 2026-06-21 | Added expiration dropdown filter and custom inline date range calendar inputs. |
-| `src/components/membership/admin/MembershipAdminDashboard.tsx` | 2026-06-21 | Refactored vertical layout spaces and grid gaps to a consistent `6` step value. |
-| `src/index.css` | 2026-06-21 | Configured Inter as default font-sans and set body line-height to 1.55. |
-| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-21 | Added 1MB avatar size validation and hid the 'Photo Loaded' text during active uploads. |
-| `api/_utils/security.ts` | 2026-06-20 | Added bot filtering, monkey-patched logging middleware, and global db rate-limiting queries. |
-| `api/public.ts` | 2026-06-20 | Bound response logging, bot checks, and public in-memory rate limiting. |
-| `api/passes.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
-| `api/admin/index.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
-| `api/apple-webhook.ts` | 2026-06-21 | Integrated bot blocker, database logs, and async rate-limiting. |
-| `api/webhooks/stripe.ts` | 2026-06-21 | Removed rate-limiting call to protect payments while keeping latency response logs. |
+| `api/admin/index.ts` | 2026-06-27 | Moved `push_test` behind superuser auth guard; enforced `isSuperUser` on all admin API requests. |
+| `api/membership.ts` | 2026-06-27 | Added `NODE_ENV !== 'production'` guard to `CLERK_BYPASS_AUTH`; removed error detail leakage from 500 response. |
+| `api/public.ts` | 2026-06-27 | Removed `details: error?.message` from 500 response in `handleSystemStatus`. |
+| `api/passes.ts` | 2026-06-27 | Restricted CORS `Access-Control-Allow-Origin` from `*` to `VITE_APP_URL` on both Google Wallet handlers. |
+| `api/cron/expiry-alerts.ts` | 2026-06-27 | Added `CRON_SECRET` Bearer token authorization check to prevent external triggering. |
+| `src/components/admin/AdminSidebar.tsx` | 2026-06-27 | Hidden Security and Settings links from non-superuser admins; added User Manual link. |
+| `src/components/admin/AdminSecurity.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
+| `src/components/admin/AdminSettings.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
+| `src/components/admin/AdminManual.tsx` | 2026-06-27 | New component — full user guide rendered at `/admin/manual`. |
+| `LAUNCH_CHECKLIST.md` | 2026-06-27 | New file — 9-phase go-live checklist for custom domain deployment. |
 
 ---
 
 ## ▶️ HOW TO RESUME
 
-1. **Configure Production Credentials**: Ensure the following variables are uploaded to Vercel/production environment:
-   - `APPLE_APNS_AUTH_KEY` (Contents of `apns.p8`)
-   - `WALLET_WWDR_CERT` (Contents of `wwdr.pem`)
-   - `WALLET_SIGNER_CERT` (Contents of `signerCert.pem`)
-   - `WALLET_SIGNER_KEY` (Contents of `signerKey.pem`)
-2. **Verify Build Health:** `npm run build`
-3. **Launch Local Server:** `npm run dev -- --port 5173`
+1. **See `LAUNCH_CHECKLIST.md`** for the full custom domain go-live guide
+2. **Add new env vars to Vercel:**
+   - `CRON_SECRET` = `31fb1be23adefb3e557f1de7dcb9bd4206cee4c1e3a0fc3f648825b90f37f842`
+   - `VITE_APP_URL` = `https://yourdomain.com`
+   - `SUPERUSER_EMAIL` = your email address
+3. **Configure Production Credentials**: Ensure all wallet and payment keys are in Vercel:
+   - `APPLE_APNS_AUTH_KEY`, `WALLET_WWDR_CERT`, `WALLET_SIGNER_CERT`, `WALLET_SIGNER_KEY`
+   - `STRIPE_SECRET_KEY` (live), `STRIPE_WEBHOOK_SECRET` (live)
+4. **Verify Build Health:** `npm run build`
+5. **Launch Local Server:** `npm run dev -- --port 5173`
 
 ---
 
