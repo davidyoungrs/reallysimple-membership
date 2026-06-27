@@ -2,7 +2,7 @@
 
 | Date | Head Commit |
 | --- | --- |
-| 2026-06-27 (Session 30) | `d80a57b` |
+| 2026-06-27 (Session 30) | `4116a21` |
 
 > Repo: <https://github.com/davidyoungrs/reallysimple-membership>
 > Local Dev: `npm run dev -- --port 5173`
@@ -29,6 +29,9 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 - [x] **Error Detail Leakage Fixed**: Removed `details: error?.message` from 500 responses in `membership.ts` and `public.ts`.
 - [x] **CORS Restricted on Pass Endpoints**: Replaced wildcard `*` CORS with `VITE_APP_URL` env var on both Google Wallet pass handlers.
 - [x] **Launch Checklist Created**: Wrote `LAUNCH_CHECKLIST.md` covering all 9 phases of custom domain go-live.
+- [x] **`isSuperUser` Role Check Bug Fixed (MembershipCardCreator)**: Corrected `role === 'admin'` typo to `role === 'super_admin'` — superusers were incorrectly shown the "Protected Design Template" lock overlay in the strip image designer.
+- [x] **`isSuperUser` Role Check Bug Fixed (MembershipAdminTemplates)**: Same typo in templates component was blocking superusers from creating, editing, and deleting templates.
+- [x] **Full Codebase Role Check Audit**: Scanned all 9 components that reference `isSuperUser` — confirmed no further instances of the bug remain.
 - [x] **Full Production Build Verification**: All builds compile successfully with zero TypeScript errors across all sessions.
 
 ### Sidebar Navigation Reordering (Session 29)
@@ -103,6 +106,8 @@ The platform is in a **production-ready, secure, clean, and fully-optimized** st
 | `src/components/admin/AdminSecurity.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
 | `src/components/admin/AdminSettings.tsx` | 2026-06-27 | Added client-side superuser check — redirects to `/admin/no-access` on direct URL entry. |
 | `src/components/admin/AdminManual.tsx` | 2026-06-27 | New component — full user guide rendered at `/admin/manual`. |
+| `src/components/membership/MembershipCardCreator.tsx` | 2026-06-27 | Fixed `isSuperUser` role check from `'admin'` → `'super_admin'`; unlocks strip image designer for superusers. |
+| `src/components/membership/admin/MembershipAdminTemplates.tsx` | 2026-06-27 | Fixed `isSuperUser` role check from `'admin'` → `'super_admin'`; restores template create/edit/delete for superusers. |
 | `LAUNCH_CHECKLIST.md` | 2026-06-27 | New file — 9-phase go-live checklist for custom domain deployment. |
 
 ---
