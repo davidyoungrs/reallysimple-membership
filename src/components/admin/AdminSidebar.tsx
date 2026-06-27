@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, ShieldAlert, LogOut, Shield, Users } from 'lucide-react';
+import { Settings, ShieldAlert, LogOut, Shield, Users, BookOpen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { Tooltip } from '../Tooltip';
@@ -41,6 +41,7 @@ export function AdminSidebar() {
         { icon: Shield, label: 'Membership Clubs', path: '/admin', tooltip: 'Manage your membership clubs, template designs, and issued passes.' },
         { icon: ShieldAlert, label: 'Security', path: '/admin/security', tooltip: 'Monitor rate limits, bot blocks, input sanitization records, and API performance.' },
         { icon: Settings, label: 'Settings', path: '/admin/settings', tooltip: 'Configure profile settings and global configurations.' },
+        { icon: BookOpen, label: 'User Manual', path: '/admin/manual', tooltip: 'Access the comprehensive user guide and product workflows.' },
     ];
 
     if (isSuperUser) {
