@@ -1,6 +1,7 @@
 import { Settings, ShieldAlert, LogOut, Shield, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useClerk, useUser } from '@clerk/clerk-react';
+import { Tooltip } from '../Tooltip';
 
 export function AdminSidebar() {
     const location = useLocation();
@@ -14,13 +15,13 @@ export function AdminSidebar() {
                         user?.publicMetadata?.role === 'super_admin';
 
     const navItems = [
-        { icon: Shield, label: 'Membership Clubs', path: '/admin' },
-        { icon: ShieldAlert, label: 'Security', path: '/admin/security' },
-        { icon: Settings, label: 'Settings', path: '/admin/settings' },
+        { icon: Shield, label: 'Membership Clubs', path: '/admin', tooltip: 'Manage your membership clubs, template designs, and issued passes.' },
+        { icon: ShieldAlert, label: 'Security', path: '/admin/security', tooltip: 'Monitor rate limits, bot blocks, input sanitization records, and API performance.' },
+        { icon: Settings, label: 'Settings', path: '/admin/settings', tooltip: 'Configure profile settings and global configurations.' },
     ];
 
     if (isSuperUser) {
-        navItems.push({ icon: Users, label: 'Super User', path: '/admin/superuser' });
+        navItems.push({ icon: Users, label: 'Super User', path: '/admin/superuser', tooltip: 'Access root-level privileges to delegate roles and assign geofenced club access.' });
     }
 
     return (
@@ -34,29 +35,33 @@ export function AdminSidebar() {
 
             <nav className="flex-1 p-4 space-y-2">
                 {navItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(item.path)
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                            }`}
-                    >
-                        <item.icon className="w-5 h-5" />
-                        <span className="font-medium">{item.label}</span>
-                    </Link>
+                    <Tooltip key={item.path} content={item.tooltip} position="right" className="w-full">
+                        <Link
+                            to={item.path}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(item.path)
+                                ? 'bg-blue-600 text-white'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                }`}
+                        >
+                            <item.icon className="w-5 h-5" />
+                            <span className="font-medium">{item.label}</span>
+                        </Link>
+                    </Tooltip>
                 ))}
             </nav>
 
             <div className="p-4 border-t border-slate-800">
-                <button
-                    onClick={() => signOut()}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white w-full transition-colors"
-                >
-                    <LogOut className="w-5 h-5" />
-                    <span className="font-medium">Sign Out</span>
-                </button>
+                <Tooltip content="Sign out of your active administrator session." position="right" className="w-full">
+                    <button
+                        onClick={() => signOut()}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white w-full transition-colors"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Sign Out</span>
+                    </button>
+                </Tooltip>
             </div>
         </div>
     );
 }
+
