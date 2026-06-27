@@ -257,7 +257,26 @@ export function MembershipAdminLayout() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-2">
+        <div className="p-4 border-t border-slate-800 space-y-4">
+          <div className="flex items-center justify-between px-4 py-2 bg-slate-950/50 border border-slate-800/85 rounded-xl">
+            <span className="text-xs font-bold text-slate-400">ToolTips</span>
+            <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="right">
+              <button
+                onClick={handleToggleTooltips}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none focus:ring-1 focus:ring-blue-500 ${
+                  tooltipsEnabled ? 'bg-blue-600' : 'bg-slate-700'
+                }`}
+                aria-label="Toggle Tooltips"
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    tooltipsEnabled ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </Tooltip>
+          </div>
+
           <Link
             to="/admin"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-850 hover:text-white font-semibold text-xs uppercase tracking-wider transition-colors w-full"
@@ -279,31 +298,10 @@ export function MembershipAdminLayout() {
               {clubSlug}
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-              <span className="text-xs font-bold text-slate-400">ToolTips</span>
-              <Tooltip content={tooltipsEnabled ? "Disable contextual help tooltips" : "Enable contextual help tooltips"} position="bottom">
-                <button
-                  onClick={handleToggleTooltips}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none focus:ring-1 focus:ring-blue-500 ${
-                    tooltipsEnabled ? 'bg-blue-600' : 'bg-slate-700'
-                  }`}
-                  aria-label="Toggle Tooltips"
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                      tooltipsEnabled ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </Tooltip>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400 font-semibold">{user?.fullName}</span>
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
-                <img src={user?.imageUrl} alt="Profile" className="w-full h-full object-cover" />
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400 font-semibold">{user?.fullName}</span>
+            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+              <img src={user?.imageUrl} alt="Profile" className="w-full h-full object-cover" />
             </div>
           </div>
         </header>
