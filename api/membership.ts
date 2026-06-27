@@ -188,7 +188,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let authenticatedUserEmail = 'admin@reallysimpleapps.com';
     let isSuperUser = true;
 
-    const authBypass = process.env.CLERK_BYPASS_AUTH === 'true';
+    const authBypass = process.env.NODE_ENV !== 'production' && process.env.CLERK_BYPASS_AUTH === 'true';
 
     if (!authBypass) {
         const authHeader = req.headers.authorization;
