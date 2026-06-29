@@ -517,6 +517,18 @@ async function handleClubs(
 
             // Fetch club admins list
             const admins = await db.select().from(clubAdmins).where(eq(clubAdmins.clubId, club.id));
+            if (isSuperUser) {
+                const superAdminExists = admins.some(a => a.clerkId === userId);
+                if (!superAdminExists) {
+                    admins.push({
+                        id: -1,
+                        clubId: club.id,
+                        clerkId: userId,
+                        email: 'superuser@reallysimpleapps.com',
+                        createdAt: new Date()
+                    } as any);
+                }
+            }
 
             return res.status(200).json({ success: true, club, admins });
         }

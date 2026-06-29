@@ -15,6 +15,7 @@ export function MembershipCardCreator() {
   const superuserEmail = (import.meta.env.VITE_SUPERUSER_EMAIL || '').toLowerCase();
   const isSuperUser = user?.publicMetadata?.role === 'super_admin' ||
     (superuserEmail !== '' && user?.primaryEmailAddress?.emailAddress?.toLowerCase() === superuserEmail);
+  const isSystemAdmin = user?.publicMetadata?.role === 'admin';
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const editId = searchParams.get('edit');
@@ -836,7 +837,7 @@ export function MembershipCardCreator() {
                           onClick={() => setShowStripDesigner(true)}
                           className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl transition-all"
                         >
-                          {isSuperUser || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)
+                          {isSuperUser || isSystemAdmin || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)
                             ? '🎨 Customize Strip Banner & Background'
                             : '👁️ View Strip Banner'}
                         </button>
@@ -963,7 +964,7 @@ export function MembershipCardCreator() {
           memberName={memberName}
           memberPhoto={memberPhoto}
           initialStripConfig={cardConfig.stripConfig}
-          isAdmin={isSuperUser || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)}
+          isAdmin={isSuperUser || isSystemAdmin || selectedClub?.admins?.some((a: any) => a.clerkId === user?.id)}
           onSave={(dataUrl, newStripConfig) => {
             setCardConfig(prev => prev ? { ...prev, stripConfig: newStripConfig } : null);
             setStripImageUrl(dataUrl);
